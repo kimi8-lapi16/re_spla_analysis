@@ -1,9 +1,10 @@
-export interface TComeServiceInterface<T> {
-  findAll(): Promise<T[]>
-  upsert(param: T): Promise<T>
+export interface BaseCrudRepositoryInterface<T> {
+  findOneById(id: string): Promise<T>
+  read(): Promise<T[]>
+  create(param: T): Promise<T>
+  update(param: T): Promise<T>
   delete(id: string): Promise<void>
 }
-
 export interface SingletonServiceInterface<T> {
   getInstance(): T
 }

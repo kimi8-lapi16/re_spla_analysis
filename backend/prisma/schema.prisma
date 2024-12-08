@@ -27,11 +27,11 @@ enum MatchResult {
 
 model User {
   id String @id @default(cuid())
-  mailAddress String
+  mailAddress String @unique
   name String
   password String
   registerDate DateTime @db.Date
-  cancelDate DateTime @db.Date
+  cancelDate DateTime? @db.Date 
 }
 
 model Rule {
@@ -60,5 +60,5 @@ model Analysis {
   ruleId String
   weaponId String
   gameDateTime DateTime @db.Date
-  point Int
+  point Int?
 }

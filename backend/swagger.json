@@ -2,10 +2,88 @@
   "openapi": "3.0.0",
   "info": {
     "version": "1.0.0",
-    "title": "Household-buget API",
-    "description": "Household-buget API"
+    "title": "Splatoon Analysis API",
+    "description": "Splatoon Analysis API"
   },
   "paths": {
+    "/users/login": {
+      "post": {
+        "tags": ["UserController"],
+        "summary": "Login",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "input": {
+                    "$ref": "#/components/schemas/LoginRequest"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "response": {
+          "200": {
+            "description": "Login Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["token"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/signUp": {
+      "post": {
+        "tags": ["UserController"],
+        "summary": "Create User",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "input": {
+                    "$ref": "#/components/schemas/SignUpRequest"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "response": {
+          "200": {
+            "description": "New User Instance",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["token"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/users": {
       "get": {
         "tags": ["UserController"],
@@ -18,11 +96,32 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "incomes": {
+                    "user": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/user"
+                        "$ref": "#/components/schemas/User"
                       }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["UserController"],
+        "summary": "Update or Create User",
+        "response": {
+          "200": {
+            "description": "New User Instance",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "user": {
+                      "$ref": "#/components/schemas/User"
                     }
                   }
                 }
@@ -35,7 +134,34 @@
   },
   "components": {
     "schemas": {
-      "user": {
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "mailAddress": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        },
+        "required": ["mailAddress", "password"]
+      },
+      "SignUpRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "mailAddress": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        },
+        "required": ["name", "mailAddress", "password"]
+      },
+      "User": {
         "type": "object",
         "properties": {
           "id": {
