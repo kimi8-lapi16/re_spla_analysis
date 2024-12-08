@@ -1,0 +1,64 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum BattleType {
+  CHALLENGE
+  OPEN
+  X
+}
+
+enum MatchResult {
+  VICTORY
+  DEFEAT
+  DRAW
+}
+
+model User {
+  id String @id @default(cuid())
+  mailAddress String
+  name String
+  password String
+  registerDate DateTime @db.Date
+  cancelDate DateTime @db.Date
+}
+
+model Rule {
+  id String @id @default(cuid())
+  name String
+}
+
+model Stage {
+  id String @id @default(cuid())
+  name String
+}
+
+model Weapon {
+  id String @id @default(cuid())
+  main String
+  sub String
+  special String
+}
+
+model Analysis {
+  id String @id @default(cuid())
+  userId String
+  battleType BattleType
+  matchResult MatchResult
+  stageId String
+  ruleId String
+  weaponId String
+  gameDateTime DateTime @db.Date
+  point Int
+}

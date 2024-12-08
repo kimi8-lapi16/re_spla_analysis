@@ -1,0 +1,74 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "Household-buget API",
+    "description": "Household-buget API"
+  },
+  "paths": {
+    "/users": {
+      "get": {
+        "tags": ["UserController"],
+        "summary": "GET ALL Users",
+        "responses": {
+          "200": {
+            "description": "Fetch List of User",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "incomes": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/user"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "user": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "mailAddress": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "registerDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "cancelDate": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": ["id", "name", "mailAddress", "password", "registerDate", "cancelDate"]
+      },
+      "BattleType": {
+        "type": "string",
+        "enum": ["CHALLENGE", "OPEN", "X"]
+      },
+      "MatchResult": {
+        "type": "string",
+        "enum": ["VICTORY", "DEFEAT", "DRAW"]
+      }
+    }
+  }
+}
