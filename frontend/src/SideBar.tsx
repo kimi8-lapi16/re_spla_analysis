@@ -5,8 +5,8 @@ export default function SideBar() {
   return (
     <div>
       <Flex direction="column" gap="md">
-        <SideBarElement key="analysis" name="Analysis" to="/analysis" />
-        <SideBarElement key="search" name="Search" to="/search" />
+        <SideBarElement key="analysis" name="Analysis" to="analysis" />
+        <SideBarElement key="search" name="Search" to="search" />
         <SideBarElement key="profile" name="Profile" to="profile" />
       </Flex>
     </div>

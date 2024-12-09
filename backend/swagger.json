@@ -5,11 +5,18 @@
     "title": "Splatoon Analysis API",
     "description": "Splatoon Analysis API"
   },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
   "paths": {
     "/users/login": {
       "post": {
         "tags": ["UserController"],
-        "summary": "Login",
+        "summary": "Login a user",
+        "description": "Authenticates a user with their credentials.",
+        "security": [],
         "requestBody": {
           "required": true,
           "content": {
@@ -25,19 +32,13 @@
             }
           }
         },
-        "response": {
+        "responses": {
           "200": {
-            "description": "Login Response",
+            "description": "Successful login",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "token": {
-                      "type": "string"
-                    }
-                  },
-                  "required": ["token"]
+                  "$ref": "#/components/schemas/LoginResponse"
                 }
               }
             }
@@ -49,6 +50,7 @@
       "post": {
         "tags": ["UserController"],
         "summary": "Create User",
+        "security": [],
         "requestBody": {
           "required": true,
           "content": {
@@ -64,19 +66,13 @@
             }
           }
         },
-        "response": {
+        "responses": {
           "200": {
             "description": "New User Instance",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "token": {
-                      "type": "string"
-                    }
-                  },
-                  "required": ["token"]
+                  "$ref": "#/components/schemas/LoginResponse"
                 }
               }
             }
@@ -87,43 +83,15 @@
     "/users": {
       "get": {
         "tags": ["UserController"],
-        "summary": "GET ALL Users",
+        "summary": "fetch a user",
+        "description": "fetch by user from jwt",
         "responses": {
           "200": {
-            "description": "Fetch List of User",
+            "description": "Self User Instance",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "user": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/User"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": ["UserController"],
-        "summary": "Update or Create User",
-        "response": {
-          "200": {
-            "description": "New User Instance",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "user": {
-                      "$ref": "#/components/schemas/User"
-                    }
-                  }
+                  "$ref": "#/components/schemas/User"
                 }
               }
             }
@@ -133,6 +101,14 @@
     }
   },
   "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT token required."
+      }
+    },
     "schemas": {
       "LoginRequest": {
         "type": "object",
@@ -145,6 +121,16 @@
           }
         },
         "required": ["mailAddress", "password"]
+      },
+      "LoginResponse": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "JWT token for the authenticated user"
+          }
+        },
+        "required": ["token"]
       },
       "SignUpRequest": {
         "type": "object",

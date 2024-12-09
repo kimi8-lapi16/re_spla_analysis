@@ -4,18 +4,18 @@ import ReactDOM from "react-dom/client";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import AuthorizedLayout from "./AuthorizedLayout";
 import "./index.css";
-import NotAuthorizedLayout from "./NoAuthorizedLayout";
 import AnalysisPage from "./pages/AnalysisPage";
 import LoginPage from "./pages/LoginPage";
 import ProfilePage from "./pages/Profile";
 import SearchPage from "./pages/SearchPage";
 import SignUpPage from "./pages/SignUpPage";
+import UnAuthorizedLayout from "./UnAuthorizedLayout";
 
 const routes = [
   {
     // 未ログイン時のレイアウト
     path: "/",
-    element: <NotAuthorizedLayout />,
+    element: <UnAuthorizedLayout />,
     children: [
       {
         path: "login",

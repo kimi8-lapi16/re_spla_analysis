@@ -1,6 +1,8 @@
 import { Heading, Link } from "@yamada-ui/react";
+import { useNavigate } from "react-router-dom";
 
 export default function Header() {
+  const navigate = useNavigate();
   return (
     <section style={{ display: "flex" }}>
       <Heading
@@ -19,6 +21,7 @@ export default function Header() {
           width: "fit-content",
           marginRight: "0px",
         }}
+        onClick={() => navigate("/login")}
       >
         Logout
       </Link>
