@@ -6,7 +6,7 @@ import { LoginRequest, SignUpRequest } from '../type/LoginRequest';
 import UserService from './userService';
 
 const userService = new UserService();
-const jwtKey = process.env.JWT_SECRET_KEY!!
+const jwtKey = process.env.JWT_SECRET_KEY!
 
 class UserController {
   async login(req: LoginRequest, res: Response) {
@@ -49,7 +49,7 @@ class UserController {
   }
 
   async updateUser(req: Request, res: Response) {
-    const user = await userService.upsert(req.body.input);
+    await userService.upsert(req.body.input);
     res.status(200).json({ isSuccess: true });
   }
 

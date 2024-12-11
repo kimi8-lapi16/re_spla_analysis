@@ -1,6 +1,6 @@
 import { useAtomValue } from "jotai";
 import { useState } from "react";
-import { userApiAtom } from "./auth";
+import { userApiAtom } from "./config";
 
 export function useLogin() {
   const [loading, setLoading] = useState(true);

@@ -5,7 +5,10 @@ import { expressjwt } from "express-jwt";
 import swaggerUi from "swagger-ui-express";
 import * as swaggerDoc from "../swagger.json";
 import getTokenFromCookie from "./getToken";
+import ruleRouter from "./rule/ruleRouter";
+import stageRouter from "./stage/stageRouter";
 import userRouter from "./user/userRouter";
+import weaponRouter from "./weapon/weaponRouter";
 
 const app = express();
 
@@ -30,11 +33,14 @@ app.use((req, res, next) => {
   if (skipAuthRoutes.includes(req.path)) {
     return next(); // 認証をスキップ
   }
-  return expressjwt({ secret: process.env.JWT_SECRET_KEY!!, algorithms: ["HS256"], getToken: req => getTokenFromCookie(req) })(req, res, next);
+  return expressjwt({ secret: process.env.JWT_SECRET_KEY!, algorithms: ["HS256"], getToken: req => getTokenFromCookie(req) })(req, res, next);
 });
 
 // ルーティング設定
 app.use("/users", userRouter);
+app.use("/weapons", weaponRouter);
+app.use("/stages", stageRouter);
+app.use("/rules", ruleRouter);
 
 const port = process.env.PORT || 4000;
 app.listen(port, () => {

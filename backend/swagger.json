@@ -98,6 +98,90 @@
           }
         }
       }
+    },
+    "/rules": {
+      "get": {
+        "tags": ["RuleController"],
+        "summary": "fetch all rules",
+        "description": "fetch rules",
+        "responses": {
+          "200": {
+            "description": "List of Rule",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "rules": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Rule"
+                      }
+                    }
+                  },
+                  "required": ["rules"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/weapons": {
+      "get": {
+        "tags": ["WeaponController"],
+        "summary": "fetch all weapon",
+        "description": "fetch weapons",
+        "responses": {
+          "200": {
+            "description": "List of Weapon",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "weapons": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Weapon"
+                      }
+                    }
+                  },
+                  "required": ["weapons"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/stages": {
+      "get": {
+        "tags": ["StageController"],
+        "summary": "fetch all stages",
+        "description": "fetch stages",
+        "responses": {
+          "200": {
+            "description": "List of Stage",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "stages": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Stage"
+                      }
+                    }
+                  },
+                  "required": ["stages"]
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -172,6 +256,48 @@
           }
         },
         "required": ["id", "name", "mailAddress", "password", "registerDate", "cancelDate"]
+      },
+      "Weapon": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "main": {
+            "type": "string"
+          },
+          "sub": {
+            "type": "string"
+          },
+          "special": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "main", "sub", "special"]
+      },
+      "Rule": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "name"]
+      },
+      "Stage": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "name"]
       },
       "BattleType": {
         "type": "string",
