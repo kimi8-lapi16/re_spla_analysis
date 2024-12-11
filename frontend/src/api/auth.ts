@@ -5,7 +5,7 @@ export const configAtom = atom(() => {
   return new Configuration({
     basePath: "http://localhost:4000",
     baseOptions: {
-      credentials: 'include',
+      credentials: 'include'
     }
   });
 });

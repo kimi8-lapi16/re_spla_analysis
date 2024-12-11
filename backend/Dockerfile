@@ -15,7 +15,7 @@ RUN npx prisma generate
 # アプリケーションのソースコードをコピー
 COPY . .
 
-RUN npm run seed
+# RUN npm run seed
 
 # サーバーを起動
 CMD ["npm", "run", "dev"]

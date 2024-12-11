@@ -13,7 +13,7 @@ class UserController {
     try {
       const user = await userService.login(req.body.input);
       const token = jsonwebtoken.sign({ userId: user.id }, jwtKey, { expiresIn: '1h' });
-      res.cookie('token', token, { httpOnly: true, sameSite: 'none' });
+      res.cookie('token', token, { httpOnly: true, sameSite: 'none', secure: true });
       res.status(200).json({ token });
     } catch(e) {
       console.error(e);
@@ -30,7 +30,7 @@ class UserController {
     try {
       const user = await userService.signUp(req.body.input);
       const token = jsonwebtoken.sign({ userId: user.id }, jwtKey, { expiresIn: '1h' });
-      res.cookie('token', token, { httpOnly: true, sameSite: 'none' });
+      res.cookie('token', token, { httpOnly: true, sameSite: 'none', secure: true });
       res.status(200).json({ token });
     } catch(e) {
       console.error(e);

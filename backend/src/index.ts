@@ -12,7 +12,7 @@ const app = express();
 // CORSの設定
 const corsOption = {
   origin: process.env.FRONT_URL,
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: true,
   optionsSuccessStatus: 200,
