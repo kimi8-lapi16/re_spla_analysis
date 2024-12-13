@@ -3,13 +3,13 @@ import { Link } from "react-router-dom";
 
 export default function SideBar() {
   return (
-    <div>
+    <section>
       <Flex direction="column" gap="md">
         <SideBarElement key="analysis" name="Analysis" to="analysis" />
         <SideBarElement key="search" name="Search" to="search" />
         <SideBarElement key="profile" name="Profile" to="profile" />
       </Flex>
-    </div>
+    </section>
   );
 }
 

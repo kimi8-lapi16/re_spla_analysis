@@ -37,3 +37,11 @@ export function useGetUser() {
   }
   return { loading, getUser }
 }
+
+export function useLogout() {
+  const userApi = useAtomValue(userApiAtom);
+  async function logout() {
+    await userApi.usersLogoutPost({ withCredentials: true });
+  }
+  return { logout };
+}
