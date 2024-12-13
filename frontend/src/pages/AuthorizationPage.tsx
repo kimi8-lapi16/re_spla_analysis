@@ -21,7 +21,7 @@ export default function AuthorizationPage() {
       />
       <Button
         onClick={() => onChange(value === "from" ? "to" : "from")}
-        style={{ marginTop: "100px" }}
+        style={{ marginTop: "150px" }}
         variant="ghost"
       >
         {value === "from" && (

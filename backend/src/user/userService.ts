@@ -8,34 +8,30 @@ const userRepository = UserRepository.getInstance();
 export default class UserService {
   async login(param: LoginBody): Promise<User> {
     const { mailAddress, password } = param;
-    console.log({ mailAddress, password })
     const user = await userRepository.findByMailAddress(mailAddress);
     if (!await this.comparePassword(password, user.password)) {
       throw new Error('Invalid Password');
     }
-    console.log({user})
     return user;
   }
 
   async signUp(param: SingUpBody): Promise<User> {
     const { mailAddress, password, name } = param;
-    console.log({ mailAddress, password, name })
     const registerDate = new Date();
-    const tempUser = { name, mailAddress, password: this.hashPassword(password), registerDate }
-    const user = await userRepository.create(tempUser);
-    console.log({user})
-    return user;
+    // TODO: mailAddressのバリデーションとパスワードのポリシーチェック
+    const newUser = { name, mailAddress, password: this.hashPassword(password), registerDate }
+    return await userRepository.create(newUser);
   }
 
   async get(id: string): Promise<User> { 
     return await userRepository.findOneById(id);
   }
 
-  async upsert(param: User): Promise<User> {
-    if (param.id) {
-      return await userRepository.update(param);
+  async upsert(user: User): Promise<User> {
+    if (user.id) {
+      return await userRepository.update(user);
     } else {
-      return await userRepository.create(param);
+      return await userRepository.create(user);
     };
   }
 
@@ -51,6 +47,6 @@ export default class UserService {
     password: string,
     hashed: string
   ): Promise<boolean> => {
-    return bcrypt.compare(password, hashed);
+    return await bcrypt.compare(password, hashed);
   };
 }

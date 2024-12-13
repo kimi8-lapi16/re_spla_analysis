@@ -34,12 +34,11 @@ class UserRepository extends BaseRepository implements SingletonServiceInterface
   }
 
   async findByMailAddress(mailAddress: string): Promise<User> {
-    // TODO: mailAddressにユニーク属性をつけてfindUniqueOrThrowにすべき
-    return (await UserRepository.user.findMany({
+    return await UserRepository.user.findUniqueOrThrow({
       where: {
         mailAddress
       }
-    }))[0];
+    })
   }
 
   async read(): Promise<User[]> {
