@@ -28,9 +28,9 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDoc));
 app.use(express.json());
 
 // 認証不要なエンドポイントの設定
-const skipAuthRoutes = ["/users/login", "/users/signUp"];
+const skipAuthRoutes = new Set(["/users/login", "/users/signUp"]);
 app.use((req, res, next) => {
-  if (skipAuthRoutes.includes(req.path)) {
+  if (skipAuthRoutes.has(req.path)) {
     return next(); // 認証をスキップ
   }
   return expressjwt({ secret: process.env.JWT_SECRET_KEY!, algorithms: ["HS256"], getToken: req => getTokenFromCookie(req) })(req, res, next);

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { Request } from "express";
 import { jwtDecode } from "jwt-decode";
 import getTokenFromCookie from "./getToken";
