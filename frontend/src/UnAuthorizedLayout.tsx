@@ -13,12 +13,14 @@ export default function UnAuthorizedLayout() {
         height: "100vh",
       }}
     >
-      <Header />
-      <div style={{ display: "flex", flexDirection: "row", height: "80vh" }}>
+      <Header isLogin={false} />
+      <section
+        style={{ display: "flex", flexDirection: "row", height: "80vh" }}
+      >
         <Suspense fallback={<>Loading ... </>}>
           <Outlet />
         </Suspense>
-      </div>
+      </section>
       <Footer />
     </div>
   );

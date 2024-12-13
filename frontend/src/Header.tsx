@@ -1,10 +1,17 @@
 import { Heading, Link } from "@yamada-ui/react";
 import { useNavigate } from "react-router-dom";
+import { useLogout } from "./api/userApi";
 
-export default function Header() {
+interface HeaderProps {
+  isLogin: boolean;
+}
+
+export default function Header(props: HeaderProps) {
+  const { isLogin } = props;
   const navigate = useNavigate();
+  const { logout } = useLogout();
   return (
-    <section style={{ display: "flex" }}>
+    <section style={{ display: "flex", justifyContent: "start" }}>
       <Heading
         w="full"
         size="2xl"
@@ -15,16 +22,21 @@ export default function Header() {
       >
         Splatoon Analysis Application
       </Heading>
-      <Link
-        style={{
-          display: "inline-block",
-          width: "fit-content",
-          marginRight: "0px",
-        }}
-        onClick={() => navigate("/login")}
-      >
-        Logout
-      </Link>
+      {isLogin && (
+        <Link
+          style={{
+            display: "inline-block",
+            width: "fit-content",
+            marginInline: "10px",
+          }}
+          onClick={async () => {
+            await logout();
+            navigate("/login");
+          }}
+        >
+          Logout
+        </Link>
+      )}
     </section>
   );
 }

@@ -14,7 +14,7 @@ export default function AuthorizedLayout() {
         height: "100vh",
       }}
     >
-      <Header />
+      <Header isLogin={true} />
       <div style={{ display: "flex", flexDirection: "row", height: "80vh" }}>
         <SideBar />
         <Suspense fallback={<>Loading ... </>}>
