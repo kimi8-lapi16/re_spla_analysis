@@ -5,10 +5,9 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import AuthorizedLayout from "./AuthorizedLayout";
 import "./index.css";
 import AnalysisPage from "./pages/AnalysisPage";
-import LoginPage from "./pages/LoginPage";
+import AuthorizationPage from "./pages/AuthorizationPage";
 import ProfilePage from "./pages/Profile";
 import SearchPage from "./pages/SearchPage";
-import SignUpPage from "./pages/SignUpPage";
 import UnAuthorizedLayout from "./UnAuthorizedLayout";
 
 const routes = [
@@ -18,12 +17,8 @@ const routes = [
     element: <UnAuthorizedLayout />,
     children: [
       {
-        path: "login",
-        element: <LoginPage />,
-      },
-      {
-        path: "signUp",
-        element: <SignUpPage />,
+        path: "/",
+        element: <AuthorizationPage />,
       },
     ],
   },

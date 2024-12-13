@@ -7,7 +7,7 @@ import {
   Stack,
 } from "@yamada-ui/react";
 import { useCallback, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useSignUp } from "../api/userApi";
 
 export default function SignUpPage() {
@@ -43,6 +43,7 @@ export default function SignUpPage() {
                 onChange={(event) => {
                   setName(event.target.value);
                 }}
+                style={{ pointerEvents: "auto" }}
               />
               <Input
                 size="lg"
@@ -52,6 +53,7 @@ export default function SignUpPage() {
                 onChange={(event) => {
                   setMailAddress(event.target.value);
                 }}
+                style={{ pointerEvents: "auto" }}
               />
               <PasswordInput
                 size="lg"
@@ -60,9 +62,11 @@ export default function SignUpPage() {
                 onChange={(event) => {
                   setPassword(event.target.value);
                 }}
+                style={{ pointerEvents: "auto" }}
               />
-              <Button onClick={doSubmit}>会員登録</Button>
-              <Link to="/login">ログイン画面に戻る</Link>
+              <Button onClick={doSubmit} style={{ pointerEvents: "auto" }}>
+                会員登録
+              </Button>
             </Stack>
           </FormControl>
         </section>

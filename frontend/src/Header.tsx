@@ -31,7 +31,7 @@ export default function Header(props: HeaderProps) {
           }}
           onClick={async () => {
             await logout();
-            navigate("/login");
+            navigate("/");
           }}
         >
           Logout
