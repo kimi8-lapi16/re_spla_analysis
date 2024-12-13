@@ -1,6 +1,9 @@
 # ベースイメージとしてNodeのLTSバージョンを指定
 FROM node:lts-alpine
 
+RUN apk add --no-cache openssl
+RUN apk add --no-cache libssl3
+
 # 作業ディレクトリを設定
 WORKDIR /app
 
