@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import jsonwebtoken from "jsonwebtoken";
-import getTokenFromCookie from '../getToken';
 import getUserId from '../getUserId';
 import { LoginRequest, SignUpRequest } from '../type/LoginRequest';
 import UserService from './userService';
@@ -22,8 +21,14 @@ class UserController {
   }
 
   async logout(req: Request, res: Response) {
-    const token = getTokenFromCookie(req);
-    res.cookie('token', token, { maxAge: 0 });
+    // JWTを含むCookieを削除
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none'
+    })
+    // ログアウト後のレスポンス
+    res.status(200).json({ isSuccess: true });
   }
 
   async signUp(req: SignUpRequest, res: Response) {

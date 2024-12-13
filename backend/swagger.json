@@ -46,6 +46,25 @@
         }
       }
     },
+    "/users/logout": {
+      "post": {
+        "tags": ["UserController"],
+        "summary": "Logout a user",
+        "description": "Remove Cookie",
+        "responses": {
+          "200": {
+            "description": "Successful logout",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IsSuccessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/users/signUp": {
       "post": {
         "tags": ["UserController"],
@@ -215,6 +234,15 @@
           }
         },
         "required": ["token"]
+      },
+      "IsSuccessResponse": {
+        "type": "object",
+        "properties": {
+          "isSuccess": {
+            "type": "boolean"
+          }
+        },
+        "required": ["isSuccess"]
       },
       "SignUpRequest": {
         "type": "object",
