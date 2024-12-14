@@ -1,9 +1,9 @@
 import { Prisma, Stage } from "@prisma/client";
 import { DefaultArgs } from "@prisma/client/runtime/library";
 import BaseRepository from "../baseRepository";
-import { BaseCrudRepositoryInterface, SingletonServiceInterface } from "../type/CommonInterface";
+import { BaseCrudRepositoryInterface, SingletonRepositoryInterface } from "../type/RepositoryInterface";
 
-export default class StageRepository extends BaseRepository implements SingletonServiceInterface<StageRepository>, BaseCrudRepositoryInterface<Stage> {
+export default class StageRepository extends BaseRepository implements SingletonRepositoryInterface<StageRepository>, BaseCrudRepositoryInterface<Stage> {
   private static instance: StageRepository
   private static stage: Prisma.StageDelegate<DefaultArgs>;
 

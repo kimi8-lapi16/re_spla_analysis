@@ -1,9 +1,9 @@
 import { Prisma, Rule } from "@prisma/client";
 import { DefaultArgs } from "@prisma/client/runtime/library";
 import BaseRepository from "../baseRepository";
-import { BaseCrudRepositoryInterface, SingletonServiceInterface } from "../type/CommonInterface";
+import { BaseCrudRepositoryInterface, SingletonRepositoryInterface } from "../type/RepositoryInterface";
 
-export default class RuleRepository extends BaseRepository implements SingletonServiceInterface<RuleRepository>, BaseCrudRepositoryInterface<Rule> {
+export default class RuleRepository extends BaseRepository implements SingletonRepositoryInterface<RuleRepository>, BaseCrudRepositoryInterface<Rule> {
   private static instance: RuleRepository
   private static rule: Prisma.RuleDelegate<DefaultArgs>;
 

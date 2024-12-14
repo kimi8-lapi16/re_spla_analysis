@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import jsonwebtoken from "jsonwebtoken";
 import getUserId from '../getUserId';
-import { LoginRequest, SignUpRequest } from '../type/LoginRequest';
+import { LoginRequest, SignUpRequest } from '../type/AuthenticateRequest';
 import UserService from './userService';
 
 const userService = new UserService();

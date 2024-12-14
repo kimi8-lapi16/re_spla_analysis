@@ -1,6 +1,6 @@
 import { User } from "@prisma/client";
 import * as bcrypt from 'bcryptjs';
-import { LoginBody, SingUpBody } from "../type/LoginRequest";
+import { LoginBody, SingUpBody } from "../type/AuthenticateRequest";
 import UserRepository from "./userRepository";
 
 const userRepository = UserRepository.getInstance();

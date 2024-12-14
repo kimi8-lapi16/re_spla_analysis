@@ -1,9 +1,9 @@
 import { Prisma, Weapon } from "@prisma/client";
 import { DefaultArgs } from "@prisma/client/runtime/library";
 import BaseRepository from "../baseRepository";
-import { BaseCrudRepositoryInterface, SingletonServiceInterface } from "../type/CommonInterface";
+import { BaseCrudRepositoryInterface, SingletonRepositoryInterface } from "../type/RepositoryInterface";
 
-export default class WeaponRepository extends BaseRepository implements SingletonServiceInterface<WeaponRepository>, BaseCrudRepositoryInterface<Weapon> {
+export default class WeaponRepository extends BaseRepository implements SingletonRepositoryInterface<WeaponRepository>, BaseCrudRepositoryInterface<Weapon> {
   private static instance: WeaponRepository
   private static weapon: Prisma.WeaponDelegate<DefaultArgs>;
 

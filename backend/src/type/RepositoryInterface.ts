@@ -5,6 +5,7 @@ export interface BaseCrudRepositoryInterface<T> {
   update(param: T): Promise<T>
   delete(id: string): Promise<void>
 }
-export interface SingletonServiceInterface<T> {
+
+export interface SingletonRepositoryInterface<T> {
   getInstance(): T
 }

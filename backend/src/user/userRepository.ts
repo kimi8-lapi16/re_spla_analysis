@@ -1,9 +1,9 @@
 import { Prisma, User } from "@prisma/client";
 import { DefaultArgs } from "@prisma/client/runtime/library";
 import BaseRepository from "../baseRepository";
-import { BaseCrudRepositoryInterface, SingletonServiceInterface } from "../type/CommonInterface";
+import { BaseCrudRepositoryInterface, SingletonRepositoryInterface } from "../type/RepositoryInterface";
 
-class UserRepository extends BaseRepository implements SingletonServiceInterface<UserRepository>, BaseCrudRepositoryInterface<User> {
+class UserRepository extends BaseRepository implements SingletonRepositoryInterface<UserRepository>, BaseCrudRepositoryInterface<User> {
   private static instance: UserRepository
   private static user: Prisma.UserDelegate<DefaultArgs>;
 
