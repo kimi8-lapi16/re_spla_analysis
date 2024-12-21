@@ -4,9 +4,10 @@ import express from "express";
 import { expressjwt } from "express-jwt";
 import swaggerUi from "swagger-ui-express";
 import * as swaggerDoc from "../swagger.json";
-import getTokenFromCookie from "./getToken";
+import analysisRouter from "./analysis/analysisRouter";
 import ruleRouter from "./rule/ruleRouter";
 import stageRouter from "./stage/stageRouter";
+import { getTokenFromCookie } from "./tokenUtil";
 import userRouter from "./user/userRouter";
 import weaponRouter from "./weapon/weaponRouter";
 
@@ -41,6 +42,7 @@ app.use("/users", userRouter);
 app.use("/weapons", weaponRouter);
 app.use("/stages", stageRouter);
 app.use("/rules", ruleRouter);
+app.use("/analysis", analysisRouter);
 
 const port = process.env.PORT || 4000;
 app.listen(port, () => {
