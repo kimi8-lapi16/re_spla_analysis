@@ -1,6 +1,6 @@
-export interface BaseCrudRepositoryInterface<T> {
+export interface BaseCrudRepositoryInterface<T, TWhereInput> {
   findOneById(id: string): Promise<T>
-  read(): Promise<T[]>
+  read(where?: TWhereInput): Promise<T[]>
   create(param: T): Promise<T>
   update(param: T): Promise<T>
   delete(id: string): Promise<void>

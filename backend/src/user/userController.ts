@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import jsonwebtoken from "jsonwebtoken";
-import getUserId from '../getUserId';
+import { getUserId } from '../tokenUtil';
 import { LoginRequest, SignUpRequest } from '../type/AuthenticateRequest';
 import UserService from './userService';
 
@@ -49,7 +49,7 @@ class UserController {
       res.json(user);
     } catch(e) {
       console.error(e);
-      res.status(404).send("Not Found User")
+      res.status(404).send("Not Found User");
     }
   }
 
