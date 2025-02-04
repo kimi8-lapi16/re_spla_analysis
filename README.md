@@ -27,11 +27,7 @@
 
 ## 立ち上げ方
 
-- docker desktop を起動
-- VSCode を起動
-- HOUSEHOLD-BUDGET 直下(docker-compose.yaml)の TARMINAL で `docker-compose build` を実行
-- 同じ場所で`docker-compose up -d` を実行
-- ※ `docker-compose up -d --build` でも良いです
+- `docker-compose up -d` を実行
 
 ## バックアップの取り方
 
