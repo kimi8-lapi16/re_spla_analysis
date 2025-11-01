@@ -1,0 +1,35 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: re_spla_analysis_db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      MYSQL_DATABASE: re_spla_analysis_db
+    ports:
+      - '3306:3306'
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - re_spla_analysis_network
+  app:
+    container_name: re_spla_analysis
+    build:
+      context: .
+      args:
+        BUILDKIT_PROGRESS: plain
+      dockerfile: Dockerfile
+    volumes:
+      - .:/workspace
+    command: /bin/sh -c "while sleep 1000; do :; done"
+    depends_on:
+      - db
+    networks:
+      - re_spla_analysis_network
+
+networks:
+  re_spla_analysis_network:
+
+volumes:
+  db_data:
