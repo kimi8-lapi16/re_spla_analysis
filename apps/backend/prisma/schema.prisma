@@ -1,0 +1,114 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+model User {
+  id         String       @id @default(uuid()) @db.Char(36)
+  name       String
+  email      String       @unique
+  createdAt  DateTime     @default(now()) @map("created_at")
+  updatedAt  DateTime     @updatedAt @map("updated_at")
+  deletedAt  DateTime?    @map("deleted_at")
+
+  // relation
+  secret     UserSecret?
+  analyses   Analysis[]
+
+  @@map("user")
+}
+
+model UserSecret {
+  userId     String   @id @map("user_id")
+  password   String
+
+  // relation
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_secret")
+}
+
+model Stage {
+  id      Int       @id @default(autoincrement())
+  name    String
+
+  analyses Analysis[]
+
+  @@map("stage")
+}
+
+model Rule {
+  id      Int       @id @default(autoincrement())
+  name    String
+
+  analyses Analysis[]
+
+  @@map("rule")
+}
+
+model SubWeapon {
+  id      Int       @id @default(autoincrement())
+  name    String
+
+  mainWeapons Weapon[]
+
+  @@map("sub_weapon")
+}
+
+model SpecialWeapon {
+  id      Int       @id @default(autoincrement())
+  name    String
+
+  mainWeapons Weapon[]
+
+  @@map("special_weapon")
+}
+
+model Weapon {
+  id              Int            @id @default(autoincrement())
+  name            String
+  subWeaponId     Int            @map("sub_weapon_id")
+  specialWeaponId Int            @map("special_weapon_id")
+
+  subWeapon       SubWeapon      @relation(fields: [subWeaponId], references: [id])
+  specialWeapon   SpecialWeapon  @relation(fields: [specialWeaponId], references: [id])
+  analyses        Analysis[]
+
+  @@map("weapon")
+}
+
+model BattleType {
+  id      Int       @id @default(autoincrement())
+  name    String
+
+  analyses Analysis[]
+
+  @@map("battle_type")
+}
+
+model Analysis {
+  id            String    @id @default(uuid()) @db.Char(36)
+  result        String
+  battleTypeId  Int       @map("battle_type_id")
+  stageId       Int       @map("stage_id")
+  ruleId        Int       @map("rule_id")
+  weaponId      Int       @map("weapon_id")
+  gameDateTime  DateTime  @map("game_date_time")
+  point         Int?
+  userId        String    @map("user_id") @db.Char(36)
+
+  // relations
+  battleType    BattleType @relation(fields: [battleTypeId], references: [id])
+  stage         Stage     @relation(fields: [stageId], references: [id])
+  rule          Rule      @relation(fields: [ruleId], references: [id])
+  weapon        Weapon    @relation(fields: [weaponId], references: [id])
+  user          User      @relation(fields: [userId], references: [id])
+
+  @@map("analysis")
+}
