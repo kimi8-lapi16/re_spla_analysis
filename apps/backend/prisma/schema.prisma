@@ -19,7 +19,7 @@ model User {
 
   // relation
   secret     UserSecret?
-  analyses   Analysis[]
+  matches    Match[]
 
   @@map("user")
 }
@@ -38,7 +38,7 @@ model Stage {
   id      Int       @id @default(autoincrement())
   name    String
 
-  analyses Analysis[]
+  matches Match[]
 
   @@map("stage")
 }
@@ -47,7 +47,7 @@ model Rule {
   id      Int       @id @default(autoincrement())
   name    String
 
-  analyses Analysis[]
+  matches Match[]
 
   @@map("rule")
 }
@@ -78,7 +78,7 @@ model Weapon {
 
   subWeapon       SubWeapon      @relation(fields: [subWeaponId], references: [id])
   specialWeapon   SpecialWeapon  @relation(fields: [specialWeaponId], references: [id])
-  analyses        Analysis[]
+  matches         Match[]
 
   @@map("weapon")
 }
@@ -87,12 +87,12 @@ model BattleType {
   id      Int       @id @default(autoincrement())
   name    String
 
-  analyses Analysis[]
+  matches Match[]
 
   @@map("battle_type")
 }
 
-model Analysis {
+model Match {
   id            String    @id @default(uuid()) @db.Char(36)
   result        String
   battleTypeId  Int       @map("battle_type_id")
@@ -110,5 +110,5 @@ model Analysis {
   weapon        Weapon    @relation(fields: [weaponId], references: [id])
   user          User      @relation(fields: [userId], references: [id])
 
-  @@map("analysis")
+  @@map("match")
 }
