@@ -36,7 +36,7 @@ model UserSecret {
 
 model Stage {
   id      Int       @id @default(autoincrement())
-  name    String
+  name    String    @unique
 
   matches Match[]
 
@@ -45,7 +45,7 @@ model Stage {
 
 model Rule {
   id      Int       @id @default(autoincrement())
-  name    String
+  name    String    @unique
 
   matches Match[]
 
@@ -54,7 +54,7 @@ model Rule {
 
 model SubWeapon {
   id      Int       @id @default(autoincrement())
-  name    String
+  name    String    @unique
 
   mainWeapons Weapon[]
 
@@ -63,7 +63,7 @@ model SubWeapon {
 
 model SpecialWeapon {
   id      Int       @id @default(autoincrement())
-  name    String
+  name    String    @unique
 
   mainWeapons Weapon[]
 
@@ -72,7 +72,7 @@ model SpecialWeapon {
 
 model Weapon {
   id              Int            @id @default(autoincrement())
-  name            String
+  name            String         @unique
   subWeaponId     Int            @map("sub_weapon_id")
   specialWeaponId Int            @map("special_weapon_id")
 
@@ -85,7 +85,7 @@ model Weapon {
 
 model BattleType {
   id      Int       @id @default(autoincrement())
-  name    String
+  name    String    @unique
 
   matches Match[]
 

@@ -1,4 +1,7 @@
+import { config } from "dotenv";
 import { PrismaClient } from "../generated/prisma/client";
+
+config();
 
 const prisma = new PrismaClient();
 
@@ -237,28 +240,47 @@ const stages = [
 async function main() {
   console.log('Seeding database...');
 
-  await Promise.all([
-    prisma.battleType.createMany({
-      data: battleTypes.map(name => ({ name })),
-      skipDuplicates: true,
-    }), 
-    prisma.rule.createMany({
-      data: rules.map(name => ({ name })),
-      skipDuplicates: true,
-    }),
-    prisma.stage.createMany({
-      data: stages.map(name => ({ name })),
-      skipDuplicates: true,
-    }), 
-    prisma.subWeapon.createMany({ 
-      data: subWeapons, skipDuplicates: true
-    }),
-    prisma.specialWeapon.createMany({ 
-      data: specialWeapons, skipDuplicates: true 
-    })
-  ]);
+  // Seed BattleType
+  await prisma.battleType.createMany({
+    data: battleTypes.map(name => ({ name })),
+    skipDuplicates: true,
+  });
+  console.log('Battle types seeded');
 
-  await prisma.weapon.createMany({ data: weapons, skipDuplicates: true });
+  // Seed Rule
+  await prisma.rule.createMany({
+    data: rules.map(name => ({ name })),
+    skipDuplicates: true,
+  });
+  console.log('Rules seeded');
+
+  // Seed Stage
+  await prisma.stage.createMany({
+    data: stages.map(name => ({ name })),
+    skipDuplicates: true,
+  });
+  console.log('Stages seeded');
+
+  // Seed SubWeapon
+  await prisma.subWeapon.createMany({
+    data: subWeapons,
+    skipDuplicates: true,
+  });
+  console.log('Sub weapons seeded');
+
+  // Seed SpecialWeapon
+  await prisma.specialWeapon.createMany({
+    data: specialWeapons,
+    skipDuplicates: true,
+  });
+  console.log('Special weapons seeded');
+
+  // Seed Weapon
+  await prisma.weapon.createMany({
+    data: weapons,
+    skipDuplicates: true,
+  });
+  console.log('Weapons seeded');
 
   console.log('Seeding finished.');
 }
