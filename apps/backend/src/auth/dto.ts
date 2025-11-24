@@ -1,4 +1,5 @@
 import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import { CookieOptions } from 'express';
 
 export class LoginDto {
   @IsEmail()
@@ -13,4 +14,8 @@ export class LoginDto {
 export class JwtPayload {
   sub: string;
   email: string;
+}
+
+export interface ResponseWithCookie {
+  cookie(name: string, val: string, options: CookieOptions): this;
 }

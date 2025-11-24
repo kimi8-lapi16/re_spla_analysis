@@ -1,26 +1,28 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { User } from 'generated/prisma/client';
 import { UserRepository } from './user.repository';
 import { PrismaService } from '../prisma/prisma.service';
 
+type MockPrismaService = {
+  user: {
+    create: jest.Mock;
+    findUnique: jest.Mock;
+    update: jest.Mock;
+    delete: jest.Mock;
+  };
+};
+
 describe('UserRepository', () => {
   let repository: UserRepository;
-  let prismaService: jest.Mocked<PrismaService>;
+  let prismaService: MockPrismaService;
 
-  const mockUser = {
+  const mockUser: User = {
     id: 'test-user-id',
     name: 'Test User',
     email: 'test@example.com',
     createdAt: new Date(),
     updatedAt: new Date(),
     deletedAt: null,
-  };
-
-  const mockUserWithSecret = {
-    ...mockUser,
-    secret: {
-      userId: 'test-user-id',
-      password: 'hashed-password',
-    },
   };
 
   beforeEach(async () => {
@@ -33,6 +35,8 @@ describe('UserRepository', () => {
             user: {
               create: jest.fn(),
               findUnique: jest.fn(),
+              update: jest.fn(),
+              delete: jest.fn(),
             },
           },
         },
@@ -40,7 +44,7 @@ describe('UserRepository', () => {
     }).compile();
 
     repository = module.get<UserRepository>(UserRepository);
-    prismaService = module.get(PrismaService) as jest.Mocked<PrismaService>;
+    prismaService = module.get<MockPrismaService>(PrismaService);
   });
 
   afterEach(() => {
@@ -48,47 +52,35 @@ describe('UserRepository', () => {
   });
 
   describe('create', () => {
-    it('should create a new user with secret', async () => {
+    it('should create a new user', async () => {
       const createData = {
         name: 'Test User',
         email: 'test@example.com',
-        password: 'hashed-password',
       };
 
-      prismaService.user.create.mockResolvedValue(mockUserWithSecret as any);
+      prismaService.user.create.mockResolvedValue(mockUser);
 
       const result = await repository.create(createData);
 
-      expect(result).toEqual(mockUserWithSecret);
+      expect(result).toEqual(mockUser);
       expect(prismaService.user.create).toHaveBeenCalledWith({
         data: {
           name: 'Test User',
           email: 'test@example.com',
-          secret: {
-            create: {
-              password: 'hashed-password',
-            },
-          },
-        },
-        include: {
-          secret: true,
         },
       });
     });
   });
 
   describe('findByEmail', () => {
-    it('should find user by email with secret', async () => {
-      prismaService.user.findUnique.mockResolvedValue(mockUserWithSecret as any);
+    it('should find user by email', async () => {
+      prismaService.user.findUnique.mockResolvedValue(mockUser);
 
       const result = await repository.findByEmail('test@example.com');
 
-      expect(result).toEqual(mockUserWithSecret);
+      expect(result).toEqual(mockUser);
       expect(prismaService.user.findUnique).toHaveBeenCalledWith({
         where: { email: 'test@example.com' },
-        include: {
-          secret: true,
-        },
       });
     });
 
@@ -102,8 +94,8 @@ describe('UserRepository', () => {
   });
 
   describe('findById', () => {
-    it('should find user by id without secret', async () => {
-      prismaService.user.findUnique.mockResolvedValue(mockUser as any);
+    it('should find user by id', async () => {
+      prismaService.user.findUnique.mockResolvedValue(mockUser);
 
       const result = await repository.findById('test-user-id');
 
@@ -122,27 +114,33 @@ describe('UserRepository', () => {
     });
   });
 
-  describe('findByIdWithSecret', () => {
-    it('should find user by id with secret', async () => {
-      prismaService.user.findUnique.mockResolvedValue(mockUserWithSecret as any);
+  describe('update', () => {
+    it('should update user', async () => {
+      const updatedUser: User = { ...mockUser, name: 'Updated Name' };
+      prismaService.user.update.mockResolvedValue(updatedUser);
 
-      const result = await repository.findByIdWithSecret('test-user-id');
+      const result = await repository.update('test-user-id', {
+        name: 'Updated Name',
+      });
 
-      expect(result).toEqual(mockUserWithSecret);
-      expect(prismaService.user.findUnique).toHaveBeenCalledWith({
+      expect(result).toEqual(updatedUser);
+      expect(prismaService.user.update).toHaveBeenCalledWith({
         where: { id: 'test-user-id' },
-        include: {
-          secret: true,
-        },
+        data: { name: 'Updated Name' },
       });
     });
+  });
 
-    it('should return null when user not found', async () => {
-      prismaService.user.findUnique.mockResolvedValue(null);
+  describe('delete', () => {
+    it('should delete user', async () => {
+      prismaService.user.delete.mockResolvedValue(mockUser);
 
-      const result = await repository.findByIdWithSecret('non-existent-id');
+      const result = await repository.delete('test-user-id');
 
-      expect(result).toBeNull();
+      expect(result).toEqual(mockUser);
+      expect(prismaService.user.delete).toHaveBeenCalledWith({
+        where: { id: 'test-user-id' },
+      });
     });
   });
 });

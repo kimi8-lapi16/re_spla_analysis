@@ -3,27 +3,32 @@ import { ConflictException, InternalServerErrorException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
+import { UserSecret } from 'generated/prisma/client';
 import { UserService } from './user.service';
 import { UserRepository } from './user.repository';
-import { CreateUserDto } from './dto';
+import { CreateUserDto, UserWithSecret } from './dto';
+import { UserUseCase } from './user.usecase';
 
 jest.mock('bcrypt');
 
 describe('UserService', () => {
   let service: UserService;
   let repository: jest.Mocked<UserRepository>;
+  let userUseCase: jest.Mocked<UserUseCase>;
 
-  const mockUser = {
+  const mockUserSecret: UserSecret = {
+    userId: 'test-user-id',
+    password: 'hashed-password',
+  };
+
+  const mockUser: UserWithSecret = {
     id: 'test-user-id',
     name: 'Test User',
     email: 'test@example.com',
     createdAt: new Date(),
     updatedAt: new Date(),
     deletedAt: null,
-    secret: {
-      userId: 'test-user-id',
-      password: 'hashed-password',
-    },
+    secret: mockUserSecret,
   };
 
   beforeEach(async () => {
@@ -33,10 +38,16 @@ describe('UserService', () => {
         {
           provide: UserRepository,
           useValue: {
-            create: jest.fn(),
             findByEmail: jest.fn(),
             findById: jest.fn(),
-            findByIdWithSecret: jest.fn(),
+          },
+        },
+        {
+          provide: UserUseCase,
+          useValue: {
+            createUserWithSecret: jest.fn(),
+            findUserWithSecretByEmail: jest.fn(),
+            findUserWithSecretById: jest.fn(),
           },
         },
         {
@@ -56,6 +67,7 @@ describe('UserService', () => {
 
     service = module.get<UserService>(UserService);
     repository = module.get(UserRepository) as jest.Mocked<UserRepository>;
+    userUseCase = module.get(UserUseCase) as jest.Mocked<UserUseCase>;
   });
 
   afterEach(() => {
@@ -71,7 +83,7 @@ describe('UserService', () => {
 
     it('should successfully create a new user', async () => {
       repository.findByEmail.mockResolvedValue(null);
-      repository.create.mockResolvedValue(mockUser);
+      userUseCase.createUserWithSecret.mockResolvedValue(mockUser);
       (bcrypt.hash as jest.Mock).mockResolvedValue('hashed-password');
 
       const result = await service.createUser(createUserDto);
@@ -85,7 +97,7 @@ describe('UserService', () => {
       });
       expect(repository.findByEmail).toHaveBeenCalledWith('test@example.com');
       expect(bcrypt.hash).toHaveBeenCalledWith('password123', 10);
-      expect(repository.create).toHaveBeenCalledWith({
+      expect(userUseCase.createUserWithSecret).toHaveBeenCalledWith({
         name: 'Test User',
         email: 'test@example.com',
         password: 'hashed-password',
@@ -93,7 +105,15 @@ describe('UserService', () => {
     });
 
     it('should throw ConflictException if email already exists', async () => {
-      repository.findByEmail.mockResolvedValue(mockUser);
+      const existingUser = {
+        id: 'existing-user-id',
+        name: 'Existing User',
+        email: 'test@example.com',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        deletedAt: null,
+      };
+      repository.findByEmail.mockResolvedValue(existingUser);
 
       await expect(service.createUser(createUserDto)).rejects.toThrow(
         ConflictException,
@@ -104,31 +124,30 @@ describe('UserService', () => {
 
       expect(repository.findByEmail).toHaveBeenCalledWith('test@example.com');
       expect(bcrypt.hash).not.toHaveBeenCalled();
-      expect(repository.create).not.toHaveBeenCalled();
+      expect(userUseCase.createUserWithSecret).not.toHaveBeenCalled();
     });
 
     it('should throw InternalServerErrorException if user creation fails', async () => {
       repository.findByEmail.mockResolvedValue(null);
-      repository.create.mockResolvedValue(null);
+      userUseCase.createUserWithSecret.mockRejectedValue(
+        new InternalServerErrorException('Database error'),
+      );
       (bcrypt.hash as jest.Mock).mockResolvedValue('hashed-password');
 
       await expect(service.createUser(createUserDto)).rejects.toThrow(
         InternalServerErrorException,
       );
-      await expect(service.createUser(createUserDto)).rejects.toThrow(
-        'Failed to create user',
-      );
     });
 
     it('should hash password with bcrypt before storing', async () => {
       repository.findByEmail.mockResolvedValue(null);
-      repository.create.mockResolvedValue(mockUser);
+      userUseCase.createUserWithSecret.mockResolvedValue(mockUser);
       (bcrypt.hash as jest.Mock).mockResolvedValue('super-hashed-password');
 
       await service.createUser(createUserDto);
 
       expect(bcrypt.hash).toHaveBeenCalledWith('password123', 10);
-      expect(repository.create).toHaveBeenCalledWith(
+      expect(userUseCase.createUserWithSecret).toHaveBeenCalledWith(
         expect.objectContaining({
           password: 'super-hashed-password',
         }),
@@ -138,21 +157,21 @@ describe('UserService', () => {
 
   describe('findByEmail', () => {
     it('should return user when found', async () => {
-      repository.findByEmail.mockResolvedValue(mockUser);
+      userUseCase.findUserWithSecretByEmail.mockResolvedValue(mockUser);
 
       const result = await service.findByEmail('test@example.com');
 
       expect(result).toEqual(mockUser);
-      expect(repository.findByEmail).toHaveBeenCalledWith('test@example.com');
+      expect(userUseCase.findUserWithSecretByEmail).toHaveBeenCalledWith('test@example.com');
     });
 
     it('should return null when user not found', async () => {
-      repository.findByEmail.mockResolvedValue(null);
+      userUseCase.findUserWithSecretByEmail.mockResolvedValue(null);
 
       const result = await service.findByEmail('nonexistent@example.com');
 
       expect(result).toBeNull();
-      expect(repository.findByEmail).toHaveBeenCalledWith('nonexistent@example.com');
+      expect(userUseCase.findUserWithSecretByEmail).toHaveBeenCalledWith('nonexistent@example.com');
     });
   });
 

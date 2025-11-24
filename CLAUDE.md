@@ -119,6 +119,325 @@ This is a relational model where Analysis is the central entity connecting users
 - **Testing**: Jest with ts-jest
 - **Language**: TypeScript 5.9
 
+### Layered Architecture Guidelines
+
+This project follows a layered architecture pattern with clear separation of concerns:
+
+#### Repository Layer
+- **Purpose**: Handle CRUD operations for a **single table only**
+- **Rules**:
+  - One repository per database table (e.g., `UserRepository` for `User` table, `UserSecretRepository` for `UserSecret` table)
+  - Should NOT directly access or join other tables
+  - Should NOT use Prisma's `include` or `select` to fetch related data from other tables
+  - Only contain basic CRUD operations: `create`, `findById`, `findByEmail`, `update`, `delete`, etc.
+  - **Must support transactions** by accepting an optional transaction parameter
+- **Transaction Support**:
+  ```typescript
+  // Define PrismaTransaction type in src/prisma/prisma.types.ts (DRY principle)
+  import { PrismaService } from './prisma.service';
+
+  export type PrismaTransaction = Omit<
+    PrismaService,
+    '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'
+  >;
+  ```
+- **Example**:
+  ```typescript
+  import { PrismaTransaction } from '../prisma/prisma.types';
+
+  @Injectable()
+  export class UserRepository {
+    constructor(private readonly prisma: PrismaService) {}
+
+    // ✅ Good: Single table operation with transaction support
+    async create(
+      data: { name: string; email: string },
+      tx?: PrismaTransaction,
+    ): Promise<User> {
+      const client = tx ?? this.prisma;
+      return client.user.create({
+        data: {
+          name: data.name,
+          email: data.email,
+        },
+      });
+    }
+
+    // ✅ Good: Read operations without transaction (default client)
+    async findByEmail(email: string): Promise<User | null> {
+      return this.prisma.user.findUnique({
+        where: { email },
+      });
+    }
+
+    // ❌ Bad: Multi-table operation (includes UserSecret)
+    async findByEmail(email: string): Promise<UserWithSecret | null> {
+      return this.prisma.user.findUnique({
+        where: { email },
+        include: { secret: true }, // Don't do this in Repository!
+      });
+    }
+  }
+  ```
+
+#### UseCase Layer
+- **Purpose**: Orchestrate business logic that spans multiple tables or repositories
+- **Rules**:
+  - Handle operations that require data from multiple tables
+  - Coordinate multiple repository calls using their repository methods
+  - Use Prisma transactions when multiple writes need to be atomic
+  - Pass transaction context to repository methods
+  - Place UseCases in `{module}.usecase.ts` (e.g., `user.usecase.ts`)
+  - Name classes based on the primary entity (e.g., `CreateUserUseCase` for User + UserSecret)
+- **File Organization**:
+  - Use a single `{module}.usecase.ts` file per module instead of a `usecases/` directory
+  - Define composite types in `dto.ts` to avoid duplication
+- **Example**:
+  ```typescript
+  // src/user/dto.ts - Define composite types here
+  export type UserWithSecret = User & { secret: UserSecret | null };
+
+  // src/user/user.usecase.ts - All UseCases for the user module
+  import { PrismaTransaction } from '../prisma/prisma.types';
+  import { UserWithSecret } from './dto';
+
+  @Injectable()
+  export class CreateUserUseCase {
+    constructor(
+      private readonly prisma: PrismaService,
+      private readonly userRepository: UserRepository,
+      private readonly userSecretRepository: UserSecretRepository,
+    ) {}
+
+    // ✅ Good: Use repository methods with transaction
+    async execute(data: {
+      name: string;
+      email: string;
+      password: string;
+    }): Promise<UserWithSecret> {
+      return this.prisma.$transaction(async (tx) => {
+        // Pass transaction to repository methods
+        const user = await this.userRepository.create(
+          { name: data.name, email: data.email },
+          tx,
+        );
+        const secret = await this.userSecretRepository.create(
+          { userId: user.id, password: data.password },
+          tx,
+        );
+        return { ...user, secret };
+      });
+    }
+  }
+
+  @Injectable()
+  export class FindUserWithSecretUseCase {
+    constructor(
+      private readonly userRepository: UserRepository,
+      private readonly userSecretRepository: UserSecretRepository,
+    ) {}
+
+    // ✅ Good: Coordinate multiple repository reads
+    async byEmail(email: string): Promise<UserWithSecret | null> {
+      const user = await this.userRepository.findByEmail(email);
+      if (!user) return null;
+
+      const secret = await this.userSecretRepository.findByUserId(user.id);
+      return { ...user, secret };
+    }
+  }
+
+  // ❌ Bad: Direct Prisma operations instead of using repositories
+  async execute(data: { name: string; email: string; password: string }) {
+    return this.prisma.$transaction(async (tx) => {
+      const user = await tx.user.create({ data: { name, email } }); // Don't do this!
+      const secret = await tx.userSecret.create({ data: { userId: user.id, password } });
+      return { ...user, secret };
+    });
+  }
+  ```
+
+#### Service Layer
+- **Purpose**: Handle application logic and coordinate between UseCases, Repositories, and external services
+- **Rules**:
+  - Use UseCases for multi-table operations
+  - Use Repositories directly for single-table queries
+  - Handle business validations and transformations
+  - Transform data into DTOs for API responses
+- **Example**:
+  ```typescript
+  @Injectable()
+  export class UserService {
+    constructor(
+      private readonly userRepository: UserRepository,
+      private readonly createUserUseCase: CreateUserUseCase,
+      private readonly findUserWithSecretUseCase: FindUserWithSecretUseCase,
+    ) {}
+
+    async createUser(dto: CreateUserDto) {
+      // Check existence using repository (single table)
+      const existingUser = await this.userRepository.findByEmail(dto.email);
+      if (existingUser) throw new ConflictException('Email already exists');
+
+      // Create user with secret using UseCase (multi-table)
+      const user = await this.createUserUseCase.execute(dto);
+      return this.toUserResponse(user);
+    }
+
+    async authenticate(email: string, password: string) {
+      // Find user with secret using UseCase (multi-table)
+      const user = await this.findUserWithSecretUseCase.byEmail(email);
+      // ... validate password
+    }
+  }
+  ```
+
+#### When to Use Each Layer
+
+| Operation Type | Use | Example |
+|---------------|-----|---------|
+| Single table read | Repository directly | `userRepository.findById()` |
+| Single table write | Repository directly | `userRepository.update()` |
+| Multi-table read | UseCase | `findUserWithSecretUseCase.byEmail()` |
+| Multi-table write | UseCase with transaction | `createUserUseCase.execute()` |
+| Business logic + validation | Service | `userService.createUser()` |
+
+### Testing Best Practices
+
+#### Anti-Patterns to Avoid
+
+**NEVER use these patterns in test code:**
+
+1. **Type Assertions (`as any`, `as unknown as Type`)**
+   - These bypass TypeScript's type system and hide real type issues
+   - Exception: Only when TypeScript's type inference has fundamental limitations
+
+   ```typescript
+   // ❌ Bad: Using 'as any' to bypass type errors
+   prismaService.user.create.mockResolvedValue(mockUser as any);
+
+   // ✅ Good: Define proper types for mocks
+   const mockUser: User = {
+     id: 'test-id',
+     name: 'Test User',
+     email: 'test@example.com',
+     createdAt: new Date(),
+     updatedAt: new Date(),
+     deletedAt: null,
+   };
+   prismaService.user.create.mockResolvedValue(mockUser);
+   ```
+
+2. **ESLint Disable Comments**
+   - Never use `// eslint-disable` or `// @ts-ignore` to suppress warnings
+   - Fix the underlying issue instead
+
+   ```typescript
+   // ❌ Bad: Suppressing type errors
+   // @ts-ignore
+   const result = someFunction();
+
+   // ✅ Good: Fix the type issue properly
+   const result: ExpectedType = someFunction();
+   ```
+
+#### Proper Mock Type Definitions
+
+**For Prisma Service Mocks:**
+```typescript
+// Define a custom mock type for Prisma operations
+type MockPrismaService = {
+  user: {
+    create: jest.Mock;
+    findUnique: jest.Mock;
+    update: jest.Mock;
+    delete: jest.Mock;
+  };
+};
+
+describe('UserRepository', () => {
+  let prismaService: MockPrismaService;
+
+  beforeEach(async () => {
+    const module = await Test.createTestingModule({
+      providers: [
+        UserRepository,
+        {
+          provide: PrismaService,
+          useValue: {
+            user: {
+              create: jest.fn(),
+              findUnique: jest.fn(),
+              update: jest.fn(),
+              delete: jest.fn(),
+            },
+          },
+        },
+      ],
+    }).compile();
+
+    prismaService = module.get<MockPrismaService>(PrismaService);
+  });
+});
+```
+
+**For Complex Dependencies:**
+```typescript
+// If a dependency requires specific methods, define an interface
+export interface ResponseWithCookie {
+  cookie(name: string, val: string, options: CookieOptions): this;
+}
+
+// Use the interface in your service
+class AuthService {
+  setRefreshTokenCookie(res: ResponseWithCookie, token: string) {
+    res.cookie('refreshToken', token, { httpOnly: true });
+  }
+}
+
+// Mock implementation in tests
+const mockResponse: ResponseWithCookie = {
+  cookie: jest.fn().mockReturnThis(),
+};
+```
+
+**For Mock Data:**
+```typescript
+// Always use proper Prisma types for mock data
+import { User, UserSecret } from 'generated/prisma/client';
+
+const mockUserSecret: UserSecret = {
+  userId: 'test-user-id',
+  password: 'hashed-password',
+};
+
+const mockUser: User = {
+  id: 'test-user-id',
+  name: 'Test User',
+  email: 'test@example.com',
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  deletedAt: null,
+};
+```
+
+#### Type-Safe Test Patterns
+
+When testing error conditions that require null/undefined:
+```typescript
+// ❌ Bad: Using type assertions
+createUserUseCase.execute.mockResolvedValue(null as any);
+
+// ✅ Good: Use mockRejectedValue for error cases
+createUserUseCase.execute.mockRejectedValue(
+  new InternalServerErrorException('Database error')
+);
+
+// ✅ Also Good: If null is a valid return, adjust the return type
+// In this case, the function signature should be:
+// execute(): Promise<User | null>
+```
+
 ### Frontend Stack
 - **Framework**: React 19
 - **Build Tool**: Vite 7

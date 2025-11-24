@@ -8,11 +8,13 @@ import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { UserRepository } from './user.repository';
 import { CreateUserDto, UserResponseDto } from './dto';
+import { UserUseCase } from './user.usecase';
 
 @Injectable()
 export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
+    private readonly userUseCase: UserUseCase,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {}
@@ -25,7 +27,7 @@ export class UserService {
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
-    const user = await this.userRepository.create({
+    const user = await this.userUseCase.createUserWithSecret({
       name: dto.name,
       email: dto.email,
       password: hashedPassword,
@@ -39,7 +41,7 @@ export class UserService {
   }
 
   async findByEmail(email: string) {
-    return this.userRepository.findByEmail(email);
+    return this.userUseCase.findUserWithSecretByEmail(email);
   }
 
   async findById(id: string): Promise<UserResponseDto | null> {

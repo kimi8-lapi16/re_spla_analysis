@@ -1,11 +1,10 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { Response } from 'express';
+import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { UserService } from '../user/user.service';
-import { JwtPayload, LoginDto } from './dto';
 import { UserResponseDto } from '../user/dto';
+import { UserService } from '../user/user.service';
+import { JwtPayload, LoginDto, ResponseWithCookie } from './dto';
 
 @Injectable()
 export class AuthService {
@@ -72,7 +71,7 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
-  setRefreshTokenCookie(res: Response, refreshToken: string) {
+  setRefreshTokenCookie(res: ResponseWithCookie, refreshToken: string) {
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: this.configService.get<string>('NODE_ENV') === 'production',

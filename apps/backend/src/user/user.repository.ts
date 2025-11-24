@@ -1,41 +1,28 @@
 import { Injectable } from '@nestjs/common';
-import { User, UserSecret } from 'generated/prisma/client';
+import { User } from 'generated/prisma/client';
+import { PrismaTransaction } from 'src/prisma/prisma.types';
 import { PrismaService } from '../prisma/prisma.service';
-
-
-export type UserWithSecret = User & { secret: UserSecret | null };
 
 @Injectable()
 export class UserRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(data: {
-    name: string;
-    email: string;
-    password: string;
-  }): Promise<UserWithSecret> {
-    return this.prisma.user.create({
+  async create(
+    data: { name: string; email: string },
+    tx?: PrismaTransaction,
+  ): Promise<User> {
+    const client = tx ?? this.prisma;
+    return client.user.create({
       data: {
         name: data.name,
         email: data.email,
-        secret: {
-          create: {
-            password: data.password,
-          },
-        },
-      },
-      include: {
-        secret: true,
       },
     });
   }
 
-  async findByEmail(email: string): Promise<UserWithSecret | null> {
+  async findByEmail(email: string): Promise<User | null> {
     return this.prisma.user.findUnique({
       where: { email },
-      include: {
-        secret: true,
-      },
     });
   }
 
@@ -45,12 +32,16 @@ export class UserRepository {
     });
   }
 
-  async findByIdWithSecret(id: string): Promise<UserWithSecret | null> {
-    return this.prisma.user.findUnique({
+  async update(id: string, data: { name?: string; email?: string }): Promise<User> {
+    return this.prisma.user.update({
       where: { id },
-      include: {
-        secret: true,
-      },
+      data,
+    });
+  }
+
+  async delete(id: string): Promise<User> {
+    return this.prisma.user.delete({
+      where: { id },
     });
   }
 }

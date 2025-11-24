@@ -1,4 +1,5 @@
 import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { User, UserSecret } from 'generated/prisma/client';
 
 export class CreateUserDto {
   @IsString()
@@ -26,3 +27,5 @@ export class AuthTokenResponseDto {
   accessToken: string;
   user: UserResponseDto;
 }
+
+export type UserWithSecret = User & { secret: UserSecret | null };

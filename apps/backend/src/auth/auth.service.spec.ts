@@ -1,11 +1,11 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
 import { UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
+import { Test, TestingModule } from '@nestjs/testing';
 import * as bcrypt from 'bcrypt';
-import { AuthService } from './auth.service';
 import { UserService } from '../user/user.service';
-import { LoginDto } from './dto';
+import { AuthService } from './auth.service';
+import { LoginDto, ResponseWithCookie } from './dto';
 
 jest.mock('bcrypt');
 
@@ -194,9 +194,9 @@ describe('AuthService', () => {
 
   describe('setRefreshTokenCookie', () => {
     it('should set refresh token cookie with correct options', () => {
-      const mockResponse = {
-        cookie: jest.fn(),
-      } as any;
+      const mockResponse: ResponseWithCookie = {
+        cookie: jest.fn().mockReturnThis(),
+      };
 
       configService.get.mockReturnValue('development');
 
@@ -211,9 +211,9 @@ describe('AuthService', () => {
     });
 
     it('should set secure flag in production', () => {
-      const mockResponse = {
-        cookie: jest.fn(),
-      } as any;
+      const mockResponse: ResponseWithCookie = {
+        cookie: jest.fn().mockReturnThis(),
+      };
 
       configService.get.mockReturnValue('production');
 
