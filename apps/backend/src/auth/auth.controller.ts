@@ -5,16 +5,26 @@ import {
   Res,
   ValidationPipe,
 } from '@nestjs/common';
+import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { AuthTokenResponseDto } from '../user/dto';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto';
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
+  @ApiOperation({ summary: 'User login' })
+  @ApiBody({ type: LoginDto })
+  @ApiResponse({
+    status: 201,
+    description: 'User successfully logged in',
+    type: AuthTokenResponseDto,
+  })
+  @ApiResponse({ status: 401, description: 'Invalid credentials' })
   async login(
     @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
     dto: LoginDto,

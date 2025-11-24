@@ -5,10 +5,12 @@ import {
   Res,
   ValidationPipe
 } from '@nestjs/common';
+import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { AuthTokenResponseDto, CreateUserDto } from './dto';
 import { UserService } from './user.service';
 
+@ApiTags('users')
 @Controller('users')
 export class UserController {
   constructor(
@@ -16,6 +18,15 @@ export class UserController {
   ) {}
 
   @Post()
+  @ApiOperation({ summary: 'Create a new user account' })
+  @ApiBody({ type: CreateUserDto })
+  @ApiResponse({
+    status: 201,
+    description: 'User successfully created',
+    type: AuthTokenResponseDto,
+  })
+  @ApiResponse({ status: 400, description: 'Invalid input data' })
+  @ApiResponse({ status: 409, description: 'Email already exists' })
   async createUser(
     @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
     dto: CreateUserDto,

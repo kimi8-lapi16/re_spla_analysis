@@ -6,9 +6,10 @@ import { UserService } from './user.service';
 import { UserRepository } from './user.repository';
 import { UserSecretRepository } from './user-secret.repository';
 import { UserUseCase } from './user.usecase';
+import { CommonModule } from '../common/common.module';
 
 @Module({
-  imports: [JwtModule, ConfigModule],
+  imports: [JwtModule, ConfigModule, CommonModule],
   controllers: [UserController],
   providers: [UserService, UserRepository, UserSecretRepository, UserUseCase],
   exports: [UserService],
