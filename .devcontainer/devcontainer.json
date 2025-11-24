@@ -1,13 +1,9 @@
 {
   "name": "re_spla_analysis",
-  "dockerComposeFile": [
-    "../docker-compose.yml"
-  ],
+  "dockerComposeFile": ["../docker-compose.yml"],
   "service": "app",
   "workspaceFolder": "/workspace",
-  "runServices": [
-    "app"
-  ],
+  "runServices": ["app"],
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
       "version": "latest"
@@ -23,9 +19,7 @@
   },
   "customizations": {
     "vscode": {
-      "extensions": [
-        "esbenp.prettier-vscode"
-      ],
+      "extensions": ["esbenp.prettier-vscode"],
       "settings": {
         "editor.defaultFormatter": "dbaeumer.vscode-eslint",
         "editor.formatOnSave": true,

@@ -18,6 +18,7 @@ This is a monorepo for "re_spla_analysis" - a Splatoon battle analysis applicati
 ## Development Commands
 
 ### Root Level (use Turbo)
+
 ```bash
 # Install dependencies
 pnpm install
@@ -36,6 +37,7 @@ pnpm format
 ```
 
 ### Backend (apps/backend)
+
 ```bash
 # Development with watch mode
 cd apps/backend
@@ -57,6 +59,7 @@ pnpm seed                   # Seed database
 ```
 
 ### Frontend (apps/frontend)
+
 ```bash
 # Development server
 cd apps/frontend
@@ -74,11 +77,14 @@ pnpm preview
 The project uses MySQL 8.0 with Prisma ORM.
 
 ### Environment Setup
+
 1. Copy `apps/backend/.env.template` to `apps/backend/.env`
 2. Set `DATABASE_URL` and `SHADOW_DATABASE_URL` (for Prisma migrations)
 
 ### Docker Setup
+
 The project includes docker-compose.yml with MySQL database:
+
 ```bash
 # Start database
 docker-compose up -d db
@@ -88,13 +94,16 @@ docker-compose up -d
 ```
 
 ### Prisma Configuration
+
 - **Custom Output**: Prisma client is generated to `apps/backend/generated/prisma` (not default location)
 - **Schema Location**: [apps/backend/prisma/schema.prisma](apps/backend/prisma/schema.prisma)
 - **Migrations**: Located in `apps/backend/prisma/migrations`
 - **Seed File**: [apps/backend/prisma/seed.ts](apps/backend/prisma/seed.ts)
 
 ### Database Initialization
+
 From the root README, initialize the database with:
+
 ```bash
 pnpm prisma migrate dev
 ```
@@ -102,7 +111,9 @@ pnpm prisma migrate dev
 ## Architecture Notes
 
 ### Backend Data Model
+
 The application tracks Splatoon battles with the following key entities:
+
 - **User**: Players with authentication (UserSecret)
 - **Analysis**: Battle records linking to:
   - **Weapon**: Main weapons with SubWeapon and SpecialWeapon
@@ -114,6 +125,7 @@ The application tracks Splatoon battles with the following key entities:
 This is a relational model where Analysis is the central entity connecting users to their battle performance data.
 
 ### Backend Stack
+
 - **Framework**: NestJS 11
 - **ORM**: Prisma with MySQL
 - **Testing**: Jest with ts-jest
@@ -124,6 +136,7 @@ This is a relational model where Analysis is the central entity connecting users
 This project follows a layered architecture pattern with clear separation of concerns:
 
 #### Repository Layer
+
 - **Purpose**: Handle CRUD operations for a **single table only**
 - **Rules**:
   - One repository per database table (e.g., `UserRepository` for `User` table, `UserSecretRepository` for `UserSecret` table)
@@ -132,28 +145,28 @@ This project follows a layered architecture pattern with clear separation of con
   - Only contain basic CRUD operations: `create`, `findById`, `findByEmail`, `update`, `delete`, etc.
   - **Must support transactions** by accepting an optional transaction parameter
 - **Transaction Support**:
+
   ```typescript
   // Define PrismaTransaction type in src/prisma/prisma.types.ts (DRY principle)
-  import { PrismaService } from './prisma.service';
+  import { PrismaService } from "./prisma.service";
 
   export type PrismaTransaction = Omit<
     PrismaService,
-    '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'
+    "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
   >;
   ```
+
 - **Example**:
+
   ```typescript
-  import { PrismaTransaction } from '../prisma/prisma.types';
+  import { PrismaTransaction } from "../prisma/prisma.types";
 
   @Injectable()
   export class UserRepository {
     constructor(private readonly prisma: PrismaService) {}
 
     // ✅ Good: Single table operation with transaction support
-    async create(
-      data: { name: string; email: string },
-      tx?: PrismaTransaction,
-    ): Promise<User> {
+    async create(data: { name: string; email: string }, tx?: PrismaTransaction): Promise<User> {
       const client = tx ?? this.prisma;
       return client.user.create({
         data: {
@@ -181,6 +194,7 @@ This project follows a layered architecture pattern with clear separation of con
   ```
 
 #### UseCase Layer
+
 - **Purpose**: Orchestrate business logic that spans multiple tables or repositories
 - **Rules**:
   - Handle operations that require data from multiple tables
@@ -193,6 +207,7 @@ This project follows a layered architecture pattern with clear separation of con
   - Use a single `{module}.usecase.ts` file per module instead of a `usecases/` directory
   - Define composite types in `dto.ts` to avoid duplication
 - **Example**:
+
   ```typescript
   // src/user/dto.ts - Define composite types here
   export type UserWithSecret = User & { secret: UserSecret | null };
@@ -258,6 +273,7 @@ This project follows a layered architecture pattern with clear separation of con
   ```
 
 #### Service Layer
+
 - **Purpose**: Handle application logic and coordinate between UseCases, Repositories, and external services
 - **Rules**:
   - Use UseCases for multi-table operations
@@ -265,19 +281,20 @@ This project follows a layered architecture pattern with clear separation of con
   - Handle business validations and transformations
   - Transform data into DTOs for API responses
 - **Example**:
+
   ```typescript
   @Injectable()
   export class UserService {
     constructor(
       private readonly userRepository: UserRepository,
       private readonly createUserUseCase: CreateUserUseCase,
-      private readonly findUserWithSecretUseCase: FindUserWithSecretUseCase,
+      private readonly findUserWithSecretUseCase: FindUserWithSecretUseCase
     ) {}
 
     async createUser(dto: CreateUserDto) {
       // Check existence using repository (single table)
       const existingUser = await this.userRepository.findByEmail(dto.email);
-      if (existingUser) throw new ConflictException('Email already exists');
+      if (existingUser) throw new ConflictException("Email already exists");
 
       // Create user with secret using UseCase (multi-table)
       const user = await this.createUserUseCase.execute(dto);
@@ -294,13 +311,13 @@ This project follows a layered architecture pattern with clear separation of con
 
 #### When to Use Each Layer
 
-| Operation Type | Use | Example |
-|---------------|-----|---------|
-| Single table read | Repository directly | `userRepository.findById()` |
-| Single table write | Repository directly | `userRepository.update()` |
-| Multi-table read | UseCase | `findUserWithSecretUseCase.byEmail()` |
-| Multi-table write | UseCase with transaction | `createUserUseCase.execute()` |
-| Business logic + validation | Service | `userService.createUser()` |
+| Operation Type              | Use                      | Example                               |
+| --------------------------- | ------------------------ | ------------------------------------- |
+| Single table read           | Repository directly      | `userRepository.findById()`           |
+| Single table write          | Repository directly      | `userRepository.update()`             |
+| Multi-table read            | UseCase                  | `findUserWithSecretUseCase.byEmail()` |
+| Multi-table write           | UseCase with transaction | `createUserUseCase.execute()`         |
+| Business logic + validation | Service                  | `userService.createUser()`            |
 
 ### Testing Best Practices
 
@@ -318,9 +335,9 @@ This project follows a layered architecture pattern with clear separation of con
 
    // ✅ Good: Define proper types for mocks
    const mockUser: User = {
-     id: 'test-id',
-     name: 'Test User',
-     email: 'test@example.com',
+     id: "test-id",
+     name: "Test User",
+     email: "test@example.com",
      createdAt: new Date(),
      updatedAt: new Date(),
      deletedAt: null,
@@ -344,6 +361,7 @@ This project follows a layered architecture pattern with clear separation of con
 #### Proper Mock Type Definitions
 
 **For Prisma Service Mocks:**
+
 ```typescript
 // Define a custom mock type for Prisma operations
 type MockPrismaService = {
@@ -355,7 +373,7 @@ type MockPrismaService = {
   };
 };
 
-describe('UserRepository', () => {
+describe("UserRepository", () => {
   let prismaService: MockPrismaService;
 
   beforeEach(async () => {
@@ -382,6 +400,7 @@ describe('UserRepository', () => {
 ```
 
 **For Complex Dependencies:**
+
 ```typescript
 // If a dependency requires specific methods, define an interface
 export interface ResponseWithCookie {
@@ -391,7 +410,7 @@ export interface ResponseWithCookie {
 // Use the interface in your service
 class AuthService {
   setRefreshTokenCookie(res: ResponseWithCookie, token: string) {
-    res.cookie('refreshToken', token, { httpOnly: true });
+    res.cookie("refreshToken", token, { httpOnly: true });
   }
 }
 
@@ -402,19 +421,20 @@ const mockResponse: ResponseWithCookie = {
 ```
 
 **For Mock Data:**
+
 ```typescript
 // Always use proper Prisma types for mock data
-import { User, UserSecret } from 'generated/prisma/client';
+import { User, UserSecret } from "generated/prisma/client";
 
 const mockUserSecret: UserSecret = {
-  userId: 'test-user-id',
-  password: 'hashed-password',
+  userId: "test-user-id",
+  password: "hashed-password",
 };
 
 const mockUser: User = {
-  id: 'test-user-id',
-  name: 'Test User',
-  email: 'test@example.com',
+  id: "test-user-id",
+  name: "Test User",
+  email: "test@example.com",
   createdAt: new Date(),
   updatedAt: new Date(),
   deletedAt: null,
@@ -424,14 +444,13 @@ const mockUser: User = {
 #### Type-Safe Test Patterns
 
 When testing error conditions that require null/undefined:
+
 ```typescript
 // ❌ Bad: Using type assertions
 createUserUseCase.execute.mockResolvedValue(null as any);
 
 // ✅ Good: Use mockRejectedValue for error cases
-createUserUseCase.execute.mockRejectedValue(
-  new InternalServerErrorException('Database error')
-);
+createUserUseCase.execute.mockRejectedValue(new InternalServerErrorException("Database error"));
 
 // ✅ Also Good: If null is a valid return, adjust the return type
 // In this case, the function signature should be:
@@ -439,6 +458,7 @@ createUserUseCase.execute.mockRejectedValue(
 ```
 
 ### Frontend Stack
+
 - **Framework**: React 19
 - **Build Tool**: Vite 7
 - **Language**: TypeScript 5.9
@@ -447,16 +467,20 @@ createUserUseCase.execute.mockRejectedValue(
 ## Important Notes
 
 ### Prisma Client Import
+
 When importing Prisma client in backend code, use the custom output path:
+
 ```typescript
-import { PrismaClient } from '../generated/prisma';
+import { PrismaClient } from "../generated/prisma";
 ```
 
 ### Running Single Tests
+
 ```bash
 cd apps/backend
 pnpm test -- path/to/test.spec.ts
 ```
 
 ### Turbo Caching
+
 Turbo caches build outputs in `.turbo` directories. The `dev` task has caching disabled for live reload.
