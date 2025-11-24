@@ -10,7 +10,8 @@
     "dev": "turbo run dev --parallel",
     "build": "turbo run build",
     "lint": "turbo run lint",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "api:generate": "pnpm --filter @app/backend openapi:generate && pnpm --filter @app/frontend api:generate"
   },
   "devDependencies": {
     "turbo": "^2.1.0",

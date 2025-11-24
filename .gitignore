@@ -1,3 +1,7 @@
 .pnpm-store
 .turbo
 node_modules
+
+# Generated files
+apps/backend/openapi.json
+apps/frontend/src/api

@@ -7,9 +7,15 @@
     "dev": "vite --host",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "api:generate": "openapi --input ../backend/openapi.json --output ./src/api --client axios"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.90.10",
+    "@tanstack/react-query-devtools": "^5.91.0",
+    "@tanstack/react-router": "^1.139.3",
+    "axios": "^1.13.2",
+    "form-data": "^4.0.5",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   },
@@ -23,6 +29,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.22",
     "globals": "^16.4.0",
+    "openapi-typescript-codegen": "^0.29.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.45.0",
     "vite": "^7.1.7"
