@@ -11,13 +11,18 @@
     "api:generate": "openapi --input ../backend/openapi.json --output ./src/api --client axios"
   },
   "dependencies": {
+    "@ant-design/icons": "^6.1.0",
+    "@hookform/resolvers": "^5.2.2",
     "@tanstack/react-query": "^5.90.10",
     "@tanstack/react-query-devtools": "^5.91.0",
     "@tanstack/react-router": "^1.139.3",
+    "antd": "^6.0.0",
     "axios": "^1.13.2",
     "form-data": "^4.0.5",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react-dom": "^19.1.1",
+    "react-hook-form": "^7.66.1",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",

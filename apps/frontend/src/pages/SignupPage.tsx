@@ -1,121 +1,151 @@
-import { useState } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Card, Form, Input, Button, Spin } from 'antd';
+import { UserOutlined, MailOutlined, LockOutlined } from '@ant-design/icons';
+import { useNavigate } from '@tanstack/react-router';
 import { useCreateUser } from '../hooks/useUser';
+import { useNotification } from '../contexts/NotificationContext';
+import { authUtils } from '../utils/auth';
+import { AuthLayout } from '../components/layouts/AuthLayout';
 
-/**
- * Signup page component
- * Demonstrates how to use the useCreateUser hook
- */
+const registerSchema = z.object({
+  name: z.string().min(1, '名前は必須です'),
+  email: z.string().min(1, 'メールアドレスは必須です').email('有効なメールアドレスを入力してください'),
+  password: z
+    .string()
+    .min(8, 'パスワードは8文字以上である必要があります')
+    .regex(
+      /^(?=.*[a-zA-Z])(?=.*[0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/,
+      'パスワードは英数字記号のうち2種類以上を含む必要があります'
+    ),
+});
+
+type RegisterFormData = z.infer<typeof registerSchema>;
+
 export function SignupPage() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
+  const notification = useNotification();
+  const { mutate: createUser, isPending } = useCreateUser();
 
-  const { mutate: createUser, isPending, isError, error } = useCreateUser();
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      password: '',
+    },
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    createUser(
-      { name, email, password },
-      {
-        onSuccess: (data) => {
-          console.log('Signup successful:', data);
-          alert(`Welcome ${data.user.name}! Token: ${data.accessToken.substring(0, 20)}...`);
-          // TODO: Navigate to dashboard
-        },
-        onError: (error) => {
-          console.error('Signup failed:', error);
-        },
-      }
-    );
+  const onSubmit = (data: RegisterFormData) => {
+    createUser(data, {
+      onSuccess: (response) => {
+        authUtils.setAccessToken(response.accessToken);
+        notification.success({
+          title: '登録成功',
+          description: `${response.user.name}さん、ようこそ！`,
+          placement: 'topRight',
+        });
+        navigate({ to: '/dashboard' });
+      },
+      onError: (error) => {
+        notification.error({
+          title: '登録失敗',
+          description: error.message || 'アカウントの作成に失敗しました',
+          placement: 'topRight',
+        });
+      },
+    });
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px' }}>
-      <h1>Sign Up</h1>
+    <AuthLayout>
+      <Spin spinning={isPending} tip="アカウント作成中...">
+        <Card title="新規登録" style={{ width: 400 }}>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <Form.Item
+              validateStatus={errors.name ? 'error' : ''}
+              help={errors.name?.message}
+            >
+              <Controller
+                name="name"
+                control={control}
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    prefix={<UserOutlined />}
+                    placeholder="名前"
+                    size="large"
+                    disabled={isPending}
+                  />
+                )}
+              />
+            </Form.Item>
 
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '15px' }}>
-          <label htmlFor="name" style={{ display: 'block', marginBottom: '5px' }}>
-            Name
-          </label>
-          <input
-            id="name"
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-            disabled={isPending}
-            style={{
-              width: '100%',
-              padding: '8px',
-              fontSize: '14px',
-            }}
-          />
-        </div>
+            <Form.Item
+              validateStatus={errors.email ? 'error' : ''}
+              help={errors.email?.message}
+            >
+              <Controller
+                name="email"
+                control={control}
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    prefix={<MailOutlined />}
+                    placeholder="メールアドレス"
+                    size="large"
+                    disabled={isPending}
+                  />
+                )}
+              />
+            </Form.Item>
 
-        <div style={{ marginBottom: '15px' }}>
-          <label htmlFor="email" style={{ display: 'block', marginBottom: '5px' }}>
-            Email
-          </label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            disabled={isPending}
-            style={{
-              width: '100%',
-              padding: '8px',
-              fontSize: '14px',
-            }}
-          />
-        </div>
+            <Form.Item
+              validateStatus={errors.password ? 'error' : ''}
+              help={errors.password?.message}
+            >
+              <Controller
+                name="password"
+                control={control}
+                render={({ field }) => (
+                  <Input.Password
+                    {...field}
+                    prefix={<LockOutlined />}
+                    placeholder="パスワード（8文字以上、2種類以上）"
+                    size="large"
+                    disabled={isPending}
+                  />
+                )}
+              />
+            </Form.Item>
 
-        <div style={{ marginBottom: '15px' }}>
-          <label htmlFor="password" style={{ display: 'block', marginBottom: '5px' }}>
-            Password (min 8 characters)
-          </label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength={8}
-            disabled={isPending}
-            style={{
-              width: '100%',
-              padding: '8px',
-              fontSize: '14px',
-            }}
-          />
-        </div>
+            <Form.Item>
+              <Button
+                type="primary"
+                htmlType="submit"
+                size="large"
+                block
+                loading={isPending}
+                disabled={isPending}
+              >
+                登録
+              </Button>
+            </Form.Item>
 
-        {isError && (
-          <div style={{ color: 'red', marginBottom: '15px' }}>
-            Error: {error?.message || 'Signup failed'}
-          </div>
-        )}
-
-        <button
-          type="submit"
-          disabled={isPending}
-          style={{
-            width: '100%',
-            padding: '10px',
-            fontSize: '16px',
-            backgroundColor: isPending ? '#ccc' : '#28a745',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: isPending ? 'not-allowed' : 'pointer',
-          }}
-        >
-          {isPending ? 'Creating account...' : 'Sign Up'}
-        </button>
-      </form>
-    </div>
+            <div style={{ textAlign: 'center' }}>
+              すでにアカウントをお持ちですか？{' '}
+              <Button type="link" onClick={() => navigate({ to: '/login' })}>
+                ログイン
+              </Button>
+            </div>
+          </form>
+        </Card>
+      </Spin>
+    </AuthLayout>
   );
 }

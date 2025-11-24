@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AuthService } from '../api';
 import type { LoginDto } from '../api';
+import { authUtils } from '../utils/auth';
 
 /**
  * Hook for user login
@@ -31,10 +32,8 @@ export function useLogin() {
 
   return useMutation({
     mutationFn: (credentials: LoginDto) => AuthService.authControllerLogin(credentials),
-    onSuccess: (data) => {
-      // Store access token in localStorage
-      localStorage.setItem('accessToken', data.accessToken);
-
+    onSuccess: () => {
+      // Token is stored by the caller (LoginPage component)
       // Invalidate and refetch user-related queries
       queryClient.invalidateQueries({ queryKey: ['user'] });
     },
@@ -59,7 +58,7 @@ export function useLogout() {
   return useMutation({
     mutationFn: async () => {
       // Clear access token
-      localStorage.removeItem('accessToken');
+      authUtils.removeAccessToken();
       // TODO: Call refresh token revocation endpoint if available
     },
     onSuccess: () => {

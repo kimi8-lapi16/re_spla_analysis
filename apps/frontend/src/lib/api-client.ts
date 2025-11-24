@@ -16,7 +16,7 @@ export function configureApiClient() {
   // This will be called automatically for endpoints that require authentication
   OpenAPI.TOKEN = async () => {
     // You can get the token from localStorage, sessionStorage, or any state management
-    const token = localStorage.getItem('accessToken');
+    const token = localStorage.getItem('access_token');
     return token || '';
   };
 }

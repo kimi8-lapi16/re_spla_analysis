@@ -36,10 +36,8 @@ export function useCreateUser() {
   return useMutation({
     mutationFn: (userData: CreateUserDto) =>
       UsersService.userControllerCreateUser(userData),
-    onSuccess: (data) => {
-      // Store access token in localStorage
-      localStorage.setItem('accessToken', data.accessToken);
-
+    onSuccess: () => {
+      // Token is stored by the caller (SignupPage component)
       // Invalidate and refetch user-related queries
       queryClient.invalidateQueries({ queryKey: ['user'] });
     },
