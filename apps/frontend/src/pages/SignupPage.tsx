@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Card, Form, Input, Button, Spin } from 'antd';
 import { UserOutlined, MailOutlined, LockOutlined } from '@ant-design/icons';
-import { useNavigate } from '@tanstack/react-router';
+import { useNavigate, Link } from '@tanstack/react-router';
 import { useCreateUser } from '../hooks/useUser';
 import { useNotification } from '../contexts/NotificationContext';
 import { authUtils } from '../utils/auth';
@@ -139,9 +139,9 @@ export function SignupPage() {
 
             <div style={{ textAlign: 'center' }}>
               すでにアカウントをお持ちですか？{' '}
-              <Button type="link" onClick={() => navigate({ to: '/login' })}>
+              <Link to="/login" style={{ color: '#1890ff' }}>
                 ログイン
-              </Button>
+              </Link>
             </div>
           </form>
         </Card>

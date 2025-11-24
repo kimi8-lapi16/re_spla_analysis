@@ -1,6 +1,6 @@
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, Link } from "@tanstack/react-router";
 import { Button, Card, Form, Input, Spin } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
@@ -109,9 +109,9 @@ export function LoginPage() {
 
             <div style={{ textAlign: "center" }}>
               アカウントをお持ちでないですか？{" "}
-              <Button type="link" onClick={() => navigate({ to: "/register" })}>
+              <Link to="/register" style={{ color: "#1890ff" }}>
                 新規登録
-              </Button>
+              </Link>
             </div>
           </form>
         </Card>
