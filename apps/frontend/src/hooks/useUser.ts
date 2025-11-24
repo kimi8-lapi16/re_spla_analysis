@@ -1,6 +1,6 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { UsersService } from '../api';
-import type { CreateUserDto } from '../api';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { UsersService } from "../api";
+import type { CreateUserDto } from "../api";
 
 /**
  * Hook for creating a new user account
@@ -34,12 +34,11 @@ export function useCreateUser() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (userData: CreateUserDto) =>
-      UsersService.userControllerCreateUser(userData),
+    mutationFn: (userData: CreateUserDto) => UsersService.userControllerCreateUser(userData),
     onSuccess: () => {
       // Token is stored by the caller (SignupPage component)
       // Invalidate and refetch user-related queries
-      queryClient.invalidateQueries({ queryKey: ['user'] });
+      queryClient.invalidateQueries({ queryKey: ["user"] });
     },
   });
 }

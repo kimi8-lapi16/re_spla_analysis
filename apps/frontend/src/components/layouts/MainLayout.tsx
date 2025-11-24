@@ -1,12 +1,8 @@
-import { Layout, Menu } from 'antd';
-import { type ReactNode, useState } from 'react';
-import {
-  DashboardOutlined,
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
-} from '@ant-design/icons';
-import { Header } from '../Header';
-import { Footer } from '../Footer';
+import { Layout, Menu } from "antd";
+import { type ReactNode, useState } from "react";
+import { DashboardOutlined, MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
+import { Header } from "../Header";
+import { Footer } from "../Footer";
 
 const { Sider, Content } = Layout;
 
@@ -19,7 +15,7 @@ export const MainLayout = ({ children, onLogout }: MainLayoutProps) => {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
+    <Layout style={{ minHeight: "100vh" }}>
       <Header onLogout={onLogout} />
       <Layout>
         <Sider
@@ -28,37 +24,37 @@ export const MainLayout = ({ children, onLogout }: MainLayoutProps) => {
           onCollapse={setCollapsed}
           trigger={null}
           style={{
-            background: '#fff',
-            borderRight: '1px solid #f0f0f0',
+            background: "#fff",
+            borderRight: "1px solid #f0f0f0",
           }}
         >
           <div
             style={{
-              padding: '16px',
-              textAlign: 'center',
-              borderBottom: '1px solid #f0f0f0',
+              padding: "16px",
+              textAlign: "center",
+              borderBottom: "1px solid #f0f0f0",
             }}
           >
             {collapsed ? (
               <MenuUnfoldOutlined
                 onClick={() => setCollapsed(false)}
-                style={{ fontSize: '18px', cursor: 'pointer' }}
+                style={{ fontSize: "18px", cursor: "pointer" }}
               />
             ) : (
               <MenuFoldOutlined
                 onClick={() => setCollapsed(true)}
-                style={{ fontSize: '18px', cursor: 'pointer' }}
+                style={{ fontSize: "18px", cursor: "pointer" }}
               />
             )}
           </div>
           <Menu
             mode="inline"
-            defaultSelectedKeys={['dashboard']}
+            defaultSelectedKeys={["dashboard"]}
             items={[
               {
-                key: 'dashboard',
+                key: "dashboard",
                 icon: <DashboardOutlined />,
-                label: 'Dashboard',
+                label: "Dashboard",
               },
             ]}
           />
@@ -66,8 +62,8 @@ export const MainLayout = ({ children, onLogout }: MainLayoutProps) => {
         <Layout>
           <Content
             style={{
-              padding: '24px',
-              minHeight: '280px',
+              padding: "24px",
+              minHeight: "280px",
             }}
           >
             {children}

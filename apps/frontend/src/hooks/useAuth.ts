@@ -1,7 +1,7 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { AuthService } from '../api';
-import type { LoginDto } from '../api';
-import { authUtils } from '../utils/auth';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { AuthService } from "../api";
+import type { LoginDto } from "../api";
+import { authUtils } from "../utils/auth";
 
 /**
  * Hook for user login
@@ -35,7 +35,7 @@ export function useLogin() {
     onSuccess: () => {
       // Token is stored by the caller (LoginPage component)
       // Invalidate and refetch user-related queries
-      queryClient.invalidateQueries({ queryKey: ['user'] });
+      queryClient.invalidateQueries({ queryKey: ["user"] });
     },
   });
 }

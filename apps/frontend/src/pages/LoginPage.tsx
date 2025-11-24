@@ -1,10 +1,11 @@
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate, Link } from "@tanstack/react-router";
-import { Button, Card, Form, Input, Spin } from "antd";
+import { Form, Spin } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { AuthLayout } from "../components/layouts/AuthLayout";
+import { Button, Card, Input } from "../components/ui";
 import { useNotification } from "../contexts/NotificationContext";
 import { useLogin } from "../hooks/useAuth";
 import { authUtils } from "../utils/auth";
@@ -57,7 +58,7 @@ export function LoginPage() {
   return (
     <AuthLayout>
       <Spin spinning={isPending} tip="ログイン中...">
-        <Card title="ログイン" style={{ width: 400 }}>
+        <Card title="ログイン" variant="elevated" style={{ width: 400 }}>
           <form onSubmit={handleSubmit(onSubmit)}>
             <Form.Item validateStatus={errors.email ? "error" : ""} help={errors.email?.message}>
               <Controller
@@ -96,7 +97,7 @@ export function LoginPage() {
 
             <Form.Item>
               <Button
-                type="primary"
+                variant="primary"
                 htmlType="submit"
                 size="large"
                 block
@@ -107,9 +108,9 @@ export function LoginPage() {
               </Button>
             </Form.Item>
 
-            <div style={{ textAlign: "center" }}>
+            <div style={{ textAlign: "center", marginTop: "16px" }}>
               アカウントをお持ちでないですか？{" "}
-              <Link to="/register" style={{ color: "#1890ff" }}>
+              <Link to="/register">
                 新規登録
               </Link>
             </div>

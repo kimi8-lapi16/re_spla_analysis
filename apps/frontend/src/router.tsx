@@ -1,29 +1,29 @@
-import { createRouter, createRoute, createRootRoute, redirect } from '@tanstack/react-router';
-import { authUtils } from './utils/auth';
-import { LoginPage } from './pages/LoginPage';
-import { SignupPage } from './pages/SignupPage';
-import { DashboardPage } from './pages/DashboardPage';
+import { createRouter, createRoute, createRootRoute, redirect } from "@tanstack/react-router";
+import { authUtils } from "./utils/auth";
+import { LoginPage } from "./pages/LoginPage";
+import { SignupPage } from "./pages/SignupPage";
+import { DashboardPage } from "./pages/DashboardPage";
 
 const rootRoute = createRootRoute({});
 
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/',
+  path: "/",
   beforeLoad: () => {
     if (authUtils.isAuthenticated()) {
-      throw redirect({ to: '/dashboard', replace: true });
+      throw redirect({ to: "/dashboard", replace: true });
     } else {
-      throw redirect({ to: '/login', replace: true });
+      throw redirect({ to: "/login", replace: true });
     }
   },
 });
 
 const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/login',
+  path: "/login",
   beforeLoad: () => {
     if (authUtils.isAuthenticated()) {
-      throw redirect({ to: '/dashboard', replace: true });
+      throw redirect({ to: "/dashboard", replace: true });
     }
   },
   component: LoginPage,
@@ -31,10 +31,10 @@ const loginRoute = createRoute({
 
 const registerRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/register',
+  path: "/register",
   beforeLoad: () => {
     if (authUtils.isAuthenticated()) {
-      throw redirect({ to: '/dashboard', replace: true });
+      throw redirect({ to: "/dashboard", replace: true });
     }
   },
   component: SignupPage,
@@ -42,25 +42,20 @@ const registerRoute = createRoute({
 
 const dashboardRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/dashboard',
+  path: "/dashboard",
   beforeLoad: () => {
     if (!authUtils.isAuthenticated()) {
-      throw redirect({ to: '/login', replace: true });
+      throw redirect({ to: "/login", replace: true });
     }
   },
   component: DashboardPage,
 });
 
-const routeTree = rootRoute.addChildren([
-  indexRoute,
-  loginRoute,
-  registerRoute,
-  dashboardRoute,
-]);
+const routeTree = rootRoute.addChildren([indexRoute, loginRoute, registerRoute, dashboardRoute]);
 
 export const router = createRouter({ routeTree });
 
-declare module '@tanstack/react-router' {
+declare module "@tanstack/react-router" {
   interface Register {
     router: typeof router;
   }

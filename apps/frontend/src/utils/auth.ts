@@ -1,4 +1,4 @@
-const ACCESS_TOKEN_KEY = 'access_token';
+const ACCESS_TOKEN_KEY = "access_token";
 
 export const authUtils = {
   setAccessToken(token: string): void {

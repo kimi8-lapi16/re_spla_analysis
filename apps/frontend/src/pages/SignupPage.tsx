@@ -1,23 +1,24 @@
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Card, Form, Input, Button, Spin } from 'antd';
-import { UserOutlined, MailOutlined, LockOutlined } from '@ant-design/icons';
-import { useNavigate, Link } from '@tanstack/react-router';
-import { useCreateUser } from '../hooks/useUser';
-import { useNotification } from '../contexts/NotificationContext';
-import { authUtils } from '../utils/auth';
-import { AuthLayout } from '../components/layouts/AuthLayout';
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Form, Spin } from "antd";
+import { UserOutlined, MailOutlined, LockOutlined } from "@ant-design/icons";
+import { useNavigate, Link } from "@tanstack/react-router";
+import { useCreateUser } from "../hooks/useUser";
+import { useNotification } from "../contexts/NotificationContext";
+import { authUtils } from "../utils/auth";
+import { AuthLayout } from "../components/layouts/AuthLayout";
+import { Button, Card, Input } from "../components/ui";
 
 const registerSchema = z.object({
-  name: z.string().min(1, '名前は必須です'),
-  email: z.email('有効なメールアドレスを入力してください'),
+  name: z.string().min(1, "名前は必須です"),
+  email: z.email("有効なメールアドレスを入力してください"),
   password: z
     .string()
-    .min(8, 'パスワードは8文字以上である必要があります')
+    .min(8, "パスワードは8文字以上である必要があります")
     .regex(
       /^(?=.*[a-zA-Z])(?=.*[0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/,
-      'パスワードは英数字記号のうち2種類以上を含む必要があります'
+      "パスワードは英数字記号のうち2種類以上を含む必要があります"
     ),
 });
 
@@ -35,9 +36,9 @@ export function SignupPage() {
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      name: '',
-      email: '',
-      password: '',
+      name: "",
+      email: "",
+      password: "",
     },
   });
 
@@ -46,17 +47,17 @@ export function SignupPage() {
       onSuccess: (response) => {
         authUtils.setAccessToken(response.accessToken);
         notification.success({
-          title: '登録成功',
+          title: "登録成功",
           description: `${response.user.name}さん、ようこそ！`,
-          placement: 'topRight',
+          placement: "topRight",
         });
-        navigate({ to: '/dashboard' });
+        navigate({ to: "/dashboard" });
       },
       onError: (error) => {
         notification.error({
-          title: '登録失敗',
-          description: error.message || 'アカウントの作成に失敗しました',
-          placement: 'topRight',
+          title: "登録失敗",
+          description: error.message || "アカウントの作成に失敗しました",
+          placement: "topRight",
         });
       },
     });
@@ -65,12 +66,9 @@ export function SignupPage() {
   return (
     <AuthLayout>
       <Spin spinning={isPending} tip="アカウント作成中...">
-        <Card title="新規登録" style={{ width: 400 }}>
+        <Card title="新規登録" variant="elevated" style={{ width: 400 }}>
           <form onSubmit={handleSubmit(onSubmit)}>
-            <Form.Item
-              validateStatus={errors.name ? 'error' : ''}
-              help={errors.name?.message}
-            >
+            <Form.Item validateStatus={errors.name ? "error" : ""} help={errors.name?.message}>
               <Controller
                 name="name"
                 control={control}
@@ -86,10 +84,7 @@ export function SignupPage() {
               />
             </Form.Item>
 
-            <Form.Item
-              validateStatus={errors.email ? 'error' : ''}
-              help={errors.email?.message}
-            >
+            <Form.Item validateStatus={errors.email ? "error" : ""} help={errors.email?.message}>
               <Controller
                 name="email"
                 control={control}
@@ -106,7 +101,7 @@ export function SignupPage() {
             </Form.Item>
 
             <Form.Item
-              validateStatus={errors.password ? 'error' : ''}
+              validateStatus={errors.password ? "error" : ""}
               help={errors.password?.message}
             >
               <Controller
@@ -126,7 +121,7 @@ export function SignupPage() {
 
             <Form.Item>
               <Button
-                type="primary"
+                variant="primary"
                 htmlType="submit"
                 size="large"
                 block
@@ -137,9 +132,9 @@ export function SignupPage() {
               </Button>
             </Form.Item>
 
-            <div style={{ textAlign: 'center' }}>
-              すでにアカウントをお持ちですか？{' '}
-              <Link to="/login" style={{ color: '#1890ff' }}>
+            <div style={{ textAlign: "center", marginTop: "16px" }}>
+              すでにアカウントをお持ちですか？{" "}
+              <Link to="/login">
                 ログイン
               </Link>
             </div>
