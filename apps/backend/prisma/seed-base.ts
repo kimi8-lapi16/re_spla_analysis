@@ -1,5 +1,5 @@
-import { config } from "dotenv";
-import { PrismaClient } from "../generated/prisma/client";
+import { config } from 'dotenv';
+import { PrismaClient } from '../generated/prisma/client';
 
 config();
 
@@ -17,7 +17,7 @@ const subWeapons = [
   { id: 11, name: 'ポイズンミスト' },
   { id: 12, name: 'ポイントセンサー' },
   { id: 13, name: 'ラインマーカー' },
-  { id: 14, name: 'ロボットボム' }
+  { id: 14, name: 'ロボットボム' },
 ];
 
 const specialWeapons = [
@@ -39,7 +39,7 @@ const specialWeapons = [
   { id: 16, name: 'ナイスダマ' },
   { id: 17, name: 'ホップソナー' },
   { id: 18, name: 'マルチミサイル' },
-  { id: 19, name: 'メガホンレーザー5.1ch' }
+  { id: 19, name: 'メガホンレーザー5.1ch' },
 ];
 
 const weapons = [
@@ -112,7 +112,11 @@ const weapons = [
   { name: 'パラシェルター', subWeaponId: 7, specialWeaponId: 15 },
   { name: 'キャンピングシェルター', subWeaponId: 4, specialWeaponId: 7 },
   { name: 'スパイガジェット', subWeaponId: 9, specialWeaponId: 9 },
-  { name: 'キャンピングシェルターソレーラ', subWeaponId: 9, specialWeaponId: 2 },
+  {
+    name: 'キャンピングシェルターソレーラ',
+    subWeaponId: 9,
+    specialWeaponId: 2,
+  },
   { name: 'ホットブラスター', subWeaponId: 14, specialWeaponId: 8 },
   { name: 'ラピッドブラスター', subWeaponId: 9, specialWeaponId: 15 },
   { name: 'ラピッドブラスターデコ', subWeaponId: 10, specialWeaponId: 11 },
@@ -138,7 +142,11 @@ const weapons = [
   { name: 'ダイナモローラーテスラ', subWeaponId: 6, specialWeaponId: 14 },
   { name: 'ホクサイ・ヒュー', subWeaponId: 4, specialWeaponId: 1 },
   { name: 'ソイチューバーカスタム', subWeaponId: 8, specialWeaponId: 4 },
-  { name: 'スクリュースロッシャーベッチュー', subWeaponId: 12, specialWeaponId: 2 },
+  {
+    name: 'スクリュースロッシャーベッチュー',
+    subWeaponId: 12,
+    specialWeaponId: 2,
+  },
   { name: 'オーバーフロッシャーデコ', subWeaponId: 13, specialWeaponId: 13 },
   { name: 'クーゲルシュライバー・ヒュー', subWeaponId: 9, specialWeaponId: 7 },
   { name: 'パラシェルターソレーラ', subWeaponId: 14, specialWeaponId: 11 },
@@ -168,7 +176,11 @@ const weapons = [
   { name: 'オーダーシューターレプリカ', subWeaponId: 2, specialWeaponId: 2 },
   { name: 'オーダーローラーレプリカ', subWeaponId: 1, specialWeaponId: 8 },
   { name: 'オーダーチャージャーレプリカ', subWeaponId: 6, specialWeaponId: 7 },
-  { name: 'オーダーストリンガーレプリカ', subWeaponId: 11, specialWeaponId: 19 },
+  {
+    name: 'オーダーストリンガーレプリカ',
+    subWeaponId: 11,
+    specialWeaponId: 19,
+  },
   { name: 'オーダーワイパーレプリカ', subWeaponId: 3, specialWeaponId: 10 },
   { name: 'オーダースロッシャーレプリカ', subWeaponId: 6, specialWeaponId: 15 },
   { name: 'オーダーブラスターレプリカ', subWeaponId: 6, specialWeaponId: 10 },
@@ -214,25 +226,37 @@ const weapons = [
   { name: 'スプラスピナーPYTN', subWeaponId: 4, specialWeaponId: 2 },
   { name: 'スパッタリーOWL', subWeaponId: 6, specialWeaponId: 19 },
   { name: 'H3リールガンSNAK', subWeaponId: 2, specialWeaponId: 15 },
-  { name: 'RブラスターエリートWNTR', subWeaponId: 2, specialWeaponId: 5 }
+  { name: 'RブラスターエリートWNTR', subWeaponId: 2, specialWeaponId: 5 },
 ];
 
 const battleTypes = ['Xマッチ', 'オープン', 'チャレンジ'];
 
-const rules = [
-  'ガチエリア',
-  'ガチヤグラ',
-  'ガチホコバトル',
-  'ガチアサリ',
-];
+const rules = ['ガチエリア', 'ガチヤグラ', 'ガチホコバトル', 'ガチアサリ'];
 
 const stages = [
-  'ユノハナ大渓谷','ゴンズイ地区','ヤガラ市場','マテガイ放水路','ナメロウ金属',
-  'マサバ海峡大橋','キンメダイ美術館','マヒマヒリゾート&スパ','海女美術大学',
-  'チョウザメ造船','ザトウマーケット','スメーシーワールド','クサヤ温泉',
-  'ヒラメが丘団地','ナンプラー遺跡','マンタマリア号','オヒョウ海運',
-  'タカアシ経済特区','バイガイ亭','ネギトロ炭鉱','カジキ空港','リュウグウターミナル',
-  'デカライン高架下'
+  'ユノハナ大渓谷',
+  'ゴンズイ地区',
+  'ヤガラ市場',
+  'マテガイ放水路',
+  'ナメロウ金属',
+  'マサバ海峡大橋',
+  'キンメダイ美術館',
+  'マヒマヒリゾート&スパ',
+  '海女美術大学',
+  'チョウザメ造船',
+  'ザトウマーケット',
+  'スメーシーワールド',
+  'クサヤ温泉',
+  'ヒラメが丘団地',
+  'ナンプラー遺跡',
+  'マンタマリア号',
+  'オヒョウ海運',
+  'タカアシ経済特区',
+  'バイガイ亭',
+  'ネギトロ炭鉱',
+  'カジキ空港',
+  'リュウグウターミナル',
+  'デカライン高架下',
 ];
 
 export async function seedBaseMasterData(prisma: PrismaClient) {
@@ -240,21 +264,21 @@ export async function seedBaseMasterData(prisma: PrismaClient) {
 
   // Seed BattleType
   await prisma.battleType.createMany({
-    data: battleTypes.map(name => ({ name })),
+    data: battleTypes.map((name) => ({ name })),
     skipDuplicates: true,
   });
   console.log('Battle types seeded');
 
   // Seed Rule
   await prisma.rule.createMany({
-    data: rules.map(name => ({ name })),
+    data: rules.map((name) => ({ name })),
     skipDuplicates: true,
   });
   console.log('Rules seeded');
 
   // Seed Stage
   await prisma.stage.createMany({
-    data: stages.map(name => ({ name })),
+    data: stages.map((name) => ({ name })),
     skipDuplicates: true,
   });
   console.log('Stages seeded');

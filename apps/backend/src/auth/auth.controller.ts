@@ -1,10 +1,4 @@
-import {
-  Body,
-  Controller,
-  Post,
-  Res,
-  ValidationPipe,
-} from '@nestjs/common';
+import { Body, Controller, Post, Res, ValidationPipe } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { AuthTokenResponseDto } from '../user/dto';
@@ -30,7 +24,8 @@ export class AuthController {
     dto: LoginDto,
     @Res({ passthrough: true }) res: Response,
   ): Promise<AuthTokenResponseDto> {
-    const { user, accessToken, refreshToken } = await this.authService.login(dto);
+    const { user, accessToken, refreshToken } =
+      await this.authService.login(dto);
 
     this.authService.setRefreshTokenCookie(res, refreshToken);
 

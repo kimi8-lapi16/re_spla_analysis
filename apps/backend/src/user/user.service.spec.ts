@@ -1,5 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ConflictException, InternalServerErrorException } from '@nestjs/common';
+import {
+  ConflictException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
@@ -162,7 +165,9 @@ describe('UserService', () => {
       const result = await service.findByEmail('test@example.com');
 
       expect(result).toEqual(mockUser);
-      expect(userUseCase.findUserWithSecretByEmail).toHaveBeenCalledWith('test@example.com');
+      expect(userUseCase.findUserWithSecretByEmail).toHaveBeenCalledWith(
+        'test@example.com',
+      );
     });
 
     it('should return null when user not found', async () => {
@@ -171,7 +176,9 @@ describe('UserService', () => {
       const result = await service.findByEmail('nonexistent@example.com');
 
       expect(result).toBeNull();
-      expect(userUseCase.findUserWithSecretByEmail).toHaveBeenCalledWith('nonexistent@example.com');
+      expect(userUseCase.findUserWithSecretByEmail).toHaveBeenCalledWith(
+        'nonexistent@example.com',
+      );
     });
   });
 

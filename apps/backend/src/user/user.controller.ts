@@ -1,10 +1,4 @@
-import {
-  Body,
-  Controller,
-  Post,
-  Res,
-  ValidationPipe
-} from '@nestjs/common';
+import { Body, Controller, Post, Res, ValidationPipe } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { AuthTokenResponseDto, CreateUserDto } from './dto';
@@ -13,9 +7,7 @@ import { UserService } from './user.service';
 @ApiTags('users')
 @Controller('users')
 export class UserController {
-  constructor(
-    private readonly userService: UserService,
-  ) {}
+  constructor(private readonly userService: UserService) {}
 
   @Post()
   @ApiOperation({ summary: 'Create a new user account' })
@@ -34,8 +26,10 @@ export class UserController {
   ): Promise<AuthTokenResponseDto> {
     const user = await this.userService.createUser(dto);
 
-    const { accessToken, refreshToken } =
-      await this.userService.generateTokens(user.id, user.email);
+    const { accessToken, refreshToken } = await this.userService.generateTokens(
+      user.id,
+      user.email,
+    );
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,

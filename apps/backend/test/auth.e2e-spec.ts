@@ -47,9 +47,7 @@ describe('Auth API (e2e)', () => {
 
   describe('POST /auth/login', () => {
     beforeAll(async () => {
-      await request(app.getHttpServer())
-        .post('/users')
-        .send(testUser);
+      await request(app.getHttpServer()).post('/users').send(testUser);
     });
 
     it('should login successfully with valid credentials', async () => {

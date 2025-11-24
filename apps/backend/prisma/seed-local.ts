@@ -103,9 +103,10 @@ function generateXMatchSet(
 
   pattern.forEach((result) => {
     // ポイントの増減（WIN: +10~50, LOSE: -10~50）
-    const pointChange = result === 'WIN'
-      ? 10 + Math.floor(Math.random() * 41)
-      : -(10 + Math.floor(Math.random() * 41));
+    const pointChange =
+      result === 'WIN'
+        ? 10 + Math.floor(Math.random() * 41)
+        : -(10 + Math.floor(Math.random() * 41));
     currentPoint += pointChange;
 
     matches.push({
@@ -120,7 +121,9 @@ function generateXMatchSet(
     });
 
     // 次の試合まで5-7分
-    currentTime = new Date(currentTime.getTime() + randomMatchDuration() * 60 * 1000);
+    currentTime = new Date(
+      currentTime.getTime() + randomMatchDuration() * 60 * 1000,
+    );
   });
 
   return matches;
@@ -209,9 +212,10 @@ function generateChallengeSet(
 
   pattern.forEach((result) => {
     // ポイントの増減（WIN: +5~15, LOSE: -5~15）
-    const pointChange = result === 'WIN'
-      ? 5 + Math.floor(Math.random() * 11)
-      : -(5 + Math.floor(Math.random() * 11));
+    const pointChange =
+      result === 'WIN'
+        ? 5 + Math.floor(Math.random() * 11)
+        : -(5 + Math.floor(Math.random() * 11));
     currentPoint += pointChange;
 
     matches.push({
@@ -226,7 +230,9 @@ function generateChallengeSet(
     });
 
     // 次の試合まで5-7分
-    currentTime = new Date(currentTime.getTime() + randomMatchDuration() * 60 * 1000);
+    currentTime = new Date(
+      currentTime.getTime() + randomMatchDuration() * 60 * 1000,
+    );
   });
 
   return matches;
@@ -250,9 +256,10 @@ function generateOpenMatches(
     const result = Math.random() > 0.5 ? RESULT.WIN : RESULT.LOSE;
 
     // ポイントの増減（WIN: +3~8, LOSE: -3~8）
-    const pointChange = result === RESULT.WIN
-      ? 3 + Math.floor(Math.random() * 6)
-      : -(3 + Math.floor(Math.random() * 6));
+    const pointChange =
+      result === RESULT.WIN
+        ? 3 + Math.floor(Math.random() * 6)
+        : -(3 + Math.floor(Math.random() * 6));
     currentPoint += pointChange;
 
     matches.push({
@@ -267,7 +274,9 @@ function generateOpenMatches(
     });
 
     // 次の試合まで5-7分
-    currentTime = new Date(currentTime.getTime() + randomMatchDuration() * 60 * 1000);
+    currentTime = new Date(
+      currentTime.getTime() + randomMatchDuration() * 60 * 1000,
+    );
   }
 
   return matches;
@@ -290,7 +299,7 @@ function generateUserMatches(
     // Xマッチのセット（3勝 or 3敗）
     for (let setNum = 0; setNum < setsPerBattleType; setNum++) {
       // 奇数時からスタート（1, 3, 5, 7...）
-      const hour = 1 + (ruleIndex * 2) + (setNum * 8);
+      const hour = 1 + ruleIndex * 2 + setNum * 8;
       currentDate.setHours(hour, 0, 0, 0);
 
       const weaponIds = randomSample(WEAPON_IDS, 5);
@@ -309,7 +318,7 @@ function generateUserMatches(
 
     // チャレンジのセット（5勝 or 3敗）
     for (let setNum = 0; setNum < setsPerBattleType; setNum++) {
-      const hour = 9 + (ruleIndex * 2) + (setNum * 8);
+      const hour = 9 + ruleIndex * 2 + setNum * 8;
       currentDate.setHours(hour, 0, 0, 0);
 
       const weaponIds = randomSample(WEAPON_IDS, 7);
@@ -328,7 +337,7 @@ function generateUserMatches(
 
     // オープン（10試合）
     for (let setNum = 0; setNum < setsPerBattleType; setNum++) {
-      const hour = 17 + (ruleIndex * 2) + (setNum * 8);
+      const hour = 17 + ruleIndex * 2 + setNum * 8;
       currentDate.setHours(hour, 0, 0, 0);
 
       const weaponIds = randomSample(WEAPON_IDS, 10);
@@ -364,13 +373,18 @@ async function seedLocalData() {
   STAGE_IDS = stages.map((s) => s.id);
   WEAPON_IDS = weapons.map((w) => w.id);
 
-  console.log(`Found ${RULE_IDS.length} rules, ${STAGE_IDS.length} stages, ${WEAPON_IDS.length} weapons`);
+  console.log(
+    `Found ${RULE_IDS.length} rules, ${STAGE_IDS.length} stages, ${WEAPON_IDS.length} weapons`,
+  );
 
   // ユーザー数を計算（各ユーザーが最低限のマッチを持つように）
   // 1ユーザーあたり: (X: 3-5試合 * 4ルール) + (Challenge: 5-8試合 * 4ルール) + (Open: 10試合 * 4ルール)
   // = 約18-20 + 20-32 + 40 = 78-92試合/ユーザー
   const estimatedMatchesPerUser = 85;
-  const userCount = Math.max(10, Math.ceil(TARGET_MATCHES / estimatedMatchesPerUser));
+  const userCount = Math.max(
+    10,
+    Math.ceil(TARGET_MATCHES / estimatedMatchesPerUser),
+  );
 
   console.log(`Generating ${userCount} users...`);
 
@@ -428,7 +442,9 @@ async function seedLocalData() {
     await prisma.match.createMany({
       data: batch,
     });
-    console.log(`Inserted ${Math.min(i + batchSize, allMatches.length)} / ${allMatches.length} matches`);
+    console.log(
+      `Inserted ${Math.min(i + batchSize, allMatches.length)} / ${allMatches.length} matches`,
+    );
   }
 
   console.log('Local data seeding finished.');

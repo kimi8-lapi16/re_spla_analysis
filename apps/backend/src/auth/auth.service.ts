@@ -15,14 +15,20 @@ export class AuthService {
     private readonly configService: ConfigService,
   ) {}
 
-  async validateUser(email: string, password: string): Promise<UserResponseDto> {
+  async validateUser(
+    email: string,
+    password: string,
+  ): Promise<UserResponseDto> {
     const user = await this.userService.findByEmail(email);
 
     if (!user || !user.secret) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.secret.password);
+    const isPasswordValid = await bcrypt.compare(
+      password,
+      user.secret.password,
+    );
 
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
@@ -65,7 +71,10 @@ export class AuthService {
     });
 
     const refreshToken = this.jwtService.sign(payload, {
-      secret: this.configService.get<string>('JWT_REFRESH_SECRET', 'your-refresh-secret-key'),
+      secret: this.configService.get<string>(
+        'JWT_REFRESH_SECRET',
+        'your-refresh-secret-key',
+      ),
       expiresIn: '7d',
     });
 

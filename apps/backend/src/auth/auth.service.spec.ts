@@ -81,7 +81,10 @@ describe('AuthService', () => {
 
       expect(result).toEqual(mockUserResponse);
       expect(userService.findByEmail).toHaveBeenCalledWith('test@example.com');
-      expect(bcrypt.compare).toHaveBeenCalledWith('password', 'hashed-password');
+      expect(bcrypt.compare).toHaveBeenCalledWith(
+        'password',
+        'hashed-password',
+      );
     });
 
     it('should throw UnauthorizedException when user does not exist', async () => {
@@ -114,7 +117,10 @@ describe('AuthService', () => {
         service.validateUser('test@example.com', 'wrong-password'),
       ).rejects.toThrow(UnauthorizedException);
 
-      expect(bcrypt.compare).toHaveBeenCalledWith('wrong-password', 'hashed-password');
+      expect(bcrypt.compare).toHaveBeenCalledWith(
+        'wrong-password',
+        'hashed-password',
+      );
     });
   });
 
@@ -128,8 +134,12 @@ describe('AuthService', () => {
       userService.findByEmail.mockResolvedValue(mockUser);
       userService.findById.mockResolvedValue(mockUserResponse);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
-      jwtService.sign.mockReturnValueOnce('access-token').mockReturnValueOnce('refresh-token');
-      configService.get.mockReturnValueOnce('jwt-secret').mockReturnValueOnce('jwt-refresh-secret');
+      jwtService.sign
+        .mockReturnValueOnce('access-token')
+        .mockReturnValueOnce('refresh-token');
+      configService.get
+        .mockReturnValueOnce('jwt-secret')
+        .mockReturnValueOnce('jwt-refresh-secret');
 
       const result = await service.login(loginDto);
 
@@ -145,14 +155,18 @@ describe('AuthService', () => {
       userService.findByEmail.mockResolvedValue(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
-      await expect(service.login(loginDto)).rejects.toThrow(UnauthorizedException);
+      await expect(service.login(loginDto)).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
   });
 
   describe('generateTokens', () => {
     it('should generate access and refresh tokens', async () => {
       userService.findById.mockResolvedValue(mockUserResponse);
-      jwtService.sign.mockReturnValueOnce('access-token').mockReturnValueOnce('refresh-token');
+      jwtService.sign
+        .mockReturnValueOnce('access-token')
+        .mockReturnValueOnce('refresh-token');
       configService.get
         .mockReturnValueOnce('jwt-secret')
         .mockReturnValueOnce('jwt-refresh-secret');
@@ -176,7 +190,9 @@ describe('AuthService', () => {
 
     it('should generate tokens with empty email if user not found', async () => {
       userService.findById.mockResolvedValue(null);
-      jwtService.sign.mockReturnValueOnce('access-token').mockReturnValueOnce('refresh-token');
+      jwtService.sign
+        .mockReturnValueOnce('access-token')
+        .mockReturnValueOnce('refresh-token');
       configService.get
         .mockReturnValueOnce('jwt-secret')
         .mockReturnValueOnce('jwt-refresh-secret');
@@ -202,12 +218,16 @@ describe('AuthService', () => {
 
       service.setRefreshTokenCookie(mockResponse, 'refresh-token');
 
-      expect(mockResponse.cookie).toHaveBeenCalledWith('refreshToken', 'refresh-token', {
-        httpOnly: true,
-        secure: false,
-        sameSite: 'strict',
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
+      expect(mockResponse.cookie).toHaveBeenCalledWith(
+        'refreshToken',
+        'refresh-token',
+        {
+          httpOnly: true,
+          secure: false,
+          sameSite: 'strict',
+          maxAge: 7 * 24 * 60 * 60 * 1000,
+        },
+      );
     });
 
     it('should set secure flag in production', () => {
@@ -219,12 +239,16 @@ describe('AuthService', () => {
 
       service.setRefreshTokenCookie(mockResponse, 'refresh-token');
 
-      expect(mockResponse.cookie).toHaveBeenCalledWith('refreshToken', 'refresh-token', {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'strict',
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
+      expect(mockResponse.cookie).toHaveBeenCalledWith(
+        'refreshToken',
+        'refresh-token',
+        {
+          httpOnly: true,
+          secure: true,
+          sameSite: 'strict',
+          maxAge: 7 * 24 * 60 * 60 * 1000,
+        },
+      );
     });
   });
 });
