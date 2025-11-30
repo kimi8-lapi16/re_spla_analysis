@@ -1,4 +1,4 @@
-import { Collapse, Col, DatePicker, Form, Radio, Row, Select } from "antd";
+import { Col, Collapse, DatePicker, Form, Radio, Row, Select } from "antd";
 import { Dayjs } from "dayjs";
 import { SearchMatchesRequest } from "../api";
 import { useBattleTypes } from "../hooks/useBattleType";
@@ -66,7 +66,7 @@ export function MatchSearchFilters({ filters, onFiltersChange }: MatchSearchFilt
             <Form size="small" layout="vertical">
               <Row gutter={16}>
                 <Col span={8}>
-                  <Form.Item label="武器">
+                  <Form.Item label="ブキ">
                     <Select
                       mode="multiple"
                       allowClear
@@ -108,7 +108,7 @@ export function MatchSearchFilters({ filters, onFiltersChange }: MatchSearchFilt
                 </Col>
 
                 <Col span={8}>
-                  <Form.Item label="バトルタイプ">
+                  <Form.Item label="バトル">
                     <Select
                       mode="multiple"
                       allowClear

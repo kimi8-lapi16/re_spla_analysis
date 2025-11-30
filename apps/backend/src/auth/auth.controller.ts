@@ -1,9 +1,24 @@
-import { Body, Controller, Post, Res, ValidationPipe } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import type { Response } from 'express';
+import {
+  Body,
+  Controller,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+  ValidationPipe,
+} from '@nestjs/common';
+import {
+  ApiBody,
+  ApiCookieAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import type { Request, Response } from 'express';
 import { AuthTokenResponseDto } from '../user/user.dto';
+import { JwtRefreshGuard } from '../common/guards/jwt-refresh.guard';
 import { AuthService } from './auth.service';
-import { LoginDto } from './auth.dto';
+import { LoginDto, RefreshTokenResponseDto } from './auth.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -33,5 +48,22 @@ export class AuthController {
       accessToken,
       user,
     };
+  }
+
+  @Post('refresh')
+  @UseGuards(JwtRefreshGuard)
+  @ApiOperation({ summary: 'Refresh access token using refresh token' })
+  @ApiCookieAuth('refreshToken')
+  @ApiResponse({
+    status: 201,
+    description: 'New access token generated',
+    type: RefreshTokenResponseDto,
+  })
+  @ApiResponse({ status: 401, description: 'Invalid or expired refresh token' })
+  async refresh(@Req() req: Request): Promise<RefreshTokenResponseDto> {
+    const user = req.user as { userId: string; email: string };
+    const { accessToken } = await this.authService.refresh(user.userId);
+
+    return { accessToken };
   }
 }

@@ -69,9 +69,7 @@ export function MatchesPage() {
             新規登録
           </Button>
         </Flex>
-
         <MatchSearchFilters filters={filters} onFiltersChange={handleFiltersChange} />
-
         <MatchTable
           matches={searchData?.matches}
           isLoading={isSearching}

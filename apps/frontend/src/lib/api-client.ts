@@ -1,10 +1,14 @@
+import axios from "axios";
 import { OpenAPI } from "../api";
+import { setupAxiosInterceptor } from "./axios-interceptor";
+import { authUtils } from "../utils/auth";
 
 /**
  * Configure OpenAPI client
  * Set base URL and credentials for API requests
+ * @param onLogout - Callback function to call when refresh token fails
  */
-export function configureApiClient() {
+export function configureApiClient(onLogout: () => void) {
   // Set base URL from environment variable or default to localhost
   OpenAPI.BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
@@ -15,8 +19,14 @@ export function configureApiClient() {
   // Set token resolver for Bearer authentication
   // This will be called automatically for endpoints that require authentication
   OpenAPI.TOKEN = async () => {
-    // You can get the token from localStorage, sessionStorage, or any state management
-    const token = localStorage.getItem("access_token");
+    const token = authUtils.getAccessToken();
     return token || "";
   };
+
+  // Create axios instance with interceptor
+  const axiosInstance = axios.create();
+  setupAxiosInterceptor(axiosInstance, onLogout);
+
+  // Make axios instance available globally for OpenAPI client
+  (globalThis as any).__AXIOS_INSTANCE__ = axiosInstance;
 }

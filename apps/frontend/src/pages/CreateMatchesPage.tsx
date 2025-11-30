@@ -167,7 +167,7 @@ export function CreateMatchesPage() {
 
   const columns = [
     {
-      title: "武器",
+      title: "ブキ",
       dataIndex: "weaponId",
       key: "weaponId",
       width: 200,
@@ -243,7 +243,7 @@ export function CreateMatchesPage() {
       ),
     },
     {
-      title: "バトルタイプ",
+      title: "バトル",
       dataIndex: "battleTypeId",
       key: "battleTypeId",
       width: 150,
@@ -308,11 +308,11 @@ export function CreateMatchesPage() {
                 }
                 // Get local date/time components and format as JST
                 const year = date.year();
-                const month = String(date.month() + 1).padStart(2, '0');
-                const day = String(date.date()).padStart(2, '0');
-                const hour = String(date.hour()).padStart(2, '0');
-                const minute = String(date.minute()).padStart(2, '0');
-                const second = String(date.second()).padStart(2, '0');
+                const month = String(date.month() + 1).padStart(2, "0");
+                const day = String(date.date()).padStart(2, "0");
+                const hour = String(date.hour()).padStart(2, "0");
+                const minute = String(date.minute()).padStart(2, "0");
+                const second = String(date.second()).padStart(2, "0");
                 field.onChange(`${year}-${month}-${day}T${hour}:${minute}:${second}+09:00`);
               }}
             />
@@ -383,7 +383,12 @@ export function CreateMatchesPage() {
           )}
 
           <Space style={{ marginTop: "24px" }}>
-            <Button htmlType="submit" variant="primary" icon={<SaveOutlined />} disabled={isCreating}>
+            <Button
+              htmlType="submit"
+              variant="primary"
+              icon={<SaveOutlined />}
+              disabled={isCreating}
+            >
               {isCreating ? "登録中..." : "登録する"}
             </Button>
             <Button

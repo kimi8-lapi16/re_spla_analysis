@@ -10,8 +10,13 @@ import { queryClient } from "./lib/query-client";
 import { router } from "./router";
 import { antdTheme } from "./theme";
 
-// Configure OpenAPI client with base URL and credentials
-configureApiClient();
+// Configure OpenAPI client with base URL, credentials, and logout handler
+configureApiClient(() => {
+  // Clear all cached queries on logout
+  queryClient.clear();
+  // Redirect to login page
+  router.navigate({ to: "/login", replace: true });
+});
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
