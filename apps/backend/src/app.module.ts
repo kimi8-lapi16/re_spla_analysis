@@ -5,6 +5,11 @@ import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
+import { MatchModule } from './match/match.module';
+import { WeaponModule } from './weapon/weapon.module';
+import { StageModule } from './stage/stage.module';
+import { RuleModule } from './rule/rule.module';
+import { BattleTypeModule } from './battle-type/battle-type.module';
 
 @Module({
   imports: [
@@ -14,6 +19,11 @@ import { AuthModule } from './auth/auth.module';
     PrismaModule,
     UserModule,
     AuthModule,
+    MatchModule,
+    WeaponModule,
+    StageModule,
+    RuleModule,
+    BattleTypeModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -319,19 +319,40 @@ This project follows a layered architecture pattern with clear separation of con
 | Multi-table write           | UseCase with transaction | `createUserUseCase.execute()`         |
 | Business logic + validation | Service                  | `userService.createUser()`            |
 
-### Testing Best Practices
+### TypeScript Best Practices
 
-#### Anti-Patterns to Avoid
+#### Type Safety Rules
 
-**NEVER use these patterns in test code:**
+**CRITICAL: NEVER use type assertions in production or test code**
 
-1. **Type Assertions (`as any`, `as unknown as Type`)**
+1. **Type Assertions (`as any`, `as unknown as Type`, `as SomeType`)**
+   - **Strictly forbidden** in all code (production and tests)
    - These bypass TypeScript's type system and hide real type issues
-   - Exception: Only when TypeScript's type inference has fundamental limitations
+   - **Exception**: Only when TypeScript's type inference has fundamental limitations (extremely rare)
 
    ```typescript
-   // ❌ Bad: Using 'as any' to bypass type errors
+   // ❌ Bad: Using type assertions
+   const user = request.user as CurrentUser;
    prismaService.user.create.mockResolvedValue(mockUser as any);
+   const data = response.data as UserData;
+
+   // ✅ Good: Use type guards
+   function isCurrentUser(user: unknown): user is CurrentUser {
+     return (
+       typeof user === 'object' &&
+       user !== null &&
+       'userId' in user &&
+       'email' in user &&
+       typeof user.userId === 'string' &&
+       typeof user.email === 'string'
+     );
+   }
+
+   const user: unknown = request.user;
+   if (!isCurrentUser(user)) {
+     return undefined;
+   }
+   // Now user is properly typed as CurrentUser
 
    // ✅ Good: Define proper types for mocks
    const mockUser: User = {
@@ -345,7 +366,29 @@ This project follows a layered architecture pattern with clear separation of con
    prismaService.user.create.mockResolvedValue(mockUser);
    ```
 
-2. **ESLint Disable Comments**
+2. **Type Guards**
+   - Always use type guards to narrow types safely
+   - Create reusable type guard functions for common patterns
+
+   ```typescript
+   // ✅ Good: Type guard pattern
+   function isValidResponse(data: unknown): data is ResponseType {
+     return (
+       typeof data === 'object' &&
+       data !== null &&
+       'status' in data &&
+       typeof data.status === 'number'
+     );
+   }
+
+   const response: unknown = await fetch(url);
+   if (!isValidResponse(response)) {
+     throw new Error('Invalid response');
+   }
+   // response is now properly typed as ResponseType
+   ```
+
+3. **ESLint Disable Comments**
    - Never use `// eslint-disable` or `// @ts-ignore` to suppress warnings
    - Fix the underlying issue instead
 
@@ -357,6 +400,15 @@ This project follows a layered architecture pattern with clear separation of con
    // ✅ Good: Fix the type issue properly
    const result: ExpectedType = someFunction();
    ```
+
+### Testing Best Practices
+
+#### Anti-Patterns to Avoid
+
+**NEVER use these patterns in test code:**
+
+1. **Type Assertions** - See TypeScript Best Practices section above
+2. **ESLint Disable Comments** - See TypeScript Best Practices section above
 
 #### Proper Mock Type Definitions
 
@@ -456,6 +508,40 @@ createUserUseCase.execute.mockRejectedValue(new InternalServerErrorException("Da
 // In this case, the function signature should be:
 // execute(): Promise<User | null>
 ```
+
+### API Response Format Rules
+
+**CRITICAL: ALL API responses MUST be JSON objects with named keys**
+
+API responses must NEVER return raw arrays or primitives. Always wrap responses in an object with descriptive keys.
+
+```typescript
+// ❌ Bad: Raw array response
+@Get()
+async getWeapons(): Promise<Weapon[]> {
+  return this.weaponService.findAll();
+}
+// Returns: [{ id: 1, name: "..." }, ...]
+
+// ✅ Good: Wrapped in object with key
+@Get()
+async getWeapons(): Promise<{ weapons: Weapon[] }> {
+  return this.weaponService.findAll();
+}
+// Returns: { weapons: [{ id: 1, name: "..." }, ...] }
+
+// ✅ Good: Other examples
+{ user: User }
+{ matches: Match[] }
+{ stages: Stage[] }
+{ success: boolean }
+{ count: number, items: Item[] }
+```
+
+**Rationale**:
+- Provides extensibility (can add metadata without breaking changes)
+- Makes response structure self-documenting
+- Consistent API design across all endpoints
 
 ### Frontend Stack
 

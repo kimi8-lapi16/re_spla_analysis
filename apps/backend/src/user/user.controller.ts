@@ -1,7 +1,7 @@
 import { Body, Controller, Post, Res, ValidationPipe } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
-import { AuthTokenResponseDto, CreateUserDto } from './dto';
+import { AuthTokenResponseDto, CreateUserDto } from './user.dto';
 import { UserService } from './user.service';
 
 @ApiTags('users')

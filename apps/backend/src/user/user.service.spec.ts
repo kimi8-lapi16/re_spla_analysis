@@ -9,7 +9,7 @@ import * as bcrypt from 'bcrypt';
 import { UserSecret } from 'generated/prisma/client';
 import { UserService } from './user.service';
 import { UserRepository } from './user.repository';
-import { CreateUserDto, UserWithSecret } from './dto';
+import { CreateUserDto, UserWithSecret } from './user.dto';
 import { UserUseCase } from './user.usecase';
 
 jest.mock('bcrypt');
