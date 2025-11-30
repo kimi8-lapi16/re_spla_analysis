@@ -7,7 +7,7 @@ import { WeaponRepository } from '../weapon/weapon.repository';
 import { StageRepository } from '../stage/stage.repository';
 import { BattleTypeRepository } from '../battle-type/battle-type.repository';
 import { PrismaService } from '../prisma/prisma.service';
-import { MatchData, MatchResult } from './dto';
+import { MatchData, MatchResult } from './match.dto';
 import { Rule, Weapon, Stage, BattleType } from 'generated/prisma/client';
 
 type MockPrismaService = {

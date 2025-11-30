@@ -3,9 +3,9 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { JwtPayload } from '../common/strategies/jwt.strategy';
-import { UserResponseDto } from '../user/dto';
+import { UserResponseDto } from '../user/user.dto';
 import { UserService } from '../user/user.service';
-import { LoginDto, ResponseWithCookie } from './dto';
+import { LoginDto, ResponseWithCookie } from './auth.dto';
 
 @Injectable()
 export class AuthService {

@@ -12,7 +12,7 @@ import { MatchService } from './match.service';
 import {
   BulkCreateMatchesRequest,
   BulkCreateMatchesResponse,
-} from './dto';
+} from './match.dto';
 
 @ApiTags('matches')
 @Controller('matches')

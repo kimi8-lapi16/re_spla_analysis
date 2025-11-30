@@ -5,7 +5,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import * as bcrypt from 'bcrypt';
 import { UserService } from '../user/user.service';
 import { AuthService } from './auth.service';
-import { LoginDto, ResponseWithCookie } from './dto';
+import { LoginDto, ResponseWithCookie } from './auth.dto';
 
 jest.mock('bcrypt');
 

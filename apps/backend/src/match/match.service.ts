@@ -3,7 +3,7 @@ import { MatchUseCase } from './match.usecase';
 import {
   BulkCreateMatchesRequest,
   BulkCreateMatchesResponse,
-} from './dto';
+} from './match.dto';
 
 @Injectable()
 export class MatchService {

@@ -5,7 +5,7 @@ import { RuleRepository } from '../rule/rule.repository';
 import { WeaponRepository } from '../weapon/weapon.repository';
 import { StageRepository } from '../stage/stage.repository';
 import { BattleTypeRepository } from '../battle-type/battle-type.repository';
-import { MatchData } from './dto';
+import { MatchData } from './match.dto';
 
 @Injectable()
 export class MatchUseCase {
