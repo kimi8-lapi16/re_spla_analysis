@@ -509,6 +509,40 @@ createUserUseCase.execute.mockRejectedValue(new InternalServerErrorException("Da
 // execute(): Promise<User | null>
 ```
 
+### API Response Format Rules
+
+**CRITICAL: ALL API responses MUST be JSON objects with named keys**
+
+API responses must NEVER return raw arrays or primitives. Always wrap responses in an object with descriptive keys.
+
+```typescript
+// ❌ Bad: Raw array response
+@Get()
+async getWeapons(): Promise<Weapon[]> {
+  return this.weaponService.findAll();
+}
+// Returns: [{ id: 1, name: "..." }, ...]
+
+// ✅ Good: Wrapped in object with key
+@Get()
+async getWeapons(): Promise<{ weapons: Weapon[] }> {
+  return this.weaponService.findAll();
+}
+// Returns: { weapons: [{ id: 1, name: "..." }, ...] }
+
+// ✅ Good: Other examples
+{ user: User }
+{ matches: Match[] }
+{ stages: Stage[] }
+{ success: boolean }
+{ count: number, items: Item[] }
+```
+
+**Rationale**:
+- Provides extensibility (can add metadata without breaking changes)
+- Makes response structure self-documenting
+- Consistent API design across all endpoints
+
 ### Frontend Stack
 
 - **Framework**: React 19
