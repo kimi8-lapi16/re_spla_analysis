@@ -139,4 +139,49 @@ describe('Auth API (e2e)', () => {
         .expect(400);
     });
   });
+
+  describe('POST /auth/refresh', () => {
+    let refreshToken: string;
+
+    beforeAll(async () => {
+      const loginResponse = await request(app.getHttpServer())
+        .post('/auth/login')
+        .send({
+          email: testUser.email,
+          password: testUser.password,
+        });
+
+      const cookies = loginResponse.headers['set-cookie'];
+      refreshToken = cookies[0].split(';')[0].split('=')[1];
+    });
+
+    it('should refresh access token with valid refresh token', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/auth/refresh')
+        .set('Cookie', [`refreshToken=${refreshToken}`])
+        .expect(201);
+
+      expect(response.body).toHaveProperty('accessToken');
+      expect(typeof response.body.accessToken).toBe('string');
+      expect(response.body.accessToken).toBeTruthy();
+    });
+
+    it('should return 401 with missing refresh token', async () => {
+      await request(app.getHttpServer()).post('/auth/refresh').expect(401);
+    });
+
+    it('should return 401 with invalid refresh token', async () => {
+      await request(app.getHttpServer())
+        .post('/auth/refresh')
+        .set('Cookie', ['refreshToken=invalid-token'])
+        .expect(401);
+    });
+
+    it('should return 401 with malformed refresh token', async () => {
+      await request(app.getHttpServer())
+        .post('/auth/refresh')
+        .set('Cookie', ['refreshToken=malformed.token.here'])
+        .expect(401);
+    });
+  });
 });

@@ -89,4 +89,9 @@ export class AuthService {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
   }
+
+  async refresh(userId: string) {
+    const { accessToken } = await this.generateTokens(userId);
+    return { accessToken };
+  }
 }

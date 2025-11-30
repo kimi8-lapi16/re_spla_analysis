@@ -67,3 +67,30 @@ export function useLogout() {
     },
   });
 }
+
+/**
+ * Hook for refreshing access token
+ *
+ * @example
+ * ```tsx
+ * const { mutateAsync: refresh } = useRefreshToken();
+ *
+ * const handleRefresh = async () => {
+ *   try {
+ *     const { accessToken } = await refresh();
+ *     // New token is automatically stored by the interceptor
+ *   } catch (error) {
+ *     console.error('Refresh failed:', error);
+ *   }
+ * };
+ * ```
+ */
+export function useRefreshToken() {
+  return useMutation({
+    mutationFn: () => AuthService.authControllerRefresh(),
+    onSuccess: (data) => {
+      // Store new access token
+      authUtils.setAccessToken(data.accessToken);
+    },
+  });
+}
