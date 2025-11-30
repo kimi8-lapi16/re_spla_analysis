@@ -40,6 +40,7 @@ export class MatchData {
     description: 'Match result',
     enum: MatchResult,
     example: MatchResult.WIN,
+    type: String,
   })
   @IsEnum(MatchResult)
   result: MatchResult;
@@ -47,6 +48,7 @@ export class MatchData {
   @ApiProperty({
     description: 'Game date and time (ISO8601)',
     example: '2024-11-24T10:30:00Z',
+    type: String,
   })
   @IsDateString()
   gameDateTime: string;
@@ -55,10 +57,11 @@ export class MatchData {
     description: 'Points earned',
     example: 1500,
     required: false,
+    type: Number,
   })
   @IsOptional()
   @IsInt()
-  @Min(0)
+  @Min(1)
   point?: number;
 }
 
@@ -74,6 +77,6 @@ export class BulkCreateMatchesRequest {
 }
 
 export class BulkCreateMatchesResponse {
-  @ApiProperty({ description: 'Operation success status', example: true })
+  @ApiProperty({ description: 'Operation success status', example: true, type: Boolean })
   success: boolean;
 }

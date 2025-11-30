@@ -1,39 +1,24 @@
 import { ApiProperty } from '@nestjs/swagger';
-
-export class SubWeaponResponse {
-  @ApiProperty({ example: 1 })
-  id: number;
-
-  @ApiProperty({ example: 'Splat Bomb' })
-  name: string;
-}
-
-export class SpecialWeaponResponse {
-  @ApiProperty({ example: 1 })
-  id: number;
-
-  @ApiProperty({ example: 'Trizooka' })
-  name: string;
-}
+import { SubWeapon, SpecialWeapon } from './weapon.entity';
 
 export class WeaponResponse {
-  @ApiProperty({ example: 1 })
+  @ApiProperty({ example: 1, type: Number })
   id: number;
 
-  @ApiProperty({ example: 'Splattershot' })
+  @ApiProperty({ example: 'Splattershot', type: String })
   name: string;
 
-  @ApiProperty({ example: 1 })
+  @ApiProperty({ example: 1, type: Number })
   subWeaponId: number;
 
-  @ApiProperty({ example: 1 })
+  @ApiProperty({ example: 1, type: Number })
   specialWeaponId: number;
 
-  @ApiProperty({ type: SubWeaponResponse })
-  subWeapon: SubWeaponResponse;
+  @ApiProperty({ type: () => SubWeapon })
+  subWeapon: SubWeapon;
 
-  @ApiProperty({ type: SpecialWeaponResponse })
-  specialWeapon: SpecialWeaponResponse;
+  @ApiProperty({ type: () => SpecialWeapon })
+  specialWeapon: SpecialWeapon;
 }
 
 export class GetWeaponsResponse {

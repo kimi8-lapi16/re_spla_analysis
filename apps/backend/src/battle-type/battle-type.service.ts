@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { BattleTypeRepository } from './battle-type.repository';
-import { GetBattleTypesResponse, BattleTypeResponse } from './battle-type.dto';
+import { GetBattleTypesResponse } from './battle-type.dto';
 
 @Injectable()
 export class BattleTypeService {
@@ -8,12 +8,6 @@ export class BattleTypeService {
 
   async findAll(): Promise<GetBattleTypesResponse> {
     const battleTypes = await this.battleTypeRepository.findAll();
-    const battleTypeResponses: BattleTypeResponse[] = battleTypes.map(
-      (battleType) => ({
-        id: battleType.id,
-        name: battleType.name,
-      }),
-    );
-    return { battleTypes: battleTypeResponses };
+    return { battleTypes };
   }
 }

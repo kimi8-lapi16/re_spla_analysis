@@ -4,14 +4,18 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { AppModule } from './app.module';
 
-// Import all DTOs that should be included in OpenAPI
+// Import all DTOs and entities that should be included in OpenAPI
 import { CreateUserDto, UserResponseDto, AuthTokenResponseDto } from './user/user.dto';
 import { LoginDto } from './auth/auth.dto';
 import { BulkCreateMatchesRequest, BulkCreateMatchesResponse, MatchData } from './match/match.dto';
-import { GetWeaponsResponse, WeaponResponse, SubWeaponResponse, SpecialWeaponResponse } from './weapon/weapon.dto';
-import { GetStagesResponse, StageResponse } from './stage/stage.dto';
-import { GetRulesResponse, RuleResponse } from './rule/rule.dto';
-import { GetBattleTypesResponse, BattleTypeResponse } from './battle-type/battle-type.dto';
+import { GetWeaponsResponse, WeaponResponse } from './weapon/weapon.dto';
+import { SubWeapon, SpecialWeapon } from './weapon/weapon.entity';
+import { GetStagesResponse } from './stage/stage.dto';
+import { Stage } from './stage/stage.entity';
+import { GetRulesResponse } from './rule/rule.dto';
+import { Rule } from './rule/rule.entity';
+import { GetBattleTypesResponse } from './battle-type/battle-type.dto';
+import { BattleType } from './battle-type/battle-type.entity';
 
 async function generateOpenApiSpec() {
   try {
@@ -40,14 +44,14 @@ async function generateOpenApiSpec() {
         MatchData,
         GetWeaponsResponse,
         WeaponResponse,
-        SubWeaponResponse,
-        SpecialWeaponResponse,
+        SubWeapon,
+        SpecialWeapon,
         GetStagesResponse,
-        StageResponse,
+        Stage,
         GetRulesResponse,
-        RuleResponse,
+        Rule,
         GetBattleTypesResponse,
-        BattleTypeResponse,
+        BattleType,
       ],
     });
 

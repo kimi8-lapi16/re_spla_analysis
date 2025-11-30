@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { Match } from 'generated/prisma/client';
+import { Match as PrismaMatch } from 'generated/prisma/client';
 import { PrismaTransaction } from 'src/prisma/prisma.types';
 import { PrismaService } from '../prisma/prisma.service';
+import { Match } from './match.entity';
 
 export interface CreateMatchData {
   userId: string;
@@ -18,6 +19,20 @@ export interface CreateMatchData {
 export class MatchRepository {
   constructor(private readonly prisma: PrismaService) {}
 
+  private toDomain(prismaMatch: PrismaMatch): Match {
+    return {
+      id: prismaMatch.id,
+      result: prismaMatch.result,
+      battleTypeId: prismaMatch.battleTypeId,
+      stageId: prismaMatch.stageId,
+      ruleId: prismaMatch.ruleId,
+      weaponId: prismaMatch.weaponId,
+      gameDateTime: prismaMatch.gameDateTime,
+      point: prismaMatch.point,
+      userId: prismaMatch.userId,
+    };
+  }
+
   async createMany(
     dataList: CreateMatchData[],
     tx?: PrismaTransaction,
@@ -29,15 +44,17 @@ export class MatchRepository {
   }
 
   async findById(id: string): Promise<Match | null> {
-    return this.prisma.match.findUnique({
+    const prismaMatch = await this.prisma.match.findUnique({
       where: { id },
     });
+    return prismaMatch ? this.toDomain(prismaMatch) : null;
   }
 
   async findByUserId(userId: string): Promise<Match[]> {
-    return this.prisma.match.findMany({
+    const prismaMatches = await this.prisma.match.findMany({
       where: { userId },
       orderBy: { gameDateTime: 'desc' },
     });
+    return prismaMatches.map((m) => this.toDomain(m));
   }
 }

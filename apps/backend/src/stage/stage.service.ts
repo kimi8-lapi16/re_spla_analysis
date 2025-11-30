@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { StageRepository } from './stage.repository';
-import { GetStagesResponse, StageResponse } from './stage.dto';
+import { GetStagesResponse } from './stage.dto';
 
 @Injectable()
 export class StageService {
@@ -8,10 +8,6 @@ export class StageService {
 
   async findAll(): Promise<GetStagesResponse> {
     const stages = await this.stageRepository.findAll();
-    const stageResponses: StageResponse[] = stages.map((stage) => ({
-      id: stage.id,
-      name: stage.name,
-    }));
-    return { stages: stageResponses };
+    return { stages };
   }
 }
