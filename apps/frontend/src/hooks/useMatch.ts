@@ -6,7 +6,7 @@ import {
   BattleTypesService,
   MatchesService
 } from '../api';
-import type { BulkCreateMatchesRequest } from '../api';
+import type { BulkCreateMatchesRequest, SearchMatchesRequest } from '../api';
 
 export function useWeapons() {
   return useQuery({
@@ -40,5 +40,13 @@ export function useBulkCreateMatches() {
   return useMutation({
     mutationFn: (data: BulkCreateMatchesRequest) =>
       MatchesService.matchControllerBulkCreateMatches(data),
+  });
+}
+
+export function useSearchMatches(searchParams: SearchMatchesRequest) {
+  return useQuery({
+    queryKey: ['matches', 'search', searchParams],
+    queryFn: () => MatchesService.matchControllerSearchMatches(searchParams),
+    enabled: !!searchParams.operator,
   });
 }
