@@ -9,6 +9,7 @@
 ### DB 初期化
 
 - `pnpm prisma migrate dev`
+- `pnpm run seed:local`
 
 ### 準備
 - `pnpm run api:generate`
