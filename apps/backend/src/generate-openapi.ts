@@ -4,6 +4,15 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { AppModule } from './app.module';
 
+// Import all DTOs that should be included in OpenAPI
+import { CreateUserDto, UserResponseDto, AuthTokenResponseDto } from './user/user.dto';
+import { LoginDto } from './auth/auth.dto';
+import { BulkCreateMatchesRequest, BulkCreateMatchesResponse, MatchData } from './match/match.dto';
+import { GetWeaponsResponse, WeaponResponse, SubWeaponResponse, SpecialWeaponResponse } from './weapon/weapon.dto';
+import { GetStagesResponse, StageResponse } from './stage/stage.dto';
+import { GetRulesResponse, RuleResponse } from './rule/rule.dto';
+import { GetBattleTypesResponse, BattleTypeResponse } from './battle-type/battle-type.dto';
+
 async function generateOpenApiSpec() {
   try {
     console.log('Creating NestJS application...');
@@ -20,7 +29,27 @@ async function generateOpenApiSpec() {
       .build();
 
     console.log('Generating OpenAPI document...');
-    const document = SwaggerModule.createDocument(app, config);
+    const document = SwaggerModule.createDocument(app, config, {
+      extraModels: [
+        CreateUserDto,
+        UserResponseDto,
+        AuthTokenResponseDto,
+        LoginDto,
+        BulkCreateMatchesRequest,
+        BulkCreateMatchesResponse,
+        MatchData,
+        GetWeaponsResponse,
+        WeaponResponse,
+        SubWeaponResponse,
+        SpecialWeaponResponse,
+        GetStagesResponse,
+        StageResponse,
+        GetRulesResponse,
+        RuleResponse,
+        GetBattleTypesResponse,
+        BattleTypeResponse,
+      ],
+    });
 
     const outputPath = path.resolve(__dirname, '../openapi.json');
     console.log(`Writing to: ${outputPath}`);

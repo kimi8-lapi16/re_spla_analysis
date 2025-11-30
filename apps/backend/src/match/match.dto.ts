@@ -16,22 +16,22 @@ export enum MatchResult {
 }
 
 export class MatchData {
-  @ApiProperty({ description: 'Rule ID', example: 1 })
+  @ApiProperty({ description: 'Rule ID', example: 1, type: Number })
   @IsInt()
   @Min(1)
   ruleId: number;
 
-  @ApiProperty({ description: 'Weapon ID', example: 1 })
+  @ApiProperty({ description: 'Weapon ID', example: 1, type: Number })
   @IsInt()
   @Min(1)
   weaponId: number;
 
-  @ApiProperty({ description: 'Stage ID', example: 1 })
+  @ApiProperty({ description: 'Stage ID', example: 1, type: Number })
   @IsInt()
   @Min(1)
   stageId: number;
 
-  @ApiProperty({ description: 'Battle Type ID', example: 1 })
+  @ApiProperty({ description: 'Battle Type ID', example: 1, type: Number })
   @IsInt()
   @Min(1)
   battleTypeId: number;
