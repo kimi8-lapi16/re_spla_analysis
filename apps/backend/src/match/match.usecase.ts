@@ -6,6 +6,7 @@ import { WeaponRepository } from '../weapon/weapon.repository';
 import { StageRepository } from '../stage/stage.repository';
 import { BattleTypeRepository } from '../battle-type/battle-type.repository';
 import { MatchData } from './match.dto';
+import { parseIsoStringAsLocalTime } from '../common/utils/date.util';
 
 @Injectable()
 export class MatchUseCase {
@@ -34,7 +35,7 @@ export class MatchUseCase {
         stageId,
         battleTypeId,
         result,
-        gameDateTime: new Date(gameDateTime),
+        gameDateTime: parseIsoStringAsLocalTime(gameDateTime),
         point: point ?? null,
       }),
     );
