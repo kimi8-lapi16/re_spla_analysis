@@ -18,13 +18,11 @@ import { MatchData } from "../api";
 import { MainLayout } from "../components/layouts/MainLayout";
 import { Button } from "../components/ui";
 import { useNotification } from "../contexts/NotificationContext";
-import {
-  useBattleTypes,
-  useBulkCreateMatches,
-  useRules,
-  useStages,
-  useWeapons,
-} from "../hooks/useMatch";
+import { useBattleTypes } from "../hooks/useBattleType";
+import { useBulkCreateMatches } from "../hooks/useMatch";
+import { useRules } from "../hooks/useRule";
+import { useStages } from "../hooks/useStage";
+import { useWeapons } from "../hooks/useWeapon";
 
 const matchSchema = z.object({
   matches: z
@@ -48,10 +46,10 @@ export function CreateMatchesPage() {
   const navigate = useNavigate();
   const notification = useNotification();
 
-  const { data: weaponsData, isLoading: isLoadingWeapons } = useWeapons();
-  const { data: stagesData, isLoading: isLoadingStages } = useStages();
-  const { data: rulesData, isLoading: isLoadingRules } = useRules();
-  const { data: battleTypesData, isLoading: isLoadingBattleTypes } = useBattleTypes();
+  const { data: weapons, isLoading: isLoadingWeapons } = useWeapons();
+  const { data: stages, isLoading: isLoadingStages } = useStages();
+  const { data: rules, isLoading: isLoadingRules } = useRules();
+  const { data: battleTypes, isLoading: isLoadingBattleTypes } = useBattleTypes();
   const { mutate: createMatches, isPending: isCreating } = useBulkCreateMatches();
 
   const {
@@ -185,7 +183,7 @@ export function CreateMatchesPage() {
               status={errors.matches?.[index]?.weaponId ? "error" : ""}
               showSearch
               optionFilterProp="label"
-              options={weaponsData?.weapons.map((w) => ({
+              options={weapons?.map((w) => ({
                 value: w.id,
                 label: w.name,
               }))}
@@ -211,7 +209,7 @@ export function CreateMatchesPage() {
               status={errors.matches?.[index]?.stageId ? "error" : ""}
               showSearch
               optionFilterProp="label"
-              options={stagesData?.stages.map((s) => ({
+              options={stages?.map((s) => ({
                 value: s.id,
                 label: s.name,
               }))}
@@ -235,7 +233,7 @@ export function CreateMatchesPage() {
               style={{ width: "100%" }}
               placeholder="選択してください"
               status={errors.matches?.[index]?.ruleId ? "error" : ""}
-              options={rulesData?.rules.map((r) => ({
+              options={rules?.map((r) => ({
                 value: r.id,
                 label: r.name,
               }))}
@@ -259,7 +257,7 @@ export function CreateMatchesPage() {
               style={{ width: "100%" }}
               placeholder="選択してください"
               status={errors.matches?.[index]?.battleTypeId ? "error" : ""}
-              options={battleTypesData?.battleTypes.map((bt) => ({
+              options={battleTypes?.map((bt) => ({
                 value: bt.id,
                 label: bt.name,
               }))}
