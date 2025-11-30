@@ -57,4 +57,78 @@ export class MatchRepository {
     });
     return prismaMatches.map((m) => this.toDomain(m));
   }
+
+  async searchMatches(params: {
+    userId: string;
+    weaponIds?: number[];
+    stageIds?: number[];
+    ruleIds?: number[];
+    battleTypeIds?: number[];
+    results?: string[];
+    startDateTime?: Date;
+    endDateTime?: Date;
+    operator: 'AND' | 'OR';
+    skip: number;
+    take: number;
+  }): Promise<{ matches: Match[]; total: number }> {
+    const {
+      userId,
+      weaponIds,
+      stageIds,
+      ruleIds,
+      battleTypeIds,
+      results,
+      startDateTime,
+      endDateTime,
+      operator,
+      skip,
+      take,
+    } = params;
+
+    const conditions: Array<Record<string, unknown>> = [];
+
+    if (weaponIds && weaponIds.length > 0) {
+      conditions.push({ weaponId: { in: weaponIds } });
+    }
+    if (stageIds && stageIds.length > 0) {
+      conditions.push({ stageId: { in: stageIds } });
+    }
+    if (ruleIds && ruleIds.length > 0) {
+      conditions.push({ ruleId: { in: ruleIds } });
+    }
+    if (battleTypeIds && battleTypeIds.length > 0) {
+      conditions.push({ battleTypeId: { in: battleTypeIds } });
+    }
+    if (results && results.length > 0) {
+      conditions.push({ result: { in: results } });
+    }
+    if (startDateTime) {
+      conditions.push({ gameDateTime: { gte: startDateTime } });
+    }
+    if (endDateTime) {
+      conditions.push({ gameDateTime: { lte: endDateTime } });
+    }
+
+    const where =
+      conditions.length === 0
+        ? { userId }
+        : operator === 'AND'
+          ? { AND: [{ userId }, ...conditions] }
+          : { AND: [{ userId }, { OR: conditions }] };
+
+    const [prismaMatches, total] = await Promise.all([
+      this.prisma.match.findMany({
+        where,
+        orderBy: { gameDateTime: 'desc' },
+        skip,
+        take,
+      }),
+      this.prisma.match.count({ where }),
+    ]);
+
+    return {
+      matches: prismaMatches.map((m) => this.toDomain(m)),
+      total,
+    };
+  }
 }

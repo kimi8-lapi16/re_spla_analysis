@@ -12,6 +12,8 @@ import { MatchService } from './match.service';
 import {
   BulkCreateMatchesRequest,
   BulkCreateMatchesResponse,
+  SearchMatchesRequest,
+  SearchMatchesResponse,
 } from './match.dto';
 
 @ApiTags('matches')
@@ -39,5 +41,27 @@ export class MatchController {
     @Body() request: BulkCreateMatchesRequest,
   ): Promise<BulkCreateMatchesResponse> {
     return this.matchService.bulkCreateMatches(userId, request);
+  }
+
+  @Post('search')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Search matches with filters' })
+  @ApiBody({ type: SearchMatchesRequest })
+  @ApiResponse({
+    status: 200,
+    description: 'Matches found successfully',
+    type: SearchMatchesResponse,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid search parameters',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async searchMatches(
+    @GetCurrentUser('userId') userId: string,
+    @Body() request: SearchMatchesRequest,
+  ): Promise<SearchMatchesResponse> {
+    return this.matchService.searchMatches(userId, request);
   }
 }
