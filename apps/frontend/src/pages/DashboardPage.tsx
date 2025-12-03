@@ -1,18 +1,9 @@
 import { Card } from "antd";
-import { useNavigate } from "@tanstack/react-router";
-import { MainLayout } from "../components/layouts/MainLayout";
-import { authUtils } from "../utils/auth";
+import { MainLayout } from "../components/layout/MainLayout";
 
 export function DashboardPage() {
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    authUtils.removeAccessToken();
-    navigate({ to: "/login" });
-  };
-
   return (
-    <MainLayout onLogout={handleLogout}>
+    <MainLayout>
       <div
         style={{
           display: "flex",

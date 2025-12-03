@@ -1,7 +1,25 @@
-import { Body, Controller, Post, Res, ValidationPipe } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Get,
+  Put,
+  Post,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
-import { AuthTokenResponseDto, CreateUserDto } from './user.dto';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import {
+  CurrentUser,
+  GetCurrentUser,
+} from '../common/decorators/current-user.decorator';
+import {
+  AuthTokenResponse,
+  CreateUser,
+  UpdateUser,
+  UserDataResponse,
+} from './user.dto';
 import { UserService } from './user.service';
 
 @ApiTags('users')
@@ -10,20 +28,11 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Create a new user account' })
-  @ApiBody({ type: CreateUserDto })
-  @ApiResponse({
-    status: 201,
-    description: 'User successfully created',
-    type: AuthTokenResponseDto,
-  })
-  @ApiResponse({ status: 400, description: 'Invalid input data' })
-  @ApiResponse({ status: 409, description: 'Email already exists' })
+  @ApiBody({ type: CreateUser })
   async createUser(
-    @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
-    dto: CreateUserDto,
+    @Body() dto: CreateUser,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<AuthTokenResponseDto> {
+  ): Promise<AuthTokenResponse> {
     const user = await this.userService.createUser(dto);
 
     const { accessToken, refreshToken } = await this.userService.generateTokens(
@@ -42,5 +51,30 @@ export class UserController {
       accessToken,
       user,
     };
+  }
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async getMe(
+    @GetCurrentUser() currentUser: CurrentUser,
+  ): Promise<UserDataResponse> {
+    const user = await this.userService.findById(currentUser.userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+    return { user };
+  }
+
+  @Put('me')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiBody({ type: UpdateUser })
+  async updateMe(
+    @GetCurrentUser() currentUser: CurrentUser,
+    @Body() dto: UpdateUser,
+  ): Promise<UserDataResponse> {
+    const user = await this.userService.updateUser(currentUser.userId, dto);
+    return { user };
   }
 }

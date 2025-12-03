@@ -2,12 +2,13 @@ import {
   Injectable,
   ConflictException,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { UserRepository } from './user.repository';
-import { CreateUserDto, UserResponseDto } from './user.dto';
+import { CreateUser, UpdateUser, UserResponse } from './user.dto';
 import { UserUseCase } from './user.usecase';
 
 @Injectable()
@@ -19,7 +20,7 @@ export class UserService {
     private readonly configService: ConfigService,
   ) {}
 
-  async createUser(dto: CreateUserDto): Promise<UserResponseDto> {
+  async createUser(dto: CreateUser): Promise<UserResponse> {
     const existingUser = await this.userRepository.findByEmail(dto.email);
     if (existingUser) {
       throw new ConflictException('Email already exists');
@@ -44,12 +45,42 @@ export class UserService {
     return this.userUseCase.findUserWithSecretByEmail(email);
   }
 
-  async findById(id: string): Promise<UserResponseDto | null> {
+  async findById(id: string): Promise<UserResponse | null> {
     const user = await this.userRepository.findById(id);
     if (!user) {
       return null;
     }
     return this.toUserResponse(user);
+  }
+
+  async updateUser(
+    userId: string,
+    dto: UpdateUser,
+  ): Promise<UserResponse> {
+    const existingUser = await this.userRepository.findById(userId);
+    if (!existingUser) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (dto.email && dto.email !== existingUser.email) {
+      const userWithEmail = await this.userRepository.findByEmail(dto.email);
+      if (userWithEmail) {
+        throw new ConflictException('Email already exists');
+      }
+    }
+
+    let hashedPassword: string | undefined;
+    if (dto.password) {
+      hashedPassword = await bcrypt.hash(dto.password, 10);
+    }
+
+    const updatedUser = await this.userUseCase.updateUserWithSecret(userId, {
+      name: dto.name,
+      email: dto.email,
+      password: hashedPassword,
+    });
+
+    return this.toUserResponse(updatedUser);
   }
 
   async generateTokens(userId: string, email: string) {
@@ -77,7 +108,7 @@ export class UserService {
     email: string;
     createdAt: Date;
     updatedAt: Date;
-  }): UserResponseDto {
+  }): UserResponse {
     return {
       id: user.id,
       name: user.name,

@@ -5,7 +5,7 @@ import * as path from 'path';
 import { AppModule } from './app.module';
 
 // Import all DTOs and entities that should be included in OpenAPI
-import { CreateUserDto, UserResponseDto, AuthTokenResponseDto } from './user/user.dto';
+import { CreateUser, UserResponse, AuthTokenResponse } from './user/user.dto';
 import { LoginDto } from './auth/auth.dto';
 import { BulkCreateMatchesRequest, BulkCreateMatchesResponse, MatchData } from './match/match.dto';
 import { GetWeaponsResponse, WeaponResponse } from './weapon/weapon.dto';
@@ -35,9 +35,9 @@ async function generateOpenApiSpec() {
     console.log('Generating OpenAPI document...');
     const document = SwaggerModule.createDocument(app, config, {
       extraModels: [
-        CreateUserDto,
-        UserResponseDto,
-        AuthTokenResponseDto,
+        CreateUser,
+        UserResponse,
+        AuthTokenResponse,
         LoginDto,
         BulkCreateMatchesRequest,
         BulkCreateMatchesResponse,

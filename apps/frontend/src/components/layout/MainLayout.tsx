@@ -1,25 +1,33 @@
 import { Layout, Menu } from "antd";
 import { type ReactNode, useState } from "react";
-import { DashboardOutlined, MenuFoldOutlined, MenuUnfoldOutlined, TrophyOutlined } from "@ant-design/icons";
+import { DashboardOutlined, MenuFoldOutlined, MenuUnfoldOutlined, TrophyOutlined, UserOutlined } from "@ant-design/icons";
 import { useNavigate, useLocation } from "@tanstack/react-router";
-import { Header } from "../Header";
-import { Footer } from "../Footer";
+import { Header } from "./Header";
+import { Footer } from "./Footer";
+import { authUtils } from "../../utils/auth";
 
 const { Sider, Content } = Layout;
 
 interface MainLayoutProps {
   children: ReactNode;
-  onLogout?: () => void;
 }
 
-export const MainLayout = ({ children, onLogout }: MainLayoutProps) => {
+export const MainLayout = ({ children }: MainLayoutProps) => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
+  const handleLogout = () => {
+    authUtils.removeAccessToken();
+    navigate({ to: "/login" });
+  };
+
   const getSelectedKey = () => {
     if (location.pathname.startsWith('/matches')) {
       return 'matches';
+    }
+    if (location.pathname === '/my-page') {
+      return 'my-page';
     }
     if (location.pathname === '/dashboard') {
       return 'dashboard';
@@ -29,7 +37,7 @@ export const MainLayout = ({ children, onLogout }: MainLayoutProps) => {
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
-      <Header onLogout={onLogout} />
+      <Header onLogout={handleLogout} />
       <Layout>
         <Sider
           collapsible
@@ -75,6 +83,12 @@ export const MainLayout = ({ children, onLogout }: MainLayoutProps) => {
                 icon: <TrophyOutlined />,
                 label: "Matches",
                 onClick: () => navigate({ to: "/matches" }),
+              },
+              {
+                key: "my-page",
+                icon: <UserOutlined />,
+                label: "My Page",
+                onClick: () => navigate({ to: "/my-page" }),
               },
             ]}
           />

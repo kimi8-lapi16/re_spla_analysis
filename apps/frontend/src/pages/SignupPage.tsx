@@ -7,8 +7,8 @@ import { useNavigate, Link } from "@tanstack/react-router";
 import { useCreateUser } from "../hooks/useUser";
 import { useNotification } from "../contexts/NotificationContext";
 import { authUtils } from "../utils/auth";
-import { AuthLayout } from "../components/layouts/AuthLayout";
-import { Button, Card, Input } from "../components/ui";
+import { AuthLayout } from "../components/layout/AuthLayout";
+import { Button, Card, Input } from "../components/base";
 
 const registerSchema = z.object({
   name: z.string().min(1, "名前は必須です"),

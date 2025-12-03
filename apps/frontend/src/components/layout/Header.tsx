@@ -1,8 +1,8 @@
-import { Layout } from "antd";
 import { LogoutOutlined } from "@ant-design/icons";
-import { authUtils } from "../utils/auth";
-import { Button } from "./ui";
-import { colors } from "../theme";
+import { Layout } from "antd";
+import { colors } from "../../theme/colors";
+import { authUtils } from "../../utils/auth";
+import { Button } from "../base";
 
 const { Header: AntHeader } = Layout;
 

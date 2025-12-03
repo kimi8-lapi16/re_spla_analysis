@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import {
   ConflictException,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -9,7 +10,7 @@ import * as bcrypt from 'bcrypt';
 import { UserSecret } from 'generated/prisma/client';
 import { UserService } from './user.service';
 import { UserRepository } from './user.repository';
-import { CreateUserDto, UserWithSecret } from './user.dto';
+import { CreateUser, UpdateUser, UserWithSecret } from './user.dto';
 import { UserUseCase } from './user.usecase';
 
 jest.mock('bcrypt');
@@ -43,6 +44,7 @@ describe('UserService', () => {
           useValue: {
             findByEmail: jest.fn(),
             findById: jest.fn(),
+            update: jest.fn(),
           },
         },
         {
@@ -51,6 +53,7 @@ describe('UserService', () => {
             createUserWithSecret: jest.fn(),
             findUserWithSecretByEmail: jest.fn(),
             findUserWithSecretById: jest.fn(),
+            updateUserWithSecret: jest.fn(),
           },
         },
         {
@@ -78,7 +81,7 @@ describe('UserService', () => {
   });
 
   describe('createUser', () => {
-    const createUserDto: CreateUserDto = {
+    const createUser: CreateUser = {
       name: 'Test User',
       email: 'test@example.com',
       password: 'password123',
@@ -89,7 +92,7 @@ describe('UserService', () => {
       userUseCase.createUserWithSecret.mockResolvedValue(mockUser);
       (bcrypt.hash as jest.Mock).mockResolvedValue('hashed-password');
 
-      const result = await service.createUser(createUserDto);
+      const result = await service.createUser(createUser);
 
       expect(result).toEqual({
         id: mockUser.id,
@@ -118,10 +121,10 @@ describe('UserService', () => {
       };
       repository.findByEmail.mockResolvedValue(existingUser);
 
-      await expect(service.createUser(createUserDto)).rejects.toThrow(
+      await expect(service.createUser(createUser)).rejects.toThrow(
         ConflictException,
       );
-      await expect(service.createUser(createUserDto)).rejects.toThrow(
+      await expect(service.createUser(createUser)).rejects.toThrow(
         'Email already exists',
       );
 
@@ -137,7 +140,7 @@ describe('UserService', () => {
       );
       (bcrypt.hash as jest.Mock).mockResolvedValue('hashed-password');
 
-      await expect(service.createUser(createUserDto)).rejects.toThrow(
+      await expect(service.createUser(createUser)).rejects.toThrow(
         InternalServerErrorException,
       );
     });
@@ -147,7 +150,7 @@ describe('UserService', () => {
       userUseCase.createUserWithSecret.mockResolvedValue(mockUser);
       (bcrypt.hash as jest.Mock).mockResolvedValue('super-hashed-password');
 
-      await service.createUser(createUserDto);
+      await service.createUser(createUser);
 
       expect(bcrypt.hash).toHaveBeenCalledWith('password123', 10);
       expect(userUseCase.createUserWithSecret).toHaveBeenCalledWith(
@@ -214,6 +217,126 @@ describe('UserService', () => {
 
       expect(result).toBeNull();
       expect(repository.findById).toHaveBeenCalledWith('non-existent-id');
+    });
+  });
+
+  describe('updateUser', () => {
+    const mockUserWithoutSecret = {
+      id: 'test-user-id',
+      name: 'Test User',
+      email: 'test@example.com',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
+    };
+
+    const updateUser: UpdateUser = {
+      name: 'Updated User',
+    };
+
+    it('should successfully update user name', async () => {
+      repository.findById.mockResolvedValue(mockUserWithoutSecret);
+      const updatedUser = {
+        ...mockUserWithoutSecret,
+        name: 'Updated User',
+        secret: null,
+      };
+      userUseCase.updateUserWithSecret.mockResolvedValue(updatedUser);
+
+      const result = await service.updateUser('test-user-id', updateUser);
+
+      expect(result).toEqual({
+        id: updatedUser.id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        createdAt: updatedUser.createdAt,
+        updatedAt: updatedUser.updatedAt,
+      });
+      expect(repository.findById).toHaveBeenCalledWith('test-user-id');
+      expect(userUseCase.updateUserWithSecret).toHaveBeenCalledWith(
+        'test-user-id',
+        {
+          name: 'Updated User',
+          email: undefined,
+          password: undefined,
+        },
+      );
+    });
+
+    it('should successfully update user email when email is not taken', async () => {
+      repository.findById.mockResolvedValue(mockUserWithoutSecret);
+      repository.findByEmail.mockResolvedValue(null);
+      const updatedUser = {
+        ...mockUserWithoutSecret,
+        email: 'newemail@example.com',
+        secret: null,
+      };
+      userUseCase.updateUserWithSecret.mockResolvedValue(updatedUser);
+
+      const result = await service.updateUser('test-user-id', {
+        email: 'newemail@example.com',
+      });
+
+      expect(result.email).toBe('newemail@example.com');
+      expect(repository.findByEmail).toHaveBeenCalledWith(
+        'newemail@example.com',
+      );
+      expect(userUseCase.updateUserWithSecret).toHaveBeenCalled();
+    });
+
+    it('should throw NotFoundException if user does not exist', async () => {
+      repository.findById.mockResolvedValue(null);
+
+      await expect(
+        service.updateUser('non-existent-id', updateUser),
+      ).rejects.toThrow(NotFoundException);
+      await expect(
+        service.updateUser('non-existent-id', updateUser),
+      ).rejects.toThrow('User not found');
+
+      expect(repository.findById).toHaveBeenCalledWith('non-existent-id');
+      expect(userUseCase.updateUserWithSecret).not.toHaveBeenCalled();
+    });
+
+    it('should throw ConflictException if new email already exists', async () => {
+      repository.findById.mockResolvedValue(mockUserWithoutSecret);
+      const existingUser = {
+        id: 'another-user-id',
+        name: 'Another User',
+        email: 'taken@example.com',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        deletedAt: null,
+      };
+      repository.findByEmail.mockResolvedValue(existingUser);
+
+      await expect(
+        service.updateUser('test-user-id', { email: 'taken@example.com' }),
+      ).rejects.toThrow(ConflictException);
+      await expect(
+        service.updateUser('test-user-id', { email: 'taken@example.com' }),
+      ).rejects.toThrow('Email already exists');
+
+      expect(repository.findByEmail).toHaveBeenCalledWith('taken@example.com');
+      expect(userUseCase.updateUserWithSecret).not.toHaveBeenCalled();
+    });
+
+    it('should not check email availability if email is not being changed', async () => {
+      repository.findById.mockResolvedValue(mockUserWithoutSecret);
+      const mockUserWithSecretNull = {
+        ...mockUserWithoutSecret,
+        secret: null,
+      };
+      userUseCase.updateUserWithSecret.mockResolvedValue(
+        mockUserWithSecretNull,
+      );
+
+      await service.updateUser('test-user-id', {
+        email: 'test@example.com',
+      });
+
+      expect(repository.findByEmail).not.toHaveBeenCalled();
+      expect(userUseCase.updateUserWithSecret).toHaveBeenCalled();
     });
   });
 });

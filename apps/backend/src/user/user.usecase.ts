@@ -70,4 +70,36 @@ export class UserUseCase {
       secret,
     };
   }
+
+  async updateUserWithSecret(
+    userId: string,
+    data: {
+      name?: string;
+      email?: string;
+      password?: string;
+    },
+  ): Promise<UserWithSecret> {
+    return this.prisma.$transaction(async (tx) => {
+      const user = await this.userRepository.update(
+        userId,
+        {
+          name: data.name,
+          email: data.email,
+        },
+        tx,
+      );
+
+      let secret: { userId: string; password: string } | null = null;
+      if (data.password) {
+        secret = await this.userSecretRepository.update(userId, data.password);
+      } else {
+        secret = await this.userSecretRepository.findByUserId(userId);
+      }
+
+      return {
+        ...user,
+        secret,
+      };
+    });
+  }
 }
