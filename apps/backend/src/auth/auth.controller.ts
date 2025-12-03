@@ -15,7 +15,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
-import { AuthTokenResponseDto } from '../user/user.dto';
+import { AuthTokenResponse } from '../user/user.dto';
 import { JwtRefreshGuard } from '../common/guards/jwt-refresh.guard';
 import { AuthService } from './auth.service';
 import { LoginDto, RefreshTokenResponseDto } from './auth.dto';
@@ -31,14 +31,14 @@ export class AuthController {
   @ApiResponse({
     status: 201,
     description: 'User successfully logged in',
-    type: AuthTokenResponseDto,
+    type: AuthTokenResponse,
   })
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
   async login(
     @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
     dto: LoginDto,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<AuthTokenResponseDto> {
+  ): Promise<AuthTokenResponse> {
     const { user, accessToken, refreshToken } =
       await this.authService.login(dto);
 

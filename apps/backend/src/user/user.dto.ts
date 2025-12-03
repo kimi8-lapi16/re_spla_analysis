@@ -1,8 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
 import { User, UserSecret } from './user.entity';
 
-export class CreateUserDto {
+export class CreateUser {
   @ApiProperty({
     description: 'User name',
     example: 'John Doe',
@@ -32,7 +38,7 @@ export class CreateUserDto {
   password: string;
 }
 
-export class UserResponseDto {
+export class UserResponse {
   @ApiProperty({
     description: 'User ID',
     example: 'clx1234567890abcdefg',
@@ -69,7 +75,50 @@ export class UserResponseDto {
   updatedAt: Date;
 }
 
-export class AuthTokenResponseDto {
+export class UpdateUser {
+  @ApiProperty({
+    description: 'User name',
+    example: 'John Doe',
+    type: String,
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  name?: string;
+
+  @ApiProperty({
+    description: 'User email address',
+    example: 'john.doe@example.com',
+    type: String,
+    required: false,
+  })
+  @IsOptional()
+  @IsEmail()
+  email?: string;
+
+  @ApiProperty({
+    description: 'User password (minimum 8 characters)',
+    example: 'newSecurePassword123',
+    minLength: 8,
+    type: String,
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  @MinLength(8)
+  password?: string;
+}
+
+export class UserDataResponse {
+  @ApiProperty({
+    description: 'User information',
+    type: () => UserResponse,
+  })
+  user: UserResponse;
+}
+
+export class AuthTokenResponse {
   @ApiProperty({
     description: 'JWT access token',
     example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
@@ -79,9 +128,9 @@ export class AuthTokenResponseDto {
 
   @ApiProperty({
     description: 'User information',
-    type: () => UserResponseDto,
+    type: () => UserResponse,
   })
-  user: UserResponseDto;
+  user: UserResponse;
 }
 
 export type UserWithSecret = User & { secret: UserSecret | null };

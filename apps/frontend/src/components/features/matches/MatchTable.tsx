@@ -2,11 +2,11 @@ import { Empty, Spin, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 import { useMemo } from "react";
-import type { MatchResponse } from "../api";
-import { useBattleTypes } from "../hooks/useBattleType";
-import { useRules } from "../hooks/useRule";
-import { useStages } from "../hooks/useStage";
-import { useWeapons } from "../hooks/useWeapon";
+import type { MatchResponse } from "../../../api";
+import { useBattleTypes } from "../../../hooks/useBattleType";
+import { useRules } from "../../../hooks/useRule";
+import { useStages } from "../../../hooks/useStage";
+import { useWeapons } from "../../../hooks/useWeapon";
 
 type MatchTableProps = {
   matches?: MatchResponse[];
@@ -27,18 +27,9 @@ export function MatchTable({ matches, isLoading, pagination }: MatchTableProps) 
   const { data: rules } = useRules();
   const { data: battleTypes } = useBattleTypes();
 
-  const weaponMap = useMemo(
-    () => new Map(weapons?.map((w) => [w.id, w.name])),
-    [weapons]
-  );
-  const stageMap = useMemo(
-    () => new Map(stages?.map((s) => [s.id, s.name])),
-    [stages]
-  );
-  const ruleMap = useMemo(
-    () => new Map(rules?.map((r) => [r.id, r.name])),
-    [rules]
-  );
+  const weaponMap = useMemo(() => new Map(weapons?.map((w) => [w.id, w.name])), [weapons]);
+  const stageMap = useMemo(() => new Map(stages?.map((s) => [s.id, s.name])), [stages]);
+  const ruleMap = useMemo(() => new Map(rules?.map((r) => [r.id, r.name])), [rules]);
   const battleTypeMap = useMemo(
     () => new Map(battleTypes?.map((bt) => [bt.id, bt.name])),
     [battleTypes]

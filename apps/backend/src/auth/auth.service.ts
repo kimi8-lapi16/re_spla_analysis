@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { JwtPayload } from '../common/strategies/jwt.strategy';
-import { UserResponseDto } from '../user/user.dto';
+import { UserResponse } from '../user/user.dto';
 import { UserService } from '../user/user.service';
 import { LoginDto, ResponseWithCookie } from './auth.dto';
 
@@ -18,7 +18,7 @@ export class AuthService {
   async validateUser(
     email: string,
     password: string,
-  ): Promise<UserResponseDto> {
+  ): Promise<UserResponse> {
     const user = await this.userService.findByEmail(email);
 
     if (!user || !user.secret) {

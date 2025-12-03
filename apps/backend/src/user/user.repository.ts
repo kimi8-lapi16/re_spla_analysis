@@ -50,8 +50,10 @@ export class UserRepository {
   async update(
     id: string,
     data: { name?: string; email?: string },
+    tx?: PrismaTransaction,
   ): Promise<User> {
-    const prismaUser = await this.prisma.user.update({
+    const client = tx ?? this.prisma;
+    const prismaUser = await client.user.update({
       where: { id },
       data,
     });

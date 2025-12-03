@@ -1,6 +1,30 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { UsersService } from "../api";
-import type { CreateUserDto } from "../api";
+import type { CreateUser, UpdateUser } from "../api";
+
+/**
+ * Hook for fetching current user data
+ */
+export function useCurrentUser() {
+  return useQuery({
+    queryKey: ["currentUser"],
+    queryFn: () => UsersService.userControllerGetMe(),
+  });
+}
+
+/**
+ * Hook for updating current user
+ */
+export function useUpdateUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: UpdateUser) => UsersService.userControllerUpdateMe(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+    },
+  });
+}
 
 /**
  * Hook for creating a new user account
@@ -34,7 +58,7 @@ export function useCreateUser() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (userData: CreateUserDto) => UsersService.userControllerCreateUser(userData),
+    mutationFn: (userData: CreateUser) => UsersService.userControllerCreateUser(userData),
     onSuccess: () => {
       // Token is stored by the caller (SignupPage component)
       // Invalidate and refetch user-related queries

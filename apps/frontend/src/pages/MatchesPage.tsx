@@ -4,10 +4,10 @@ import { Flex, Space, Typography } from "antd";
 import { Dayjs } from "dayjs";
 import { useMemo, useState } from "react";
 import { SearchMatchesRequest } from "../api";
-import { MatchSearchFilters } from "../components/MatchSearchFilters";
-import { MatchTable } from "../components/MatchTable";
-import { MainLayout } from "../components/layouts/MainLayout";
-import { Button } from "../components/ui";
+import { MatchSearchFilters } from "../components/features/matches/MatchSearchFilters";
+import { MatchTable } from "../components/features/matches/MatchTable";
+import { MainLayout } from "../components/layout/MainLayout";
+import { Button } from "../components/base";
 import { useSearchMatches } from "../hooks/useMatch";
 
 const { Title } = Typography;

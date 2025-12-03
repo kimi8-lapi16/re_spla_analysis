@@ -5,6 +5,7 @@ import { SignupPage } from "./pages/SignupPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { MatchesPage } from "./pages/MatchesPage";
 import { CreateMatchesPage } from "./pages/CreateMatchesPage";
+import { MyPage } from "./pages/MyPage";
 
 const rootRoute = createRootRoute({});
 
@@ -75,6 +76,17 @@ const matchesNewRoute = createRoute({
   component: CreateMatchesPage,
 });
 
+const myPageRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/my-page",
+  beforeLoad: () => {
+    if (!authUtils.isAuthenticated()) {
+      throw redirect({ to: "/login", replace: true });
+    }
+  },
+  component: MyPage,
+});
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   loginRoute,
@@ -82,6 +94,7 @@ const routeTree = rootRoute.addChildren([
   dashboardRoute,
   matchesRoute,
   matchesNewRoute,
+  myPageRoute,
 ]);
 
 export const router = createRouter({ routeTree });
