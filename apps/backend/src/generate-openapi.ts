@@ -7,7 +7,7 @@ import { AppModule } from './app.module';
 // Import all DTOs and entities that should be included in OpenAPI
 import { CreateUser, UserResponse, AuthTokenResponse } from './user/user.dto';
 import { LoginDto } from './auth/auth.dto';
-import { BulkCreateMatchesRequest, BulkCreateMatchesResponse, MatchData } from './match/match.dto';
+import { BulkCreateMatchesRequest, BulkCreateMatchesResponse, CreateMatchBody } from './match/match.dto';
 import { GetWeaponsResponse, WeaponResponse } from './weapon/weapon.dto';
 import { SubWeapon, SpecialWeapon } from './weapon/weapon.entity';
 import { GetStagesResponse } from './stage/stage.dto';
@@ -41,7 +41,7 @@ async function generateOpenApiSpec() {
         LoginDto,
         BulkCreateMatchesRequest,
         BulkCreateMatchesResponse,
-        MatchData,
+        CreateMatchBody,
         GetWeaponsResponse,
         WeaponResponse,
         SubWeapon,

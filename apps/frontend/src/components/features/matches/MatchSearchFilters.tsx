@@ -55,6 +55,7 @@ export function MatchSearchFilters({ filters, onFiltersChange }: MatchSearchFilt
       label: battleType.name,
       value: battleType.id,
     })) || [];
+
   return (
     <Collapse
       defaultActiveKey={["filters"]}

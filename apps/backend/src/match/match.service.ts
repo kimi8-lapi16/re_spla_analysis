@@ -1,9 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ForbiddenException } from '@nestjs/common';
 import { MatchUseCase } from './match.usecase';
 import { MatchRepository } from './match.repository';
 import {
   BulkCreateMatchesRequest,
   BulkCreateMatchesResponse,
+  BulkUpdateMatchesRequest,
+  BulkUpdateMatchesResponse,
+  BulkDeleteMatchesRequest,
+  BulkDeleteMatchesResponse,
   SearchMatchesRequest,
   SearchMatchesResponse,
   MatchResponse,
@@ -65,5 +69,36 @@ export class MatchService {
       matches: matchResponses,
       total,
     };
+  }
+
+  async bulkUpdateMatches(
+    userId: string,
+    request: BulkUpdateMatchesRequest,
+  ): Promise<BulkUpdateMatchesResponse> {
+    // Check ownership of all matches
+    const matchIds = request.matches.map((m) => m.id);
+    await this.verifyOwnership(userId, matchIds);
+
+    await this.matchUseCase.bulkUpdateMatches(request.matches);
+    return { success: true };
+  }
+
+  async bulkDeleteMatches(
+    userId: string,
+    request: BulkDeleteMatchesRequest,
+  ): Promise<BulkDeleteMatchesResponse> {
+    // Check ownership of all matches
+    await this.verifyOwnership(userId, request.ids);
+
+    // Delete matches (single table operation, no UseCase needed)
+    await this.matchRepository.deleteMany(userId, request.ids);
+    return { success: true };
+  }
+
+  private async verifyOwnership(userId: string, matchIds: string[]): Promise<void> {
+    const ownedMatches = await this.matchRepository.findByUserIdAndIds(userId, matchIds);
+    if (ownedMatches.length !== matchIds.length) {
+      throw new ForbiddenException('Not all matches belong to the user');
+    }
   }
 }

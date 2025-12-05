@@ -1,22 +1,13 @@
-import { DeleteOutlined, PlusOutlined, SaveOutlined } from "@ant-design/icons";
+import { PlusOutlined, SaveOutlined } from "@ant-design/icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "@tanstack/react-router";
-import {
-  Button as AntButton,
-  DatePicker,
-  InputNumber,
-  Radio,
-  Select,
-  Space,
-  Spin,
-  Table,
-} from "antd";
-import dayjs from "dayjs";
-import { Controller, useFieldArray, useForm } from "react-hook-form";
+import { Space, Spin, Table } from "antd";
+import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
-import { MatchData } from "../api";
+import { CreateMatchBody } from "../api";
 import { MainLayout } from "../components/layout/MainLayout";
 import { Button } from "../components/base";
+import { createMatchFormColumns, type MatchFormData } from "../components/features/matches/matchFormColumns";
 import { useNotification } from "../contexts/NotificationContext";
 import { useBattleTypes } from "../hooks/useBattleType";
 import { useBulkCreateMatches } from "../hooks/useMatch";
@@ -28,19 +19,22 @@ const matchSchema = z.object({
   matches: z
     .array(
       z.object({
+        id: z.string(),
         weaponId: z.number().optional(),
         stageId: z.number().optional(),
         ruleId: z.number().optional(),
         battleTypeId: z.number().optional(),
         result: z.enum(["WIN", "LOSE"]).optional(),
         gameDateTime: z.string().optional(),
-        point: z.number().min(0).optional(),
+        point: z.number().min(0).optional().nullable(),
       })
     )
     .min(1, "最低1試合は入力してください"),
 });
 
-type MatchFormData = z.infer<typeof matchSchema>;
+function isValidResult(result: string): result is CreateMatchBody.result {
+  return result === "WIN" || result === "LOSE";
+}
 
 export function CreateMatchesPage() {
   const navigate = useNavigate();
@@ -61,6 +55,7 @@ export function CreateMatchesPage() {
     defaultValues: {
       matches: [
         {
+          id: crypto.randomUUID(),
           weaponId: undefined,
           stageId: undefined,
           ruleId: undefined,
@@ -81,16 +76,25 @@ export function CreateMatchesPage() {
   const isLoading = isLoadingWeapons || isLoadingStages || isLoadingRules || isLoadingBattleTypes;
 
   const onSubmit = (data: MatchFormData) => {
-    // Validate and filter out incomplete rows
-    const validMatches = data.matches.filter(
-      (match) =>
-        match.weaponId &&
-        match.stageId &&
-        match.ruleId &&
-        match.battleTypeId &&
-        match.result &&
-        match.gameDateTime
-    );
+    // Validate and filter out incomplete rows using type guard
+    const validMatches = data.matches
+      .filter((match): match is typeof match & {
+        weaponId: number;
+        stageId: number;
+        ruleId: number;
+        battleTypeId: number;
+        result: "WIN" | "LOSE";
+        gameDateTime: string;
+      } => (
+        match.weaponId !== undefined &&
+        match.stageId !== undefined &&
+        match.ruleId !== undefined &&
+        match.battleTypeId !== undefined &&
+        match.result !== undefined &&
+        isValidResult(match.result) &&
+        match.gameDateTime !== undefined &&
+        match.gameDateTime !== ""
+      ));
 
     if (validMatches.length === 0) {
       notification.error({
@@ -102,16 +106,16 @@ export function CreateMatchesPage() {
       return;
     }
 
-    // Convert to API format
+    // Convert to API format - map result to CreateMatchBody.result enum
     const payload = {
       matches: validMatches.map((match) => ({
-        weaponId: match.weaponId!,
-        stageId: match.stageId!,
-        ruleId: match.ruleId!,
-        battleTypeId: match.battleTypeId!,
-        result: match.result! as MatchData.result,
-        gameDateTime: match.gameDateTime!,
-        point: match.point,
+        weaponId: match.weaponId,
+        stageId: match.stageId,
+        ruleId: match.ruleId,
+        battleTypeId: match.battleTypeId,
+        result: match.result === "WIN" ? CreateMatchBody.result.WIN : CreateMatchBody.result.LOSE,
+        gameDateTime: match.gameDateTime,
+        point: match.point ?? undefined,
       })),
     };
 
@@ -138,6 +142,7 @@ export function CreateMatchesPage() {
 
   const handleAddRow = () => {
     append({
+      id: crypto.randomUUID(),
       weaponId: undefined,
       stageId: undefined,
       ruleId: undefined,
@@ -165,192 +170,16 @@ export function CreateMatchesPage() {
     );
   }
 
-  const columns = [
-    {
-      title: "ブキ",
-      dataIndex: "weaponId",
-      key: "weaponId",
-      width: 200,
-      render: (_: unknown, __: unknown, index: number) => (
-        <Controller
-          name={`matches.${index}.weaponId`}
-          control={control}
-          render={({ field }) => (
-            <Select
-              {...field}
-              style={{ width: "100%" }}
-              placeholder="選択してください"
-              status={errors.matches?.[index]?.weaponId ? "error" : ""}
-              showSearch
-              optionFilterProp="label"
-              options={weapons?.map((w) => ({
-                value: w.id,
-                label: w.name,
-              }))}
-            />
-          )}
-        />
-      ),
-    },
-    {
-      title: "ステージ",
-      dataIndex: "stageId",
-      key: "stageId",
-      width: 200,
-      render: (_: unknown, __: unknown, index: number) => (
-        <Controller
-          name={`matches.${index}.stageId`}
-          control={control}
-          render={({ field }) => (
-            <Select
-              {...field}
-              style={{ width: "100%" }}
-              placeholder="選択してください"
-              status={errors.matches?.[index]?.stageId ? "error" : ""}
-              showSearch
-              optionFilterProp="label"
-              options={stages?.map((s) => ({
-                value: s.id,
-                label: s.name,
-              }))}
-            />
-          )}
-        />
-      ),
-    },
-    {
-      title: "ルール",
-      dataIndex: "ruleId",
-      key: "ruleId",
-      width: 150,
-      render: (_: unknown, __: unknown, index: number) => (
-        <Controller
-          name={`matches.${index}.ruleId`}
-          control={control}
-          render={({ field }) => (
-            <Select
-              {...field}
-              style={{ width: "100%" }}
-              placeholder="選択してください"
-              status={errors.matches?.[index]?.ruleId ? "error" : ""}
-              options={rules?.map((r) => ({
-                value: r.id,
-                label: r.name,
-              }))}
-            />
-          )}
-        />
-      ),
-    },
-    {
-      title: "バトル",
-      dataIndex: "battleTypeId",
-      key: "battleTypeId",
-      width: 150,
-      render: (_: unknown, __: unknown, index: number) => (
-        <Controller
-          name={`matches.${index}.battleTypeId`}
-          control={control}
-          render={({ field }) => (
-            <Select
-              {...field}
-              style={{ width: "100%" }}
-              placeholder="選択してください"
-              status={errors.matches?.[index]?.battleTypeId ? "error" : ""}
-              options={battleTypes?.map((bt) => ({
-                value: bt.id,
-                label: bt.name,
-              }))}
-            />
-          )}
-        />
-      ),
-    },
-    {
-      title: "勝敗",
-      dataIndex: "result",
-      key: "result",
-      width: 120,
-      render: (_: unknown, __: unknown, index: number) => (
-        <Controller
-          name={`matches.${index}.result`}
-          control={control}
-          render={({ field }) => (
-            <Radio.Group {...field}>
-              <Radio value="WIN">勝ち</Radio>
-              <Radio value="LOSE">負け</Radio>
-            </Radio.Group>
-          )}
-        />
-      ),
-    },
-    {
-      title: "日時",
-      dataIndex: "gameDateTime",
-      key: "gameDateTime",
-      width: 200,
-      render: (_: unknown, __: unknown, index: number) => (
-        <Controller
-          name={`matches.${index}.gameDateTime`}
-          control={control}
-          render={({ field }) => (
-            <DatePicker
-              showTime
-              format="YYYY-MM-DD HH:mm"
-              style={{ width: "100%" }}
-              placeholder="日時を選択"
-              status={errors.matches?.[index]?.gameDateTime ? "error" : ""}
-              value={field.value ? dayjs(field.value) : null}
-              onChange={(date) => {
-                if (!date) {
-                  field.onChange("");
-                  return;
-                }
-                // Get local date/time components and format as JST
-                const year = date.year();
-                const month = String(date.month() + 1).padStart(2, "0");
-                const day = String(date.date()).padStart(2, "0");
-                const hour = String(date.hour()).padStart(2, "0");
-                const minute = String(date.minute()).padStart(2, "0");
-                const second = String(date.second()).padStart(2, "0");
-                field.onChange(`${year}-${month}-${day}T${hour}:${minute}:${second}+09:00`);
-              }}
-            />
-          )}
-        />
-      ),
-    },
-    {
-      title: "ポイント",
-      dataIndex: "point",
-      key: "point",
-      width: 120,
-      render: (_: unknown, __: unknown, index: number) => (
-        <Controller
-          name={`matches.${index}.point`}
-          control={control}
-          render={({ field }) => (
-            <InputNumber {...field} style={{ width: "100%" }} placeholder="任意" min={0} />
-          )}
-        />
-      ),
-    },
-    {
-      title: "操作",
-      key: "action",
-      width: 80,
-      fixed: "right" as const,
-      render: (_: unknown, __: unknown, index: number) => (
-        <AntButton
-          type="text"
-          danger
-          icon={<DeleteOutlined />}
-          onClick={() => remove(index)}
-          disabled={fields.length === 1}
-        />
-      ),
-    },
-  ];
+  const columns = createMatchFormColumns({
+    control,
+    errors,
+    fieldsLength: fields.length,
+    remove,
+    weapons,
+    stages,
+    rules,
+    battleTypes,
+  });
 
   return (
     <MainLayout>
