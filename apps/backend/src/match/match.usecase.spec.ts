@@ -7,7 +7,7 @@ import { WeaponRepository } from '../weapon/weapon.repository';
 import { StageRepository } from '../stage/stage.repository';
 import { BattleTypeRepository } from '../battle-type/battle-type.repository';
 import { PrismaService } from '../prisma/prisma.service';
-import { MatchData, MatchResult } from './match.dto';
+import { CreateMatchBody, MatchResult, UpdateMatchBody } from './match.dto';
 import { Rule, Weapon, Stage, BattleType } from 'generated/prisma/client';
 
 type MockPrismaService = {
@@ -45,7 +45,7 @@ describe('MatchUseCase', () => {
     name: 'Regular Battle',
   };
 
-  const mockMatchData: MatchData = {
+  const mockMatchData: CreateMatchBody = {
     ruleId: 1,
     weaponId: 1,
     stageId: 1,
@@ -63,6 +63,9 @@ describe('MatchUseCase', () => {
           provide: MatchRepository,
           useValue: {
             createMany: jest.fn(),
+            findByUserIdAndIds: jest.fn(),
+            updateOne: jest.fn(),
+            deleteMany: jest.fn(),
           },
         },
         {
@@ -269,6 +272,85 @@ describe('MatchUseCase', () => {
       expect(weaponRepository.findByIds).toHaveBeenCalledWith([1, 2]);
       expect(stageRepository.findByIds).toHaveBeenCalledWith([1]);
       expect(battleTypeRepository.findByIds).toHaveBeenCalledWith([1]);
+    });
+  });
+
+  describe('bulkUpdateMatches', () => {
+    const mockUpdateMatchData: UpdateMatchBody = {
+      id: 'match-1',
+      ruleId: 1,
+      weaponId: 1,
+      stageId: 1,
+      battleTypeId: 1,
+      result: MatchResult.WIN,
+      gameDateTime: '2024-11-24T10:30:00Z',
+      point: 1500,
+    };
+
+    it('should successfully update multiple matches when all validations pass', async () => {
+      const matches = [mockUpdateMatchData];
+
+      ruleRepository.findByIds.mockResolvedValue([mockRule]);
+      weaponRepository.findByIds.mockResolvedValue([mockWeapon]);
+      stageRepository.findByIds.mockResolvedValue([mockStage]);
+      battleTypeRepository.findByIds.mockResolvedValue([mockBattleType]);
+
+      prismaService.$transaction.mockImplementation(async (callback) => {
+        return callback({
+          match: {
+            update: matchRepository.updateOne,
+          },
+        });
+      });
+
+      await useCase.bulkUpdateMatches(matches);
+
+      expect(ruleRepository.findByIds).toHaveBeenCalledWith([1]);
+      expect(weaponRepository.findByIds).toHaveBeenCalledWith([1]);
+      expect(matchRepository.updateOne).toHaveBeenCalled();
+    });
+
+    it('should throw BadRequestException when rule ID is invalid', async () => {
+      const matches = [mockUpdateMatchData];
+
+      ruleRepository.findByIds.mockResolvedValue([]);
+      weaponRepository.findByIds.mockResolvedValue([mockWeapon]);
+      stageRepository.findByIds.mockResolvedValue([mockStage]);
+      battleTypeRepository.findByIds.mockResolvedValue([mockBattleType]);
+
+      await expect(useCase.bulkUpdateMatches(matches)).rejects.toThrow(
+        BadRequestException,
+      );
+      await expect(useCase.bulkUpdateMatches(matches)).rejects.toThrow(
+        'Invalid rule IDs: 1',
+      );
+    });
+
+    it('should update multiple matches in a transaction', async () => {
+      const matches = [
+        mockUpdateMatchData,
+        { ...mockUpdateMatchData, id: 'match-2', weaponId: 2 },
+      ];
+
+      ruleRepository.findByIds.mockResolvedValue([mockRule]);
+      weaponRepository.findByIds.mockResolvedValue([
+        mockWeapon,
+        { ...mockWeapon, id: 2, name: 'Splat Roller' },
+      ]);
+      stageRepository.findByIds.mockResolvedValue([mockStage]);
+      battleTypeRepository.findByIds.mockResolvedValue([mockBattleType]);
+
+      prismaService.$transaction.mockImplementation(async (callback) => {
+        return callback({
+          match: {
+            update: matchRepository.updateOne,
+          },
+        });
+      });
+
+      await useCase.bulkUpdateMatches(matches);
+
+      expect(matchRepository.updateOne).toHaveBeenCalledTimes(2);
     });
   });
 });

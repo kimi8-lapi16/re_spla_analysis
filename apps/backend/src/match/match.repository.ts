@@ -2,18 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { Match as PrismaMatch } from 'generated/prisma/client';
 import { PrismaTransaction } from 'src/prisma/prisma.types';
 import { PrismaService } from '../prisma/prisma.service';
+import { CreateMatch, UpdateMatch } from './match.dto';
 import { Match } from './match.entity';
-
-export interface CreateMatchData {
-  userId: string;
-  ruleId: number;
-  weaponId: number;
-  stageId: number;
-  battleTypeId: number;
-  result: string;
-  gameDateTime: Date;
-  point: number | null;
-}
 
 @Injectable()
 export class MatchRepository {
@@ -34,7 +24,7 @@ export class MatchRepository {
   }
 
   async createMany(
-    dataList: CreateMatchData[],
+    dataList: CreateMatch[],
     tx?: PrismaTransaction,
   ): Promise<void> {
     const client = tx ?? this.prisma;
@@ -56,6 +46,46 @@ export class MatchRepository {
       orderBy: { gameDateTime: 'desc' },
     });
     return prismaMatches.map((m) => this.toDomain(m));
+  }
+
+  async findByUserIdAndIds(
+    userId: string,
+    ids: string[],
+  ): Promise<Match[]> {
+    const prismaMatches = await this.prisma.match.findMany({
+      where: {
+        id: { in: ids },
+        userId,
+      },
+    });
+    return prismaMatches.map((m) => this.toDomain(m));
+  }
+
+  async updateOne(
+    id: string,
+    data: UpdateMatch,
+    tx?: PrismaTransaction,
+  ): Promise<Match> {
+    const client = tx ?? this.prisma;
+    const prismaMatch = await client.match.update({
+      where: { id },
+      data,
+    });
+    return this.toDomain(prismaMatch);
+  }
+
+  async deleteMany(
+    userId: string,
+    ids: string[],
+    tx?: PrismaTransaction,
+  ): Promise<void> {
+    const client = tx ?? this.prisma;
+    await client.match.deleteMany({
+      where: {
+        id: { in: ids },
+        userId,
+      },
+    });
   }
 
   async searchMatches(params: {

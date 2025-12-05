@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, Put, UseGuards } from '@nestjs/common';
 import {
   ApiBody,
   ApiOperation,
@@ -12,6 +12,10 @@ import { MatchService } from './match.service';
 import {
   BulkCreateMatchesRequest,
   BulkCreateMatchesResponse,
+  BulkUpdateMatchesRequest,
+  BulkUpdateMatchesResponse,
+  BulkDeleteMatchesRequest,
+  BulkDeleteMatchesResponse,
   SearchMatchesRequest,
   SearchMatchesResponse,
 } from './match.dto';
@@ -63,5 +67,51 @@ export class MatchController {
     @Body() request: SearchMatchesRequest,
   ): Promise<SearchMatchesResponse> {
     return this.matchService.searchMatches(userId, request);
+  }
+
+  @Put()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Bulk update multiple matches' })
+  @ApiBody({ type: BulkUpdateMatchesRequest })
+  @ApiResponse({
+    status: 200,
+    description: 'Matches successfully updated',
+    type: BulkUpdateMatchesResponse,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid input data or validation failed',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - matches do not belong to user' })
+  async bulkUpdateMatches(
+    @GetCurrentUser('userId') userId: string,
+    @Body() request: BulkUpdateMatchesRequest,
+  ): Promise<BulkUpdateMatchesResponse> {
+    return this.matchService.bulkUpdateMatches(userId, request);
+  }
+
+  @Post('bulk-delete')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Bulk delete multiple matches' })
+  @ApiBody({ type: BulkDeleteMatchesRequest })
+  @ApiResponse({
+    status: 200,
+    description: 'Matches successfully deleted',
+    type: BulkDeleteMatchesResponse,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid input data',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - matches do not belong to user' })
+  async bulkDeleteMatches(
+    @GetCurrentUser('userId') userId: string,
+    @Body() request: BulkDeleteMatchesRequest,
+  ): Promise<BulkDeleteMatchesResponse> {
+    return this.matchService.bulkDeleteMatches(userId, request);
   }
 }

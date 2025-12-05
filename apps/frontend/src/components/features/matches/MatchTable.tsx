@@ -17,11 +17,19 @@ type MatchTableProps = {
     total: number;
     onChange: (page: number) => void;
   };
+  selectedRowKeys?: string[];
+  onSelectionChange?: (selectedKeys: string[], selectedRows: MatchResponse[]) => void;
 };
 
 type TableRow = MatchResponse & { key: string };
 
-export function MatchTable({ matches, isLoading, pagination }: MatchTableProps) {
+export function MatchTable({
+  matches,
+  isLoading,
+  pagination,
+  selectedRowKeys,
+  onSelectionChange,
+}: MatchTableProps) {
   const { data: weapons } = useWeapons();
   const { data: stages } = useStages();
   const { data: rules } = useRules();
@@ -63,7 +71,7 @@ export function MatchTable({ matches, isLoading, pagination }: MatchTableProps) 
       render: (stageId: number) => stageMap.get(stageId) || "-",
     },
     {
-      title: "武器",
+      title: "ブキ",
       dataIndex: "weaponId",
       key: "weapon",
       width: 150,
@@ -92,11 +100,33 @@ export function MatchTable({ matches, isLoading, pagination }: MatchTableProps) 
     },
   ];
 
+  const rowSelection = onSelectionChange
+    ? {
+        selectedRowKeys,
+        onChange: (keys: React.Key[], rows: TableRow[]) => {
+          onSelectionChange(
+            keys as string[],
+            rows.map((row) => ({
+              id: row.id,
+              weaponId: row.weaponId,
+              stageId: row.stageId,
+              ruleId: row.ruleId,
+              battleTypeId: row.battleTypeId,
+              result: row.result,
+              gameDateTime: row.gameDateTime,
+              point: row.point,
+            }))
+          );
+        },
+      }
+    : undefined;
+
   return (
     <Spin spinning={isLoading}>
       <Table
         dataSource={tableData}
         columns={columns}
+        rowSelection={rowSelection}
         scroll={{ y: "calc(100vh - 480px)" }}
         locale={{
           emptyText: (

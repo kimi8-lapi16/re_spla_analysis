@@ -6,6 +6,8 @@ import {
   ValidateNested,
   Min,
   IsOptional,
+  IsUUID,
+  ArrayMinSize,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
@@ -15,7 +17,8 @@ export enum MatchResult {
   LOSE = 'LOSE',
 }
 
-export class MatchData {
+// API Layer: リクエストボディ内の個別試合データ
+export class CreateMatchBody {
   @ApiProperty({ description: 'Rule ID', example: 1, type: Number })
   @IsInt()
   @Min(1)
@@ -67,13 +70,13 @@ export class MatchData {
 
 export class BulkCreateMatchesRequest {
   @ApiProperty({
-    type: [MatchData],
+    type: [CreateMatchBody],
     description: 'Array of matches to create',
   })
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => MatchData)
-  matches: MatchData[];
+  @Type(() => CreateMatchBody)
+  matches: CreateMatchBody[];
 }
 
 export class BulkCreateMatchesResponse {
@@ -230,4 +233,114 @@ export class SearchMatchesResponse {
     type: Number,
   })
   total: number;
+}
+
+export class UpdateMatchBody {
+  @ApiProperty({ description: 'Match ID', example: '550e8400-e29b-41d4-a716-446655440000', type: String })
+  @IsUUID('4')
+  id: string;
+
+  @ApiProperty({ description: 'Rule ID', example: 1, type: Number })
+  @IsInt()
+  @Min(1)
+  ruleId: number;
+
+  @ApiProperty({ description: 'Weapon ID', example: 1, type: Number })
+  @IsInt()
+  @Min(1)
+  weaponId: number;
+
+  @ApiProperty({ description: 'Stage ID', example: 1, type: Number })
+  @IsInt()
+  @Min(1)
+  stageId: number;
+
+  @ApiProperty({ description: 'Battle Type ID', example: 1, type: Number })
+  @IsInt()
+  @Min(1)
+  battleTypeId: number;
+
+  @ApiProperty({
+    description: 'Match result',
+    enum: MatchResult,
+    example: MatchResult.WIN,
+    type: String,
+  })
+  @IsEnum(MatchResult)
+  result: MatchResult;
+
+  @ApiProperty({
+    description: 'Game date and time (ISO8601)',
+    example: '2024-11-24T10:30:00Z',
+    type: String,
+  })
+  @IsDateString()
+  gameDateTime: string;
+
+  @ApiProperty({
+    description: 'Points earned',
+    example: 1500,
+    required: false,
+    type: Number,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  point?: number;
+}
+
+export class BulkUpdateMatchesRequest {
+  @ApiProperty({
+    type: [UpdateMatchBody],
+    description: 'Array of matches to update',
+  })
+  @IsArray()
+  @ArrayMinSize(1)
+  @ValidateNested({ each: true })
+  @Type(() => UpdateMatchBody)
+  matches: UpdateMatchBody[];
+}
+
+export class BulkUpdateMatchesResponse {
+  @ApiProperty({ description: 'Operation success status', example: true, type: Boolean })
+  success: boolean;
+}
+
+export class BulkDeleteMatchesRequest {
+  @ApiProperty({
+    type: [String],
+    description: 'Array of match IDs to delete',
+    example: ['550e8400-e29b-41d4-a716-446655440000'],
+  })
+  @IsArray()
+  @ArrayMinSize(1)
+  @IsUUID('4', { each: true })
+  ids: string[];
+}
+
+export class BulkDeleteMatchesResponse {
+  @ApiProperty({ description: 'Operation success status', example: true, type: Boolean })
+  success: boolean;
+}
+
+// Domain Layer: Repository/UseCase間で使用する型
+export interface CreateMatch {
+  userId: string;
+  ruleId: number;
+  weaponId: number;
+  stageId: number;
+  battleTypeId: number;
+  result: string;
+  gameDateTime: Date;
+  point: number | null;
+}
+
+export interface UpdateMatch {
+  ruleId: number;
+  weaponId: number;
+  stageId: number;
+  battleTypeId: number;
+  result: string;
+  gameDateTime: Date;
+  point: number | null;
 }

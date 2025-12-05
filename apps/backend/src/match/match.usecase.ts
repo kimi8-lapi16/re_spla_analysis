@@ -1,11 +1,11 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { MatchRepository, CreateMatchData } from './match.repository';
+import { MatchRepository } from './match.repository';
 import { RuleRepository } from '../rule/rule.repository';
 import { WeaponRepository } from '../weapon/weapon.repository';
 import { StageRepository } from '../stage/stage.repository';
 import { BattleTypeRepository } from '../battle-type/battle-type.repository';
-import { MatchData } from './match.dto';
+import { CreateMatch, CreateMatchBody, UpdateMatchBody } from './match.dto';
 import { parseIsoStringAsLocalTime } from '../common/utils/date.util';
 
 @Injectable()
@@ -21,13 +21,13 @@ export class MatchUseCase {
 
   async bulkCreateMatches(
     userId: string,
-    matches: MatchData[],
+    matches: CreateMatchBody[],
   ): Promise<void> {
     // Validate all matches before creating any
     await this.validateMatches(matches);
 
     // Prepare data for bulk insert
-    const matchDataList: CreateMatchData[] = matches.map(
+    const matchDataList: CreateMatch[] = matches.map(
       ({ ruleId, weaponId, stageId, battleTypeId, result, gameDateTime, point }) => ({
         userId,
         ruleId,
@@ -46,7 +46,33 @@ export class MatchUseCase {
     });
   }
 
-  private async validateMatches(matches: MatchData[]): Promise<void> {
+  async bulkUpdateMatches(
+    matches: UpdateMatchBody[],
+  ): Promise<void> {
+    // Validate all reference IDs
+    await this.validateMatches(matches);
+
+    // Update all matches in a transaction
+    await this.prisma.$transaction(async (tx) => {
+      for (const match of matches) {
+        await this.matchRepository.updateOne(
+          match.id,
+          {
+            ruleId: match.ruleId,
+            weaponId: match.weaponId,
+            stageId: match.stageId,
+            battleTypeId: match.battleTypeId,
+            result: match.result,
+            gameDateTime: parseIsoStringAsLocalTime(match.gameDateTime),
+            point: match.point ?? null,
+          },
+          tx,
+        );
+      }
+    });
+  }
+
+  private async validateMatches(matches: CreateMatchBody[] | UpdateMatchBody[]): Promise<void> {
     // Collect all unique IDs to validate
     const ruleIds = Array.from(new Set(matches.map((m) => m.ruleId)));
     const weaponIds = Array.from(new Set(matches.map((m) => m.weaponId)));

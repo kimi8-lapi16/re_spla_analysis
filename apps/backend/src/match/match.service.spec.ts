@@ -1,13 +1,21 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ForbiddenException } from '@nestjs/common';
 import { MatchService } from './match.service';
 import { MatchUseCase } from './match.usecase';
 import { MatchRepository } from './match.repository';
-import { SearchMatchesRequest, SearchOperator, MatchResult } from './match.dto';
+import {
+  SearchMatchesRequest,
+  SearchOperator,
+  MatchResult,
+  BulkUpdateMatchesRequest,
+  BulkDeleteMatchesRequest,
+} from './match.dto';
 import { Match } from './match.entity';
 
 describe('MatchService', () => {
   let service: MatchService;
   let matchRepository: jest.Mocked<MatchRepository>;
+  let matchUseCase: jest.Mocked<MatchUseCase>;
 
   const mockMatch: Match = {
     id: 'test-match-id',
@@ -29,12 +37,15 @@ describe('MatchService', () => {
           provide: MatchUseCase,
           useValue: {
             bulkCreateMatches: jest.fn(),
+            bulkUpdateMatches: jest.fn(),
           },
         },
         {
           provide: MatchRepository,
           useValue: {
             searchMatches: jest.fn(),
+            findByUserIdAndIds: jest.fn(),
+            deleteMany: jest.fn(),
           },
         },
       ],
@@ -42,6 +53,7 @@ describe('MatchService', () => {
 
     service = module.get<MatchService>(MatchService);
     matchRepository = module.get(MatchRepository);
+    matchUseCase = module.get(MatchUseCase);
   });
 
   afterEach(() => {
@@ -267,6 +279,133 @@ describe('MatchService', () => {
       expect(result.total).toBe(2);
       expect(result.matches[0].id).toBe('test-match-id');
       expect(result.matches[1].id).toBe('test-match-id-2');
+    });
+  });
+
+  describe('bulkUpdateMatches', () => {
+    it('should verify ownership and call useCase.bulkUpdateMatches', async () => {
+      const userId = 'test-user-id';
+      const request: BulkUpdateMatchesRequest = {
+        matches: [
+          {
+            id: 'match-1',
+            ruleId: 1,
+            weaponId: 1,
+            stageId: 1,
+            battleTypeId: 1,
+            result: MatchResult.WIN,
+            gameDateTime: '2024-11-24T10:30:00Z',
+            point: 1500,
+          },
+        ],
+      };
+
+      matchRepository.findByUserIdAndIds.mockResolvedValue([mockMatch]);
+      matchUseCase.bulkUpdateMatches.mockResolvedValue(undefined);
+
+      const result = await service.bulkUpdateMatches(userId, request);
+
+      expect(matchRepository.findByUserIdAndIds).toHaveBeenCalledWith(userId, ['match-1']);
+      expect(matchUseCase.bulkUpdateMatches).toHaveBeenCalledWith(request.matches);
+      expect(result).toEqual({ success: true });
+    });
+
+    it('should throw ForbiddenException when user does not own all matches', async () => {
+      const userId = 'test-user-id';
+      const request: BulkUpdateMatchesRequest = {
+        matches: [
+          {
+            id: 'match-1',
+            ruleId: 1,
+            weaponId: 1,
+            stageId: 1,
+            battleTypeId: 1,
+            result: MatchResult.WIN,
+            gameDateTime: '2024-11-24T10:30:00Z',
+          },
+          {
+            id: 'match-2',
+            ruleId: 1,
+            weaponId: 1,
+            stageId: 1,
+            battleTypeId: 1,
+            result: MatchResult.LOSE,
+            gameDateTime: '2024-11-24T11:30:00Z',
+          },
+        ],
+      };
+
+      // User only owns match-1, not match-2
+      matchRepository.findByUserIdAndIds.mockResolvedValue([mockMatch]);
+
+      await expect(service.bulkUpdateMatches(userId, request)).rejects.toThrow(ForbiddenException);
+      expect(matchUseCase.bulkUpdateMatches).not.toHaveBeenCalled();
+    });
+
+    it('should propagate errors from useCase', async () => {
+      const userId = 'test-user-id';
+      const request: BulkUpdateMatchesRequest = {
+        matches: [
+          {
+            id: 'match-1',
+            ruleId: 1,
+            weaponId: 1,
+            stageId: 1,
+            battleTypeId: 1,
+            result: MatchResult.WIN,
+            gameDateTime: '2024-11-24T10:30:00Z',
+          },
+        ],
+      };
+
+      matchRepository.findByUserIdAndIds.mockResolvedValue([mockMatch]);
+      matchUseCase.bulkUpdateMatches.mockRejectedValue(new Error('Test error'));
+
+      await expect(service.bulkUpdateMatches(userId, request)).rejects.toThrow('Test error');
+    });
+  });
+
+  describe('bulkDeleteMatches', () => {
+    it('should verify ownership and call repository.deleteMany', async () => {
+      const userId = 'test-user-id';
+      const request: BulkDeleteMatchesRequest = {
+        ids: ['match-1', 'match-2'],
+      };
+
+      const match2: Match = { ...mockMatch, id: 'match-2' };
+      matchRepository.findByUserIdAndIds.mockResolvedValue([mockMatch, match2]);
+      matchRepository.deleteMany.mockResolvedValue(undefined);
+
+      const result = await service.bulkDeleteMatches(userId, request);
+
+      expect(matchRepository.findByUserIdAndIds).toHaveBeenCalledWith(userId, ['match-1', 'match-2']);
+      expect(matchRepository.deleteMany).toHaveBeenCalledWith(userId, request.ids);
+      expect(result).toEqual({ success: true });
+    });
+
+    it('should throw ForbiddenException when user does not own all matches', async () => {
+      const userId = 'test-user-id';
+      const request: BulkDeleteMatchesRequest = {
+        ids: ['match-1', 'match-2'],
+      };
+
+      // User only owns match-1, not match-2
+      matchRepository.findByUserIdAndIds.mockResolvedValue([mockMatch]);
+
+      await expect(service.bulkDeleteMatches(userId, request)).rejects.toThrow(ForbiddenException);
+      expect(matchRepository.deleteMany).not.toHaveBeenCalled();
+    });
+
+    it('should propagate errors from repository', async () => {
+      const userId = 'test-user-id';
+      const request: BulkDeleteMatchesRequest = {
+        ids: ['match-1'],
+      };
+
+      matchRepository.findByUserIdAndIds.mockResolvedValue([mockMatch]);
+      matchRepository.deleteMany.mockRejectedValue(new Error('Test error'));
+
+      await expect(service.bulkDeleteMatches(userId, request)).rejects.toThrow('Test error');
     });
   });
 });
