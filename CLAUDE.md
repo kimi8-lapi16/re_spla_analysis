@@ -195,14 +195,16 @@ This project follows a layered architecture pattern with clear separation of con
 
 #### UseCase Layer
 
-- **Purpose**: Orchestrate business logic that spans multiple tables or repositories
+- **Purpose**: Orchestrate **multi-table operations with transactions** ONLY
 - **Rules**:
-  - Handle operations that require data from multiple tables
+  - **ONLY use UseCases for operations that require multiple table writes in a transaction**
+  - Single-table operations should be handled directly in Service, not UseCase
   - Coordinate multiple repository calls using their repository methods
   - Use Prisma transactions when multiple writes need to be atomic
   - Pass transaction context to repository methods
   - Place UseCases in `{module}.usecase.ts` (e.g., `user.usecase.ts`)
   - Name classes based on the primary entity (e.g., `CreateUserUseCase` for User + UserSecret)
+  - **Business logic (ownership checks, authorization) belongs in Service layer, not UseCase**
 - **File Organization**:
   - Use a single `{module}.usecase.ts` file per module instead of a `usecases/` directory
   - Define composite types in `dto.ts` to avoid duplication
@@ -270,14 +272,36 @@ This project follows a layered architecture pattern with clear separation of con
       return { ...user, secret };
     });
   }
+
+  // ❌ Bad: UseCase for single-table operation
+  @Injectable()
+  export class DeleteMatchesUseCase {
+    async execute(userId: string, ids: string[]) {
+      // This is just a single delete - should be in Service!
+      await this.matchRepository.deleteMany(userId, ids);
+    }
+  }
+
+  // ✅ Good: Single-table delete should be in Service directly
+  @Injectable()
+  export class MatchService {
+    async bulkDeleteMatches(userId: string, request: BulkDeleteMatchesRequest) {
+      // Ownership check belongs in Service
+      await this.verifyOwnership(userId, request.ids);
+      // Single-table operation - call repository directly
+      await this.matchRepository.deleteMany(userId, request.ids);
+      return { success: true };
+    }
+  }
   ```
 
 #### Service Layer
 
 - **Purpose**: Handle application logic and coordinate between UseCases, Repositories, and external services
 - **Rules**:
-  - Use UseCases for multi-table operations
-  - Use Repositories directly for single-table queries
+  - Use UseCases ONLY for multi-table transaction operations
+  - Use Repositories directly for single-table operations (CRUD)
+  - **Ownership checks and authorization logic belong here**, not in UseCase
   - Handle business validations and transformations
   - Transform data into DTOs for API responses
 - **Example**:
@@ -549,6 +573,136 @@ async getWeapons(): Promise<{ weapons: Weapon[] }> {
 - **Build Tool**: Vite 7
 - **Language**: TypeScript 5.9
 - **Module Type**: ESM
+
+### Frontend Best Practices
+
+#### Component Guidelines
+
+1. **Use Ant Design Components Instead of Plain HTML**
+   - Always use Ant Design's `Typography.Text` instead of raw `<p>` tags
+   - Use `Typography.Title` instead of `<h1>`, `<h2>`, etc.
+   - This ensures consistent styling and accessibility
+
+   ```tsx
+   // ❌ Bad: Using plain HTML
+   <p>Some text here</p>
+   <p style={{ color: "#ff4d4f" }}>Error message</p>
+
+   // ✅ Good: Using Ant Design components
+   import { Typography } from "antd";
+   const { Text } = Typography;
+
+   <Text>Some text here</Text>
+   <Text type="danger">Error message</Text>
+   ```
+
+2. **Use Custom Button Component**
+   - This project has a custom `Button` component in `components/base`
+   - Always prefer the custom Button over Ant Design's Button for consistency
+
+   ```tsx
+   // ❌ Bad: Using AntButton directly
+   import { Button as AntButton } from "antd";
+   <AntButton type="text" danger icon={<DeleteOutlined />} />
+
+   // ✅ Good: Using custom Button
+   import { Button } from "../components/base";
+   <Button variant="secondary" icon={<DeleteOutlined />} />
+   ```
+
+3. **DRY Principle for Shared UI Logic**
+   - Extract common column definitions, form schemas, or UI patterns into shared utilities
+   - Place shared components in appropriate feature folders or utils
+
+   ```tsx
+   // Example: Shared column definitions for match forms
+   // src/components/features/matches/matchFormColumns.tsx
+   export function createMatchFormColumns({ control, errors, ... }) { ... }
+   ```
+
+#### React Hook Form Best Practices
+
+1. **Avoid useEffect for Form Data Sync**
+   - Never use `useEffect` to sync prop data with form state
+   - Use React Hook Form's `values` prop instead (provided by the form library)
+
+   ```tsx
+   // ❌ Bad: Using useEffect to sync data
+   useEffect(() => {
+     if (open && matches.length > 0) {
+       reset({ matches: ... });
+     }
+   }, [open, matches, reset]);
+
+   // ✅ Good: Using values prop with useMemo
+   const initialValues = useMemo(() => {
+     if (!open || matches.length === 0) {
+       return { matches: [] };
+     }
+     return { matches: matches.map(m => ({ ... })) };
+   }, [open, matches]);
+
+   const { control } = useForm({
+     values: initialValues,
+   });
+   ```
+
+2. **Type-Safe Form Validation with Type Guards**
+   - Use type guard functions for narrowing form data types
+   - Avoid type assertions (`as`) in form submission handlers
+
+   ```tsx
+   // ✅ Good: Type guard for result validation
+   function isValidResult(result: string): result is "WIN" | "LOSE" {
+     return result === "WIN" || result === "LOSE";
+   }
+
+   // In submit handler - use filter with type predicate
+   const validMatches = data.matches
+     .filter((match): match is RequiredMatch => (
+       match.weaponId !== undefined &&
+       isValidResult(match.result)
+     ));
+   ```
+
+#### Component Responsibility
+
+1. **Move Related Logic into Modals**
+   - Avoid "bucket relay" where parent passes callbacks through multiple layers
+   - Modals should own their mutation logic when possible
+
+   ```tsx
+   // ❌ Bad: Parent owns all logic, modal just displays
+   // Parent:
+   const { mutate: deleteMatches } = useBulkDeleteMatches();
+   const handleDelete = () => { deleteMatches(...) };
+   <DeleteModal onConfirm={handleDelete} />
+
+   // ✅ Good: Modal owns its logic
+   // Parent:
+   <DeleteModal matchIds={ids} onSuccess={handleSuccess} />
+
+   // Modal:
+   export function DeleteModal({ matchIds, onSuccess }) {
+     const { mutate: deleteMatches } = useBulkDeleteMatches();
+     const handleConfirm = () => {
+       deleteMatches({ ids: matchIds }, {
+         onSuccess: () => { /* notify + invalidate */ onSuccess(); }
+       });
+     };
+     // ...
+   }
+   ```
+
+#### Utility Functions
+
+1. **Extract Common Operations to Utils**
+   - Date formatting, string manipulation, etc. should be in utils
+
+   ```tsx
+   // src/utils/date.ts
+   export function formatDateTimeAsJstIso(date: Dayjs | null): string { ... }
+   ```
 
 ## Important Notes
 
