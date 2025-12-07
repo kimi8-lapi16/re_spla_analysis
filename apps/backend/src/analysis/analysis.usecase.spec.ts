@@ -158,9 +158,10 @@ describe('AnalysisUseCase', () => {
   });
 
   describe('getPointTransition', () => {
-    it('should return point transition data for a specific rule', async () => {
+    it('should return point transition data for a specific rule and battle type', async () => {
       const userId = 'test-user-id';
       const ruleId = 1;
+      const battleTypeId = 2;
 
       const mockMatches = [
         { gameDateTime: new Date('2024-11-01T10:00:00Z'), point: 1500 },
@@ -170,7 +171,11 @@ describe('AnalysisUseCase', () => {
 
       prismaService.match.findMany.mockResolvedValue(mockMatches);
 
-      const result = await useCase.getPointTransition(userId, ruleId);
+      const result = await useCase.getPointTransition(
+        userId,
+        ruleId,
+        battleTypeId,
+      );
 
       expect(result).toEqual([
         { gameDateTime: new Date('2024-11-01T10:00:00Z'), point: 1500 },
@@ -181,6 +186,7 @@ describe('AnalysisUseCase', () => {
         where: {
           userId,
           ruleId,
+          battleTypeId,
           point: { not: null },
           gameDateTime: undefined,
         },
@@ -197,17 +203,25 @@ describe('AnalysisUseCase', () => {
     it('should filter by date range when provided', async () => {
       const userId = 'test-user-id';
       const ruleId = 1;
+      const battleTypeId = 2;
       const startDate = new Date('2024-11-01T00:00:00Z');
       const endDate = new Date('2024-11-30T23:59:59Z');
 
       prismaService.match.findMany.mockResolvedValue([]);
 
-      await useCase.getPointTransition(userId, ruleId, startDate, endDate);
+      await useCase.getPointTransition(
+        userId,
+        ruleId,
+        battleTypeId,
+        startDate,
+        endDate,
+      );
 
       expect(prismaService.match.findMany).toHaveBeenCalledWith({
         where: {
           userId,
           ruleId,
+          battleTypeId,
           point: { not: null },
           gameDateTime: {
             gte: startDate,
@@ -227,16 +241,24 @@ describe('AnalysisUseCase', () => {
     it('should filter by start date only when endDate is not provided', async () => {
       const userId = 'test-user-id';
       const ruleId = 1;
+      const battleTypeId = 2;
       const startDate = new Date('2024-11-01T00:00:00Z');
 
       prismaService.match.findMany.mockResolvedValue([]);
 
-      await useCase.getPointTransition(userId, ruleId, startDate, undefined);
+      await useCase.getPointTransition(
+        userId,
+        ruleId,
+        battleTypeId,
+        startDate,
+        undefined,
+      );
 
       expect(prismaService.match.findMany).toHaveBeenCalledWith({
         where: {
           userId,
           ruleId,
+          battleTypeId,
           point: { not: null },
           gameDateTime: {
             gte: startDate,
@@ -255,16 +277,24 @@ describe('AnalysisUseCase', () => {
     it('should filter by end date only when startDate is not provided', async () => {
       const userId = 'test-user-id';
       const ruleId = 1;
+      const battleTypeId = 2;
       const endDate = new Date('2024-11-30T23:59:59Z');
 
       prismaService.match.findMany.mockResolvedValue([]);
 
-      await useCase.getPointTransition(userId, ruleId, undefined, endDate);
+      await useCase.getPointTransition(
+        userId,
+        ruleId,
+        battleTypeId,
+        undefined,
+        endDate,
+      );
 
       expect(prismaService.match.findMany).toHaveBeenCalledWith({
         where: {
           userId,
           ruleId,
+          battleTypeId,
           point: { not: null },
           gameDateTime: {
             lte: endDate,
@@ -283,10 +313,15 @@ describe('AnalysisUseCase', () => {
     it('should return empty array when no matches found', async () => {
       const userId = 'test-user-id';
       const ruleId = 1;
+      const battleTypeId = 2;
 
       prismaService.match.findMany.mockResolvedValue([]);
 
-      const result = await useCase.getPointTransition(userId, ruleId);
+      const result = await useCase.getPointTransition(
+        userId,
+        ruleId,
+        battleTypeId,
+      );
 
       expect(result).toEqual([]);
     });

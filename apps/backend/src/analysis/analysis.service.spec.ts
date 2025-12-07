@@ -80,6 +80,7 @@ describe('AnalysisService', () => {
       const userId = 'test-user-id';
       const request: GetPointTransitionRequest = {
         ruleId: 1,
+        battleTypeId: 2,
       };
 
       const mockPoints = [
@@ -100,6 +101,7 @@ describe('AnalysisService', () => {
       expect(analysisUseCase.getPointTransition).toHaveBeenCalledWith(
         userId,
         1,
+        2,
         undefined,
         undefined,
       );
@@ -109,6 +111,7 @@ describe('AnalysisService', () => {
       const userId = 'test-user-id';
       const request: GetPointTransitionRequest = {
         ruleId: 1,
+        battleTypeId: 2,
         startDate: '2024-11-01T00:00:00Z',
         endDate: '2024-11-30T23:59:59Z',
       };
@@ -120,6 +123,7 @@ describe('AnalysisService', () => {
       expect(analysisUseCase.getPointTransition).toHaveBeenCalledWith(
         userId,
         1,
+        2,
         new Date(2024, 10, 1, 0, 0, 0),
         new Date(2024, 10, 30, 23, 59, 59),
       );
@@ -129,6 +133,7 @@ describe('AnalysisService', () => {
       const userId = 'test-user-id';
       const request: GetPointTransitionRequest = {
         ruleId: 999,
+        battleTypeId: 2,
       };
 
       analysisUseCase.getPointTransition.mockResolvedValue([]);

@@ -18,6 +18,7 @@ export function useVictoryRate(params: UseVictoryRateParams) {
 
 export interface UsePointTransitionParams {
   ruleId: number;
+  battleTypeId: number;
   startDate?: string;
   endDate?: string;
   enabled?: boolean;
@@ -25,13 +26,21 @@ export interface UsePointTransitionParams {
 
 export function usePointTransition(params: UsePointTransitionParams) {
   return useQuery({
-    queryKey: ["analysis", "pointTransition", params.ruleId, params.startDate, params.endDate],
+    queryKey: [
+      "analysis",
+      "pointTransition",
+      params.ruleId,
+      params.battleTypeId,
+      params.startDate,
+      params.endDate,
+    ],
     queryFn: () =>
       AnalysisService.analysisControllerGetPointTransition(
+        params.battleTypeId,
         params.ruleId,
         params.endDate,
         params.startDate
       ),
-    enabled: params.enabled !== false && params.ruleId > 0,
+    enabled: params.enabled !== false && params.ruleId > 0 && params.battleTypeId > 0,
   });
 }
