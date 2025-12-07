@@ -139,6 +139,7 @@ export function MatchSearchFilters({ filters, onFiltersChange }: MatchSearchFilt
                   <Form.Item label="日付範囲">
                     <RangePicker
                       showTime
+                      placeholder={["開始日時", "終了日時"]}
                       value={filters.dateRange}
                       onChange={(dates) =>
                         onFiltersChange({ dateRange: dates as [Dayjs, Dayjs] | undefined })

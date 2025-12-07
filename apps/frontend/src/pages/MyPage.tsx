@@ -20,7 +20,9 @@ export const MyPage = () => {
   if (isLoading) {
     return (
       <MainLayout>
-        <Spin fullscreen />
+        <Flex justify="center" align="center" style={{ height: "600px" }}>
+          <Spin />
+        </Flex>
       </MainLayout>
     );
   }
@@ -35,7 +37,7 @@ export const MyPage = () => {
     <MainLayout>
       <Flex justify="center">
         <Space vertical size="large" style={{ width: "100%", maxWidth: 600 }}>
-          <Title level={1}>My Page</Title>
+          <Title level={1}>マイページ</Title>
           {!isEditing ? (
             <UserProfileView
               name={user.name}

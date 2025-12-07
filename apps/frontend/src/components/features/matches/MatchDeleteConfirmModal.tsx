@@ -29,7 +29,7 @@ export function MatchDeleteConfirmModal({
       {
         onSuccess: () => {
           notification.success({
-            title: "SUCCESS",
+            title: "削除成功",
             description: "試合データを削除しました",
             placement: "topRight",
           });
@@ -38,7 +38,7 @@ export function MatchDeleteConfirmModal({
         },
         onError: (error) => {
           notification.error({
-            title: "ERROR",
+            title: "削除失敗",
             description: `削除に失敗しました: ${error.message}`,
             placement: "topRight",
           });

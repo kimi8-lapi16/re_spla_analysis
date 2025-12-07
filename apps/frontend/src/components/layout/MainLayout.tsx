@@ -82,19 +82,19 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
               {
                 key: "dashboard",
                 icon: <DashboardOutlined />,
-                label: "Dashboard",
+                label: "ダッシュボード",
                 onClick: () => navigate({ to: "/dashboard" }),
               },
               {
                 key: "matches",
                 icon: <TrophyOutlined />,
-                label: "Matches",
+                label: "試合履歴",
                 onClick: () => navigate({ to: "/matches" }),
               },
               {
                 key: "my-page",
                 icon: <UserOutlined />,
-                label: "My Page",
+                label: "マイページ",
                 onClick: () => navigate({ to: "/my-page" }),
               },
             ]}

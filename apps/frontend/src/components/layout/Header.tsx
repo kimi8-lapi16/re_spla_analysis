@@ -51,7 +51,7 @@ export const Header = ({ onLogout }: HeaderProps) => {
             fontWeight: 500,
           }}
         >
-          Logout
+          ログアウト
         </Button>
       )}
     </AntHeader>

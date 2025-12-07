@@ -39,16 +39,16 @@ export const UserProfileEdit = ({ name, email, onCancel, onSuccess }: UserProfil
       updateMutation.mutate(filteredValues, {
         onSuccess: () => {
           notification.success({
-            title: "Success",
-            message: "User information updated successfully",
+            title: "更新が完了しました！",
+            message: "ユーザー情報を更新しました",
             placement: "topRight",
           });
           onSuccess();
         },
         onError: (error: Error) => {
           notification.error({
-            title: "Update Failed",
-            message: `Failed to update user: ${error.message}`,
+            title: "更新に失敗しました",
+            message: `更新に失敗しました: ${error.message}`,
             placement: "topRight",
           });
         },
@@ -63,7 +63,7 @@ export const UserProfileEdit = ({ name, email, onCancel, onSuccess }: UserProfil
       <Space vertical size="large" style={{ width: "100%" }}>
         <Flex justify="space-between" align="center">
           <Title level={2} style={{ margin: 0 }}>
-            User Information
+            ユーザー情報
           </Title>
         </Flex>
 
@@ -77,38 +77,38 @@ export const UserProfileEdit = ({ name, email, onCancel, onSuccess }: UserProfil
           }}
         >
           <Form.Item
-            label="Name"
+            label="名前"
             name="name"
             rules={[
-              { required: true, message: "Please input your name!" },
-              { min: 1, message: "Name must not be empty" },
+              { required: true, message: "名前を入力してください" },
+              { min: 1, message: "名前を入力してください" },
             ]}
           >
-            <Input placeholder="Enter your name" />
+            <Input placeholder="名前を入力" />
           </Form.Item>
 
           <Form.Item
-            label="Email"
+            label="メールアドレス"
             name="email"
             rules={[
-              { required: true, message: "Please input your email!" },
-              { type: "email", message: "Please enter a valid email!" },
+              { required: true, message: "メールアドレスを入力してください" },
+              { type: "email", message: "有効なメールアドレスを入力してください" },
             ]}
           >
-            <Input placeholder="Enter your email" />
+            <Input placeholder="メールアドレスを入力" />
           </Form.Item>
 
           <Form.Item
-            label="Password"
+            label="パスワード"
             name="password"
-            rules={[{ min: 8, message: "Password must be at least 8 characters" }]}
+            rules={[{ min: 8, message: "パスワードは8文字以上である必要があります" }]}
           >
-            <Input.Password placeholder="Enter new password (optional)" />
+            <Input.Password placeholder="新しいパスワードを入力（任意）" />
           </Form.Item>
 
           <Flex gap={8} justify="flex-end">
             <Button variant="secondary" icon={<CloseOutlined />} onClick={onCancel}>
-              Cancel
+              キャンセル
             </Button>
             <Button
               variant="primary"
@@ -116,7 +116,7 @@ export const UserProfileEdit = ({ name, email, onCancel, onSuccess }: UserProfil
               onClick={handleSave}
               loading={updateMutation.isPending}
             >
-              Save
+              保存
             </Button>
           </Flex>
         </Form>

@@ -21,7 +21,7 @@ function App() {
             cursor: "pointer",
           }}
         >
-          Login
+          ログイン
         </button>
         <button
           onClick={() => setPage("signup")}
@@ -34,7 +34,7 @@ function App() {
             cursor: "pointer",
           }}
         >
-          Sign Up
+          新規登録
         </button>
       </nav>
 
