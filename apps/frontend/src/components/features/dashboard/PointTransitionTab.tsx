@@ -19,9 +19,15 @@ export function PointTransitionTab() {
   const [selectedBattleTypeId, setSelectedBattleTypeId] = useState<number | null>(null);
   const [dateRange, setDateRange] = useState<[Dayjs, Dayjs] | null>(null);
 
-  const isSelectionComplete = selectedRuleId !== null && selectedRuleId > 0 && selectedBattleTypeId !== null && selectedBattleTypeId > 0;
+  const isSelectionComplete =
+    selectedRuleId !== null &&
+    selectedRuleId > 0 &&
+    selectedBattleTypeId !== null &&
+    selectedBattleTypeId > 0;
 
-  const startDate = dateRange?.[0] ? formatDateTimeAsJstIso(dateRange[0].startOf("day")) : undefined;
+  const startDate = dateRange?.[0]
+    ? formatDateTimeAsJstIso(dateRange[0].startOf("day"))
+    : undefined;
   const endDate = dateRange?.[1] ? formatDateTimeAsJstIso(dateRange[1].endOf("day")) : undefined;
 
   const { data, isLoading } = usePointTransition({
@@ -104,11 +110,7 @@ export function PointTransitionTab() {
         {!isSelectionComplete ? (
           <Text type="secondary">バトルタイプとルールを選択してください</Text>
         ) : (
-          <PointTransitionChart
-            data={data?.points}
-            isLoading={isLoading}
-            ruleName={chartTitle}
-          />
+          <PointTransitionChart data={data?.points} isLoading={isLoading} ruleName={chartTitle} />
         )}
       </Card>
     </Flex>
