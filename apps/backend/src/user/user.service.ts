@@ -4,9 +4,8 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
+import { TokenService } from '../token/token.service';
 import { UserRepository } from './user.repository';
 import { CreateUser, UpdateUser, UserResponse } from './user.dto';
 import { UserUseCase } from './user.usecase';
@@ -16,8 +15,7 @@ export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly userUseCase: UserUseCase,
-    private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
+    private readonly tokenService: TokenService,
   ) {}
 
   async createUser(dto: CreateUser): Promise<UserResponse> {
@@ -83,23 +81,8 @@ export class UserService {
     return this.toUserResponse(updatedUser);
   }
 
-  async generateTokens(userId: string, email: string) {
-    const payload = { sub: userId, email };
-
-    const accessToken = this.jwtService.sign(payload, {
-      secret: this.configService.get<string>('JWT_SECRET', 'your-secret-key'),
-      expiresIn: '15m',
-    });
-
-    const refreshToken = this.jwtService.sign(payload, {
-      secret: this.configService.get<string>(
-        'JWT_REFRESH_SECRET',
-        'your-refresh-secret-key',
-      ),
-      expiresIn: '7d',
-    });
-
-    return { accessToken, refreshToken };
+  generateTokens(userId: string, email: string) {
+    return this.tokenService.generateTokens(userId, email);
   }
 
   private toUserResponse(user: {

@@ -1,8 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
-import { CookieOptions } from 'express';
 
-export class LoginDto {
+export class LoginRequest {
   @ApiProperty({
     description: 'User email address',
     example: 'user@example.com',
@@ -22,11 +21,16 @@ export class LoginDto {
   password: string;
 }
 
-export interface ResponseWithCookie {
-  cookie(name: string, val: string, options: CookieOptions): this;
+export class LoginResponse {
+  @ApiProperty({
+    description: 'JWT access token',
+    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+    type: String,
+  })
+  accessToken: string;
 }
 
-export class RefreshTokenResponseDto {
+export class RefreshTokenResponse {
   @ApiProperty({
     description: 'New access token',
     example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',

@@ -4,18 +4,17 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { AppModule } from './app.module';
 
-// Import all DTOs and entities that should be included in OpenAPI
-import { CreateUser, UserResponse, AuthTokenResponse } from './user/user.dto';
-import { LoginDto } from './auth/auth.dto';
-import { BulkCreateMatchesRequest, BulkCreateMatchesResponse, CreateMatchBody } from './match/match.dto';
-import { GetWeaponsResponse, WeaponResponse } from './weapon/weapon.dto';
-import { SubWeapon, SpecialWeapon } from './weapon/weapon.entity';
-import { GetStagesResponse } from './stage/stage.dto';
-import { Stage } from './stage/stage.entity';
-import { GetRulesResponse } from './rule/rule.dto';
-import { Rule } from './rule/rule.entity';
+import { LoginRequest } from './auth/auth.dto';
 import { GetBattleTypesResponse } from './battle-type/battle-type.dto';
 import { BattleType } from './battle-type/battle-type.entity';
+import { BulkCreateMatchesRequest, BulkCreateMatchesResponse, CreateMatchBody } from './match/match.dto';
+import { GetRulesResponse } from './rule/rule.dto';
+import { Rule } from './rule/rule.entity';
+import { GetStagesResponse } from './stage/stage.dto';
+import { Stage } from './stage/stage.entity';
+import { AuthTokenResponse, CreateUser, UserResponse } from './user/user.dto';
+import { GetWeaponsResponse, WeaponResponse } from './weapon/weapon.dto';
+import { SpecialWeapon, SubWeapon } from './weapon/weapon.entity';
 
 async function generateOpenApiSpec() {
   try {
@@ -38,7 +37,7 @@ async function generateOpenApiSpec() {
         CreateUser,
         UserResponse,
         AuthTokenResponse,
-        LoginDto,
+        LoginRequest,
         BulkCreateMatchesRequest,
         BulkCreateMatchesResponse,
         CreateMatchBody,

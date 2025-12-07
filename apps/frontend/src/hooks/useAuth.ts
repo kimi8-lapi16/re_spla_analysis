@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AuthService } from "../api";
-import type { LoginDto } from "../api";
+import type { LoginRequest } from "../api";
 import { useAuthStore } from "../store/authStore";
 
 /**
@@ -31,7 +31,7 @@ export function useLogin() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (credentials: LoginDto) => AuthService.authControllerLogin(credentials),
+    mutationFn: (credentials: LoginRequest) => AuthService.authControllerLogin(credentials),
     onSuccess: () => {
       // Token is stored by the caller (LoginPage component)
       // Invalidate and refetch user-related queries

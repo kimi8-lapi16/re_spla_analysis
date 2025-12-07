@@ -4,14 +4,13 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { UserSecret } from 'generated/prisma/client';
 import { UserService } from './user.service';
 import { UserRepository } from './user.repository';
 import { CreateUser, UpdateUser, UserWithSecret } from './user.dto';
 import { UserUseCase } from './user.usecase';
+import { TokenService } from '../token/token.service';
 
 jest.mock('bcrypt');
 
@@ -57,15 +56,9 @@ describe('UserService', () => {
           },
         },
         {
-          provide: JwtService,
+          provide: TokenService,
           useValue: {
-            sign: jest.fn(),
-          },
-        },
-        {
-          provide: ConfigService,
-          useValue: {
-            get: jest.fn(),
+            generateTokens: jest.fn(),
           },
         },
       ],
