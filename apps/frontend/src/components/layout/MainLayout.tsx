@@ -4,7 +4,7 @@ import { DashboardOutlined, MenuFoldOutlined, MenuUnfoldOutlined, TrophyOutlined
 import { useNavigate, useLocation } from "@tanstack/react-router";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
-import { authUtils } from "../../utils/auth";
+import { useAuthStore } from "../../store/authStore";
 
 const { Sider, Content } = Layout;
 
@@ -16,9 +16,10 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const clearAccessToken = useAuthStore((state) => state.clearAccessToken);
 
   const handleLogout = () => {
-    authUtils.removeAccessToken();
+    clearAccessToken();
     navigate({ to: "/login" });
   };
 

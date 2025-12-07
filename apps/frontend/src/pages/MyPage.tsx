@@ -5,7 +5,7 @@ import { UserProfileEdit } from "../components/features/mypage/UserProfileEdit";
 import { UserProfileView } from "../components/features/mypage/UserProfileView";
 import { MainLayout } from "../components/layout/MainLayout";
 import { useCurrentUser } from "../hooks/useUser";
-import { authUtils } from "../utils/auth";
+import { useAuthStore } from "../store/authStore";
 
 const { Title } = Typography;
 
@@ -13,6 +13,7 @@ export const MyPage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const navigate = useNavigate();
   const { data, isLoading, isError } = useCurrentUser();
+  const clearAccessToken = useAuthStore((state) => state.clearAccessToken);
 
   const user = data?.user;
 
@@ -25,7 +26,7 @@ export const MyPage = () => {
   }
 
   if (!user || isError) {
-    authUtils.removeAccessToken();
+    clearAccessToken();
     navigate({ to: "/login" });
     return null;
   }

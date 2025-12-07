@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AuthService } from "../api";
 import type { LoginDto } from "../api";
-import { authUtils } from "../utils/auth";
+import { useAuthStore } from "../store/authStore";
 
 /**
  * Hook for user login
@@ -54,11 +54,12 @@ export function useLogin() {
  */
 export function useLogout() {
   const queryClient = useQueryClient();
+  const clearAccessToken = useAuthStore((state) => state.clearAccessToken);
 
   return useMutation({
     mutationFn: async () => {
       // Clear access token
-      authUtils.removeAccessToken();
+      clearAccessToken();
       // TODO: Call refresh token revocation endpoint if available
     },
     onSuccess: () => {
@@ -86,11 +87,13 @@ export function useLogout() {
  * ```
  */
 export function useRefreshToken() {
+  const setAccessToken = useAuthStore((state) => state.setAccessToken);
+
   return useMutation({
     mutationFn: () => AuthService.authControllerRefresh(),
     onSuccess: (data) => {
       // Store new access token
-      authUtils.setAccessToken(data.accessToken);
+      setAccessToken(data.accessToken);
     },
   });
 }

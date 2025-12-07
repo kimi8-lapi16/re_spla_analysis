@@ -1,7 +1,7 @@
 import axios from "axios";
 import { OpenAPI } from "../api";
 import { setupAxiosInterceptor } from "./axios-interceptor";
-import { authUtils } from "../utils/auth";
+import { useAuthStore } from "../store/authStore";
 
 /**
  * Configure OpenAPI client
@@ -19,7 +19,7 @@ export function configureApiClient(onLogout: () => void) {
   // Set token resolver for Bearer authentication
   // This will be called automatically for endpoints that require authentication
   OpenAPI.TOKEN = async () => {
-    const token = authUtils.getAccessToken();
+    const token = useAuthStore.getState().accessToken;
     return token || "";
   };
 

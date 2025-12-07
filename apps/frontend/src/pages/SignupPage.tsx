@@ -6,7 +6,7 @@ import { UserOutlined, MailOutlined, LockOutlined } from "@ant-design/icons";
 import { useNavigate, Link } from "@tanstack/react-router";
 import { useCreateUser } from "../hooks/useUser";
 import { useNotification } from "../contexts/NotificationContext";
-import { authUtils } from "../utils/auth";
+import { useAuthStore } from "../store/authStore";
 import { AuthLayout } from "../components/layout/AuthLayout";
 import { Button, Card, Input } from "../components/base";
 
@@ -28,6 +28,7 @@ export function SignupPage() {
   const navigate = useNavigate();
   const notification = useNotification();
   const { mutate: createUser, isPending } = useCreateUser();
+  const setAccessToken = useAuthStore((state) => state.setAccessToken);
 
   const {
     control,
@@ -45,7 +46,7 @@ export function SignupPage() {
   const onSubmit = (data: RegisterFormData) => {
     createUser(data, {
       onSuccess: (response) => {
-        authUtils.setAccessToken(response.accessToken);
+        setAccessToken(response.accessToken);
         notification.success({
           title: "登録成功",
           description: `${response.user.name}さん、ようこそ！`,
