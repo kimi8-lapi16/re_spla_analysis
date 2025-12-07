@@ -17,10 +17,7 @@
  (swaggerの生成とopenapiクライアントの生成をやってくれます、これを実行しないとファイルがいろいろ足りません)
 
 ### アプリの立ち上げ
-- `cd apps/frontend && pnpm run dev`
-- `cd apps/backend && pnpm run dev`
-
-(turboで一気に立ち上げる仕組みも整えたい)
+- `pnpm run dev`
 
 ## 設計周り
 - フロントはまだふわふわしてるので、バックエンドだけ
