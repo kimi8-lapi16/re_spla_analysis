@@ -7,6 +7,7 @@
     "dev": "vite --host",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "format": "prettier --write \"src/**/*.{ts,tsx}\" --ignore-pattern \"src/api/**\"",
     "preview": "vite preview",
     "api:generate": "openapi --input ../backend/openapi.json --output ./src/api --client axios"
   },

@@ -41,7 +41,10 @@ describe('TokenService', () => {
       jwtService.sign.mockReturnValue('access-token');
       configService.get.mockReturnValue('jwt-secret');
 
-      const result = service.generateAccessToken('user-id', 'user@example.com');
+      const result = service.generateAccessToken({
+        userId: 'user-id',
+        email: 'user@example.com',
+      });
 
       expect(result).toBe('access-token');
       expect(jwtService.sign).toHaveBeenCalledWith(
@@ -56,7 +59,10 @@ describe('TokenService', () => {
         (key: string, defaultValue: string) => defaultValue,
       );
 
-      service.generateAccessToken('user-id', 'user@example.com');
+      service.generateAccessToken({
+        userId: 'user-id',
+        email: 'user@example.com',
+      });
 
       expect(jwtService.sign).toHaveBeenCalledWith(
         { sub: 'user-id', email: 'user@example.com' },
@@ -70,7 +76,10 @@ describe('TokenService', () => {
       jwtService.sign.mockReturnValue('refresh-token');
       configService.get.mockReturnValue('jwt-refresh-secret');
 
-      const result = service.generateRefreshToken('user-id', 'user@example.com');
+      const result = service.generateRefreshToken({
+        userId: 'user-id',
+        email: 'user@example.com',
+      });
 
       expect(result).toBe('refresh-token');
       expect(jwtService.sign).toHaveBeenCalledWith(
@@ -85,7 +94,10 @@ describe('TokenService', () => {
         (key: string, defaultValue: string) => defaultValue,
       );
 
-      service.generateRefreshToken('user-id', 'user@example.com');
+      service.generateRefreshToken({
+        userId: 'user-id',
+        email: 'user@example.com',
+      });
 
       expect(jwtService.sign).toHaveBeenCalledWith(
         { sub: 'user-id', email: 'user@example.com' },
@@ -103,7 +115,10 @@ describe('TokenService', () => {
         .mockReturnValueOnce('jwt-secret')
         .mockReturnValueOnce('jwt-refresh-secret');
 
-      const result = service.generateTokens('user-id', 'user@example.com');
+      const result = service.generateTokens({
+        userId: 'user-id',
+        email: 'user@example.com',
+      });
 
       expect(result).toEqual({
         accessToken: 'access-token',

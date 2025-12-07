@@ -110,10 +110,7 @@ export function LoginPage() {
             </Form.Item>
 
             <div style={{ textAlign: "center", marginTop: "16px" }}>
-              アカウントをお持ちでないですか？{" "}
-              <Link to="/register">
-                新規登録
-              </Link>
+              アカウントをお持ちでないですか？ <Link to="/register">新規登録</Link>
             </div>
           </form>
         </Card>

@@ -28,7 +28,15 @@ export class MatchUseCase {
 
     // Prepare data for bulk insert
     const matchDataList: CreateMatch[] = matches.map(
-      ({ ruleId, weaponId, stageId, battleTypeId, result, gameDateTime, point }) => ({
+      ({
+        ruleId,
+        weaponId,
+        stageId,
+        battleTypeId,
+        result,
+        gameDateTime,
+        point,
+      }) => ({
         userId,
         ruleId,
         weaponId,
@@ -46,9 +54,7 @@ export class MatchUseCase {
     });
   }
 
-  async bulkUpdateMatches(
-    matches: UpdateMatchBody[],
-  ): Promise<void> {
+  async bulkUpdateMatches(matches: UpdateMatchBody[]): Promise<void> {
     // Validate all reference IDs
     await this.validateMatches(matches);
 
@@ -72,12 +78,16 @@ export class MatchUseCase {
     });
   }
 
-  private async validateMatches(matches: CreateMatchBody[] | UpdateMatchBody[]): Promise<void> {
+  private async validateMatches(
+    matches: CreateMatchBody[] | UpdateMatchBody[],
+  ): Promise<void> {
     // Collect all unique IDs to validate
     const ruleIds = Array.from(new Set(matches.map((m) => m.ruleId)));
     const weaponIds = Array.from(new Set(matches.map((m) => m.weaponId)));
     const stageIds = Array.from(new Set(matches.map((m) => m.stageId)));
-    const battleTypeIds = Array.from(new Set(matches.map((m) => m.battleTypeId)));
+    const battleTypeIds = Array.from(
+      new Set(matches.map((m) => m.battleTypeId)),
+    );
 
     // Validate all IDs in parallel with bulk queries
     const [rules, weapons, stages, battleTypes] = await Promise.all([
@@ -96,7 +106,9 @@ export class MatchUseCase {
     const invalidRules = ruleIds.filter((id) => !foundRuleIds.has(id));
     const invalidWeapons = weaponIds.filter((id) => !foundWeaponIds.has(id));
     const invalidStages = stageIds.filter((id) => !foundStageIds.has(id));
-    const invalidBattleTypes = battleTypeIds.filter((id) => !foundBattleTypeIds.has(id));
+    const invalidBattleTypes = battleTypeIds.filter(
+      (id) => !foundBattleTypeIds.has(id),
+    );
 
     // Collect all validation errors
     const errors: string[] = [];

@@ -48,10 +48,7 @@ export class MatchRepository {
     return prismaMatches.map((m) => this.toDomain(m));
   }
 
-  async findByUserIdAndIds(
-    userId: string,
-    ids: string[],
-  ): Promise<Match[]> {
+  async findByUserIdAndIds(userId: string, ids: string[]): Promise<Match[]> {
     const prismaMatches = await this.prisma.match.findMany({
       where: {
         id: { in: ids },

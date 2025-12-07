@@ -84,7 +84,10 @@ export class MatchController {
     description: 'Invalid input data or validation failed',
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - matches do not belong to user' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - matches do not belong to user',
+  })
   async bulkUpdateMatches(
     @GetCurrentUser('userId') userId: string,
     @Body() request: BulkUpdateMatchesRequest,
@@ -107,7 +110,10 @@ export class MatchController {
     description: 'Invalid input data',
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - matches do not belong to user' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - matches do not belong to user',
+  })
   async bulkDeleteMatches(
     @GetCurrentUser('userId') userId: string,
     @Body() request: BulkDeleteMatchesRequest,

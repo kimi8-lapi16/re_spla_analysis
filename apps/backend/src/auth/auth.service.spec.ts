@@ -138,10 +138,10 @@ describe('AuthService', () => {
         refreshToken: 'refresh-token',
       });
       expect(userService.findByEmail).toHaveBeenCalledWith('test@example.com');
-      expect(tokenService.generateTokens).toHaveBeenCalledWith(
-        'test-user-id',
-        'test@example.com',
-      );
+      expect(tokenService.generateTokens).toHaveBeenCalledWith({
+        userId: 'test-user-id',
+        email: 'test@example.com',
+      });
     });
 
     it('should throw UnauthorizedException on invalid credentials', async () => {
@@ -162,10 +162,10 @@ describe('AuthService', () => {
       const result = await service.refresh('test-user-id');
 
       expect(result).toEqual({ accessToken: 'new-access-token' });
-      expect(tokenService.generateAccessToken).toHaveBeenCalledWith(
-        'test-user-id',
-        'test@example.com',
-      );
+      expect(tokenService.generateAccessToken).toHaveBeenCalledWith({
+        userId: 'test-user-id',
+        email: 'test@example.com',
+      });
     });
 
     it('should use empty email if user not found', async () => {
@@ -175,10 +175,10 @@ describe('AuthService', () => {
       const result = await service.refresh('non-existent-id');
 
       expect(result).toEqual({ accessToken: 'new-access-token' });
-      expect(tokenService.generateAccessToken).toHaveBeenCalledWith(
-        'non-existent-id',
-        '',
-      );
+      expect(tokenService.generateAccessToken).toHaveBeenCalledWith({
+        userId: 'non-existent-id',
+        email: '',
+      });
     });
   });
 });

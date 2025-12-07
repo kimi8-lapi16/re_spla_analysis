@@ -1,9 +1,9 @@
-import { Card as AntCard, type CardProps as AntCardProps } from 'antd';
-import { forwardRef } from 'react';
-import { colors } from '../../theme';
+import { Card as AntCard, type CardProps as AntCardProps } from "antd";
+import { forwardRef } from "react";
+import { colors } from "../../theme";
 
-export interface CardProps extends Omit<AntCardProps, 'variant'> {
-  variant?: 'default' | 'bordered' | 'elevated';
+export interface CardProps extends Omit<AntCardProps, "variant"> {
+  variant?: "default" | "bordered" | "elevated";
 }
 
 /**
@@ -11,7 +11,7 @@ export interface CardProps extends Omit<AntCardProps, 'variant'> {
  * Extends Ant Design Card with custom variant styles
  */
 export const Card = forwardRef<HTMLDivElement, CardProps>(
-  ({ variant = 'default', style, bordered, ...props }, ref) => {
+  ({ variant = "default", style, bordered, ...props }, ref) => {
     const getCardStyle = (): React.CSSProperties => {
       const baseStyle: React.CSSProperties = {
         borderRadius: 12,
@@ -19,24 +19,24 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
       };
 
       switch (variant) {
-        case 'default':
+        case "default":
           return {
             ...baseStyle,
             border: `1px solid ${colors.neutral[200]}`,
           };
 
-        case 'bordered':
+        case "bordered":
           return {
             ...baseStyle,
             border: `2px solid ${colors.primary[200]}`,
             backgroundColor: colors.primary[50],
           };
 
-        case 'elevated':
+        case "elevated":
           return {
             ...baseStyle,
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-            border: 'none',
+            boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+            border: "none",
           };
 
         default:
@@ -45,14 +45,9 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
     };
 
     return (
-      <AntCard
-        ref={ref}
-        bordered={variant !== 'elevated'}
-        style={getCardStyle()}
-        {...props}
-      />
+      <AntCard ref={ref} bordered={variant !== "elevated"} style={getCardStyle()} {...props} />
     );
   }
 );
 
-Card.displayName = 'Card';
+Card.displayName = "Card";

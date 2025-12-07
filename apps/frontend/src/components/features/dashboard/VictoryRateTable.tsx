@@ -12,11 +12,7 @@ type VictoryRateTableProps = {
 
 type TableRow = VictoryRateItem & { key: string };
 
-export function VictoryRateTable({
-  data,
-  isLoading,
-  groupBy,
-}: VictoryRateTableProps) {
+export function VictoryRateTable({ data, isLoading, groupBy }: VictoryRateTableProps) {
   const tableData: TableRow[] = useMemo(() => {
     if (!data) return [];
     return data.map((item, index) => ({

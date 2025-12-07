@@ -14,15 +14,7 @@ import dayjs from "dayjs";
 import type { PointTransitionItem } from "../../../api";
 
 // Chart.js の登録
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 const CHART_HEIGHT = 400;
 
@@ -32,11 +24,7 @@ type PointTransitionChartProps = {
   ruleName?: string;
 };
 
-export function PointTransitionChart({
-  data,
-  isLoading,
-  ruleName,
-}: PointTransitionChartProps) {
+export function PointTransitionChart({ data, isLoading, ruleName }: PointTransitionChartProps) {
   if (isLoading) {
     return (
       <Flex justify="center" align="center" style={{ height: CHART_HEIGHT }}>
@@ -46,18 +34,11 @@ export function PointTransitionChart({
   }
 
   if (!data || data.length === 0) {
-    return (
-      <Empty
-        description="ポイントデータがありません"
-        image={Empty.PRESENTED_IMAGE_SIMPLE}
-      />
-    );
+    return <Empty description="ポイントデータがありません" image={Empty.PRESENTED_IMAGE_SIMPLE} />;
   }
 
   const chartData = {
-    labels: data.map((item) =>
-      dayjs(item.gameDateTime).format("MM/DD HH:mm")
-    ),
+    labels: data.map((item) => dayjs(item.gameDateTime).format("MM/DD HH:mm")),
     datasets: [
       {
         label: ruleName ? `${ruleName} ポイント` : "ポイント",

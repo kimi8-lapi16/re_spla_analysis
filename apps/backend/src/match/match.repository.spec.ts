@@ -183,11 +183,17 @@ describe('MatchRepository', () => {
 
       const mockTx = {
         match: {
-          update: jest.fn().mockResolvedValue({ ...mockPrismaMatch, ...updateData }),
+          update: jest
+            .fn()
+            .mockResolvedValue({ ...mockPrismaMatch, ...updateData }),
         },
       };
 
-      const result = await repository.updateOne(matchId, updateData, mockTx as never);
+      const result = await repository.updateOne(
+        matchId,
+        updateData,
+        mockTx as never,
+      );
 
       expect(mockTx.match.update).toHaveBeenCalledWith({
         where: { id: matchId },

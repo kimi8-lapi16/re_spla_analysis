@@ -305,8 +305,12 @@ describe('MatchService', () => {
 
       const result = await service.bulkUpdateMatches(userId, request);
 
-      expect(matchRepository.findByUserIdAndIds).toHaveBeenCalledWith(userId, ['match-1']);
-      expect(matchUseCase.bulkUpdateMatches).toHaveBeenCalledWith(request.matches);
+      expect(matchRepository.findByUserIdAndIds).toHaveBeenCalledWith(userId, [
+        'match-1',
+      ]);
+      expect(matchUseCase.bulkUpdateMatches).toHaveBeenCalledWith(
+        request.matches,
+      );
       expect(result).toEqual({ success: true });
     });
 
@@ -338,7 +342,9 @@ describe('MatchService', () => {
       // User only owns match-1, not match-2
       matchRepository.findByUserIdAndIds.mockResolvedValue([mockMatch]);
 
-      await expect(service.bulkUpdateMatches(userId, request)).rejects.toThrow(ForbiddenException);
+      await expect(service.bulkUpdateMatches(userId, request)).rejects.toThrow(
+        ForbiddenException,
+      );
       expect(matchUseCase.bulkUpdateMatches).not.toHaveBeenCalled();
     });
 
@@ -361,7 +367,9 @@ describe('MatchService', () => {
       matchRepository.findByUserIdAndIds.mockResolvedValue([mockMatch]);
       matchUseCase.bulkUpdateMatches.mockRejectedValue(new Error('Test error'));
 
-      await expect(service.bulkUpdateMatches(userId, request)).rejects.toThrow('Test error');
+      await expect(service.bulkUpdateMatches(userId, request)).rejects.toThrow(
+        'Test error',
+      );
     });
   });
 
@@ -378,8 +386,14 @@ describe('MatchService', () => {
 
       const result = await service.bulkDeleteMatches(userId, request);
 
-      expect(matchRepository.findByUserIdAndIds).toHaveBeenCalledWith(userId, ['match-1', 'match-2']);
-      expect(matchRepository.deleteMany).toHaveBeenCalledWith(userId, request.ids);
+      expect(matchRepository.findByUserIdAndIds).toHaveBeenCalledWith(userId, [
+        'match-1',
+        'match-2',
+      ]);
+      expect(matchRepository.deleteMany).toHaveBeenCalledWith(
+        userId,
+        request.ids,
+      );
       expect(result).toEqual({ success: true });
     });
 
@@ -392,7 +406,9 @@ describe('MatchService', () => {
       // User only owns match-1, not match-2
       matchRepository.findByUserIdAndIds.mockResolvedValue([mockMatch]);
 
-      await expect(service.bulkDeleteMatches(userId, request)).rejects.toThrow(ForbiddenException);
+      await expect(service.bulkDeleteMatches(userId, request)).rejects.toThrow(
+        ForbiddenException,
+      );
       expect(matchRepository.deleteMany).not.toHaveBeenCalled();
     });
 
@@ -405,7 +421,9 @@ describe('MatchService', () => {
       matchRepository.findByUserIdAndIds.mockResolvedValue([mockMatch]);
       matchRepository.deleteMany.mockRejectedValue(new Error('Test error'));
 
-      await expect(service.bulkDeleteMatches(userId, request)).rejects.toThrow('Test error');
+      await expect(service.bulkDeleteMatches(userId, request)).rejects.toThrow(
+        'Test error',
+      );
     });
   });
 });

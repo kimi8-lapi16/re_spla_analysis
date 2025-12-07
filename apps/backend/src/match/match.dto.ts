@@ -80,7 +80,11 @@ export class BulkCreateMatchesRequest {
 }
 
 export class BulkCreateMatchesResponse {
-  @ApiProperty({ description: 'Operation success status', example: true, type: Boolean })
+  @ApiProperty({
+    description: 'Operation success status',
+    example: true,
+    type: Boolean,
+  })
   success: boolean;
 }
 
@@ -236,7 +240,11 @@ export class SearchMatchesResponse {
 }
 
 export class UpdateMatchBody {
-  @ApiProperty({ description: 'Match ID', example: '550e8400-e29b-41d4-a716-446655440000', type: String })
+  @ApiProperty({
+    description: 'Match ID',
+    example: '550e8400-e29b-41d4-a716-446655440000',
+    type: String,
+  })
   @IsUUID('4')
   id: string;
 
@@ -302,7 +310,11 @@ export class BulkUpdateMatchesRequest {
 }
 
 export class BulkUpdateMatchesResponse {
-  @ApiProperty({ description: 'Operation success status', example: true, type: Boolean })
+  @ApiProperty({
+    description: 'Operation success status',
+    example: true,
+    type: Boolean,
+  })
   success: boolean;
 }
 
@@ -319,7 +331,11 @@ export class BulkDeleteMatchesRequest {
 }
 
 export class BulkDeleteMatchesResponse {
-  @ApiProperty({ description: 'Operation success status', example: true, type: Boolean })
+  @ApiProperty({
+    description: 'Operation success status',
+    example: true,
+    type: Boolean,
+  })
   success: boolean;
 }
 

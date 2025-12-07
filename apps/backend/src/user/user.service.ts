@@ -1,13 +1,12 @@
 import {
-  Injectable,
   ConflictException,
+  Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { TokenService } from '../token/token.service';
-import { UserRepository } from './user.repository';
 import { CreateUser, UpdateUser, UserResponse } from './user.dto';
+import { UserRepository } from './user.repository';
 import { UserUseCase } from './user.usecase';
 
 @Injectable()
@@ -15,7 +14,6 @@ export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly userUseCase: UserUseCase,
-    private readonly tokenService: TokenService,
   ) {}
 
   async createUser(dto: CreateUser): Promise<UserResponse> {
@@ -51,10 +49,7 @@ export class UserService {
     return this.toUserResponse(user);
   }
 
-  async updateUser(
-    userId: string,
-    dto: UpdateUser,
-  ): Promise<UserResponse> {
+  async updateUser(userId: string, dto: UpdateUser): Promise<UserResponse> {
     const existingUser = await this.userRepository.findById(userId);
     if (!existingUser) {
       throw new NotFoundException('User not found');
@@ -79,10 +74,6 @@ export class UserService {
     });
 
     return this.toUserResponse(updatedUser);
-  }
-
-  generateTokens(userId: string, email: string) {
-    return this.tokenService.generateTokens(userId, email);
   }
 
   private toUserResponse(user: {

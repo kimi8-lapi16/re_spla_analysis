@@ -1,6 +1,11 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { MatchesService } from '../api';
-import type { BulkCreateMatchesRequest, BulkUpdateMatchesRequest, BulkDeleteMatchesRequest, SearchMatchesRequest } from '../api';
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { MatchesService } from "../api";
+import type {
+  BulkCreateMatchesRequest,
+  BulkUpdateMatchesRequest,
+  BulkDeleteMatchesRequest,
+  SearchMatchesRequest,
+} from "../api";
 
 export function useBulkCreateMatches() {
   return useMutation({
@@ -11,7 +16,7 @@ export function useBulkCreateMatches() {
 
 export function useSearchMatches(searchParams: SearchMatchesRequest) {
   return useQuery({
-    queryKey: ['matches', 'search', searchParams],
+    queryKey: ["matches", "search", searchParams],
     queryFn: () => MatchesService.matchControllerSearchMatches(searchParams),
     enabled: !!searchParams.operator,
   });

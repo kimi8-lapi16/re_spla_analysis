@@ -1,6 +1,12 @@
 import { Layout, Menu } from "antd";
 import { type ReactNode, useState } from "react";
-import { DashboardOutlined, MenuFoldOutlined, MenuUnfoldOutlined, TrophyOutlined, UserOutlined } from "@ant-design/icons";
+import {
+  DashboardOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+  TrophyOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
 import { useNavigate, useLocation } from "@tanstack/react-router";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
@@ -24,16 +30,16 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
   };
 
   const getSelectedKey = () => {
-    if (location.pathname.startsWith('/matches')) {
-      return 'matches';
+    if (location.pathname.startsWith("/matches")) {
+      return "matches";
     }
-    if (location.pathname === '/my-page') {
-      return 'my-page';
+    if (location.pathname === "/my-page") {
+      return "my-page";
     }
-    if (location.pathname === '/dashboard') {
-      return 'dashboard';
+    if (location.pathname === "/dashboard") {
+      return "dashboard";
     }
-    return 'dashboard';
+    return "dashboard";
   };
 
   return (

@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { TokenService } from '../token/token.service';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { UpdateUser, UserResponse } from './user.dto';
@@ -30,6 +31,12 @@ describe('UserController', () => {
           useValue: {
             findById: jest.fn(),
             updateUser: jest.fn(),
+          },
+        },
+        {
+          provide: TokenService,
+          useValue: {
+            generateTokens: jest.fn(),
           },
         },
       ],

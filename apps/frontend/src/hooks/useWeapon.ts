@@ -1,9 +1,9 @@
-import { useQuery } from '@tanstack/react-query';
-import { WeaponsService } from '../api';
+import { useQuery } from "@tanstack/react-query";
+import { WeaponsService } from "../api";
 
 export function useWeapons() {
   const query = useQuery({
-    queryKey: ['weapons'],
+    queryKey: ["weapons"],
     queryFn: () => WeaponsService.weaponControllerGetWeapons(),
   });
   return {

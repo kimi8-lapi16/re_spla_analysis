@@ -7,7 +7,11 @@ import { AppModule } from './app.module';
 import { LoginRequest } from './auth/auth.dto';
 import { GetBattleTypesResponse } from './battle-type/battle-type.dto';
 import { BattleType } from './battle-type/battle-type.entity';
-import { BulkCreateMatchesRequest, BulkCreateMatchesResponse, CreateMatchBody } from './match/match.dto';
+import {
+  BulkCreateMatchesRequest,
+  BulkCreateMatchesResponse,
+  CreateMatchBody,
+} from './match/match.dto';
 import { GetRulesResponse } from './rule/rule.dto';
 import { Rule } from './rule/rule.entity';
 import { GetStagesResponse } from './stage/stage.dto';

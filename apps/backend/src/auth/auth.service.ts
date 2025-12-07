@@ -35,13 +35,16 @@ export class AuthService {
     const user = await this.userService.findById(userId);
     const email = user?.email ?? '';
 
-    return this.tokenService.generateTokens(userId, email);
+    return this.tokenService.generateTokens({ userId, email });
   }
 
   async refresh(userId: string) {
     const user = await this.userService.findById(userId);
     const email = user?.email ?? '';
-    const accessToken = this.tokenService.generateAccessToken(userId, email);
+    const accessToken = this.tokenService.generateAccessToken({
+      userId,
+      email,
+    });
 
     return { accessToken };
   }

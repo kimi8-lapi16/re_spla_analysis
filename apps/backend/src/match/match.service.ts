@@ -95,8 +95,14 @@ export class MatchService {
     return { success: true };
   }
 
-  private async verifyOwnership(userId: string, matchIds: string[]): Promise<void> {
-    const ownedMatches = await this.matchRepository.findByUserIdAndIds(userId, matchIds);
+  private async verifyOwnership(
+    userId: string,
+    matchIds: string[],
+  ): Promise<void> {
+    const ownedMatches = await this.matchRepository.findByUserIdAndIds(
+      userId,
+      matchIds,
+    );
     if (ownedMatches.length !== matchIds.length) {
       throw new ForbiddenException('Not all matches belong to the user');
     }

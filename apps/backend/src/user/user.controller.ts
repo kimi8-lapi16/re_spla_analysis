@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
+import { TokenService } from '../token/token.service';
 import {
   CurrentUser,
   GetCurrentUser,
@@ -25,7 +26,10 @@ import { UserService } from './user.service';
 @ApiTags('users')
 @Controller('users')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly tokenService: TokenService,
+  ) {}
 
   @Post()
   @ApiBody({ type: CreateUser })
@@ -34,11 +38,10 @@ export class UserController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<AuthTokenResponse> {
     const user = await this.userService.createUser(body);
-
-    const { accessToken, refreshToken } = await this.userService.generateTokens(
-      user.id,
-      user.email,
-    );
+    const { accessToken, refreshToken } = this.tokenService.generateTokens({
+      userId: user.id,
+      email: user.email,
+    });
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,

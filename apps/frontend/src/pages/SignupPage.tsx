@@ -134,10 +134,7 @@ export function SignupPage() {
             </Form.Item>
 
             <div style={{ textAlign: "center", marginTop: "16px" }}>
-              すでにアカウントをお持ちですか？{" "}
-              <Link to="/login">
-                ログイン
-              </Link>
+              すでにアカウントをお持ちですか？ <Link to="/login">ログイン</Link>
             </div>
           </form>
         </Card>

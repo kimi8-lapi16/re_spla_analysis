@@ -26,10 +26,7 @@ const processQueue = (error: Error | null = null) => {
  * @param axiosInstance - The axios instance to setup interceptors on
  * @param onLogout - Callback function to call when refresh fails (should handle logout)
  */
-export function setupAxiosInterceptor(
-  axiosInstance: AxiosInstance,
-  onLogout: () => void,
-) {
+export function setupAxiosInterceptor(axiosInstance: AxiosInstance, onLogout: () => void) {
   axiosInstance.interceptors.response.use(
     (response) => response,
     async (error: AxiosError) => {
@@ -87,7 +84,7 @@ export function setupAxiosInterceptor(
       } finally {
         isRefreshing = false;
       }
-    },
+    }
   );
 }
 
