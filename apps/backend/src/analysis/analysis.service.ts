@@ -38,6 +38,7 @@ export class AnalysisService {
     const results = await this.analysisUseCase.getPointTransition(
       userId,
       request.ruleId,
+      request.battleTypeId,
       startDate,
       endDate,
     );

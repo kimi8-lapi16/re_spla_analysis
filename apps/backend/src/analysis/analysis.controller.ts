@@ -60,6 +60,13 @@ export class AnalysisController {
     example: 1,
   })
   @ApiQuery({
+    name: 'battleTypeId',
+    type: Number,
+    required: true,
+    description: 'Battle Type ID to filter by',
+    example: 1,
+  })
+  @ApiQuery({
     name: 'startDate',
     type: String,
     required: false,

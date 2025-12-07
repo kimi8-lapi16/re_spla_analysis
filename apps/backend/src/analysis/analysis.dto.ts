@@ -79,6 +79,15 @@ export class GetPointTransitionRequest {
   ruleId: number;
 
   @ApiProperty({
+    description: 'Battle Type ID to filter by',
+    example: 1,
+    type: Number,
+  })
+  @IsInt()
+  @Transform(({ value }) => parseInt(value, 10))
+  battleTypeId: number;
+
+  @ApiProperty({
     description: 'Start date (ISO8601)',
     required: false,
     type: String,

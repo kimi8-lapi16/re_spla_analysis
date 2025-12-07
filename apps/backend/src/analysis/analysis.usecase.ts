@@ -58,6 +58,7 @@ export class AnalysisUseCase {
   async getPointTransition(
     userId: string,
     ruleId: number,
+    battleTypeId: number,
     startDate?: Date,
     endDate?: Date,
   ): Promise<PointTransitionResult[]> {
@@ -65,6 +66,7 @@ export class AnalysisUseCase {
       where: {
         userId,
         ruleId,
+        battleTypeId,
         point: { not: null },
         gameDateTime: this.buildDateTimeFilter(startDate, endDate),
       },
