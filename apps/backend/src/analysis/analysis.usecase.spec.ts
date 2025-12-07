@@ -171,7 +171,11 @@ describe('AnalysisUseCase', () => {
 
       prismaService.match.findMany.mockResolvedValue(mockMatches);
 
-      const result = await useCase.getPointTransition(userId, ruleId, battleTypeId);
+      const result = await useCase.getPointTransition(
+        userId,
+        ruleId,
+        battleTypeId,
+      );
 
       expect(result).toEqual([
         { gameDateTime: new Date('2024-11-01T10:00:00Z'), point: 1500 },
@@ -205,7 +209,13 @@ describe('AnalysisUseCase', () => {
 
       prismaService.match.findMany.mockResolvedValue([]);
 
-      await useCase.getPointTransition(userId, ruleId, battleTypeId, startDate, endDate);
+      await useCase.getPointTransition(
+        userId,
+        ruleId,
+        battleTypeId,
+        startDate,
+        endDate,
+      );
 
       expect(prismaService.match.findMany).toHaveBeenCalledWith({
         where: {
@@ -236,7 +246,13 @@ describe('AnalysisUseCase', () => {
 
       prismaService.match.findMany.mockResolvedValue([]);
 
-      await useCase.getPointTransition(userId, ruleId, battleTypeId, startDate, undefined);
+      await useCase.getPointTransition(
+        userId,
+        ruleId,
+        battleTypeId,
+        startDate,
+        undefined,
+      );
 
       expect(prismaService.match.findMany).toHaveBeenCalledWith({
         where: {
@@ -266,7 +282,13 @@ describe('AnalysisUseCase', () => {
 
       prismaService.match.findMany.mockResolvedValue([]);
 
-      await useCase.getPointTransition(userId, ruleId, battleTypeId, undefined, endDate);
+      await useCase.getPointTransition(
+        userId,
+        ruleId,
+        battleTypeId,
+        undefined,
+        endDate,
+      );
 
       expect(prismaService.match.findMany).toHaveBeenCalledWith({
         where: {
@@ -295,7 +317,11 @@ describe('AnalysisUseCase', () => {
 
       prismaService.match.findMany.mockResolvedValue([]);
 
-      const result = await useCase.getPointTransition(userId, ruleId, battleTypeId);
+      const result = await useCase.getPointTransition(
+        userId,
+        ruleId,
+        battleTypeId,
+      );
 
       expect(result).toEqual([]);
     });

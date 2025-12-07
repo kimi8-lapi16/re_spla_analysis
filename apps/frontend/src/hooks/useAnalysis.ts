@@ -26,7 +26,14 @@ export interface UsePointTransitionParams {
 
 export function usePointTransition(params: UsePointTransitionParams) {
   return useQuery({
-    queryKey: ["analysis", "pointTransition", params.ruleId, params.battleTypeId, params.startDate, params.endDate],
+    queryKey: [
+      "analysis",
+      "pointTransition",
+      params.ruleId,
+      params.battleTypeId,
+      params.startDate,
+      params.endDate,
+    ],
     queryFn: () =>
       AnalysisService.analysisControllerGetPointTransition(
         params.battleTypeId,
