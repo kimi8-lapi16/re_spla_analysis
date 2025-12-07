@@ -16,23 +16,23 @@ export const UserProfileView = ({ name, email, onEdit }: UserProfileViewProps) =
       <Space vertical size="large" style={{ width: "100%" }}>
         <Flex justify="space-between" align="center">
           <Title level={2} style={{ margin: 0 }}>
-            User Information
+            ユーザー情報
           </Title>
           <Button variant="primary" icon={<EditOutlined />} onClick={onEdit}>
-            Edit
+            編集
           </Button>
         </Flex>
 
         <Space vertical size="middle" style={{ width: "100%" }}>
           <Space vertical size={4}>
             <Text strong type="secondary">
-              Name
+              名前
             </Text>
             <Text>{name}</Text>
           </Space>
           <Space vertical size={4}>
             <Text strong type="secondary">
-              Email
+              メールアドレス
             </Text>
             <Text>{email}</Text>
           </Space>
