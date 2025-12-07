@@ -1,5 +1,5 @@
 import { createRouter, createRoute, createRootRoute, redirect } from "@tanstack/react-router";
-import { authUtils } from "./utils/auth";
+import { useAuthStore } from "./store/authStore";
 import { LoginPage } from "./pages/LoginPage";
 import { SignupPage } from "./pages/SignupPage";
 import { DashboardPage } from "./pages/DashboardPage";
@@ -13,7 +13,7 @@ const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/",
   beforeLoad: () => {
-    if (authUtils.isAuthenticated()) {
+    if (useAuthStore.getState().isAuthenticated()) {
       throw redirect({ to: "/dashboard", replace: true });
     } else {
       throw redirect({ to: "/login", replace: true });
@@ -25,7 +25,7 @@ const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/login",
   beforeLoad: () => {
-    if (authUtils.isAuthenticated()) {
+    if (useAuthStore.getState().isAuthenticated()) {
       throw redirect({ to: "/dashboard", replace: true });
     }
   },
@@ -36,7 +36,7 @@ const registerRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/register",
   beforeLoad: () => {
-    if (authUtils.isAuthenticated()) {
+    if (useAuthStore.getState().isAuthenticated()) {
       throw redirect({ to: "/dashboard", replace: true });
     }
   },
@@ -47,7 +47,7 @@ const dashboardRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/dashboard",
   beforeLoad: () => {
-    if (!authUtils.isAuthenticated()) {
+    if (!useAuthStore.getState().isAuthenticated()) {
       throw redirect({ to: "/login", replace: true });
     }
   },
@@ -58,7 +58,7 @@ const matchesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/matches",
   beforeLoad: () => {
-    if (!authUtils.isAuthenticated()) {
+    if (!useAuthStore.getState().isAuthenticated()) {
       throw redirect({ to: "/login", replace: true });
     }
   },
@@ -69,7 +69,7 @@ const matchesNewRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/matches/new",
   beforeLoad: () => {
-    if (!authUtils.isAuthenticated()) {
+    if (!useAuthStore.getState().isAuthenticated()) {
       throw redirect({ to: "/login", replace: true });
     }
   },
@@ -80,7 +80,7 @@ const myPageRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/my-page",
   beforeLoad: () => {
-    if (!authUtils.isAuthenticated()) {
+    if (!useAuthStore.getState().isAuthenticated()) {
       throw redirect({ to: "/login", replace: true });
     }
   },

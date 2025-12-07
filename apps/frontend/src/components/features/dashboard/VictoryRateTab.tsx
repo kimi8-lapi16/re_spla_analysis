@@ -17,9 +17,7 @@ function isGroupByField(value: string): value is GroupByField {
 }
 
 export function VictoryRateTab() {
-  const [selectedGroupBy, setSelectedGroupBy] = useState<GroupByField[]>([
-    "rule",
-  ]);
+  const [selectedGroupBy, setSelectedGroupBy] = useState<GroupByField[]>(["rule"]);
 
   const { data, isLoading } = useVictoryRate({
     groupBy: selectedGroupBy,
@@ -46,9 +44,7 @@ export function VictoryRateTab() {
 
       {selectedGroupBy.length === 0 ? (
         <Card>
-          <Text type="secondary">
-            グルーピング対象を1つ以上選択してください
-          </Text>
+          <Text type="secondary">グルーピング対象を1つ以上選択してください</Text>
         </Card>
       ) : (
         <VictoryRateTable

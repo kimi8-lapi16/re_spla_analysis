@@ -2,18 +2,19 @@ import {
   Body,
   Controller,
   Get,
-  Put,
   Post,
+  Put,
   Res,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { TokenService } from '../token/token.service';
 import {
   CurrentUser,
   GetCurrentUser,
 } from '../common/decorators/current-user.decorator';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import {
   AuthTokenResponse,
   CreateUser,
@@ -25,20 +26,22 @@ import { UserService } from './user.service';
 @ApiTags('users')
 @Controller('users')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly tokenService: TokenService,
+  ) {}
 
   @Post()
   @ApiBody({ type: CreateUser })
   async createUser(
-    @Body() dto: CreateUser,
+    @Body() body: CreateUser,
     @Res({ passthrough: true }) res: Response,
   ): Promise<AuthTokenResponse> {
-    const user = await this.userService.createUser(dto);
-
-    const { accessToken, refreshToken } = await this.userService.generateTokens(
-      user.id,
-      user.email,
-    );
+    const user = await this.userService.createUser(body);
+    const { accessToken, refreshToken } = this.tokenService.generateTokens({
+      userId: user.id,
+      email: user.email,
+    });
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
@@ -72,9 +75,9 @@ export class UserController {
   @ApiBody({ type: UpdateUser })
   async updateMe(
     @GetCurrentUser() currentUser: CurrentUser,
-    @Body() dto: UpdateUser,
+    @Body() body: UpdateUser,
   ): Promise<UserDataResponse> {
-    const user = await this.userService.updateUser(currentUser.userId, dto);
+    const user = await this.userService.updateUser(currentUser.userId, body);
     return { user };
   }
 }

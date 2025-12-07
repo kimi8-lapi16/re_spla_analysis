@@ -1,15 +1,14 @@
 import { Module } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
-import { ConfigModule } from '@nestjs/config';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { UserRepository } from './user.repository';
 import { UserSecretRepository } from './user-secret.repository';
 import { UserUseCase } from './user.usecase';
 import { CommonModule } from '../common/common.module';
+import { TokenModule } from '../token/token.module';
 
 @Module({
-  imports: [JwtModule, ConfigModule, CommonModule],
+  imports: [CommonModule, TokenModule],
   controllers: [UserController],
   providers: [UserService, UserRepository, UserSecretRepository, UserUseCase],
   exports: [UserService],

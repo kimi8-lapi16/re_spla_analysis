@@ -7,7 +7,10 @@ import { z } from "zod";
 import { CreateMatchBody } from "../api";
 import { MainLayout } from "../components/layout/MainLayout";
 import { Button } from "../components/base";
-import { createMatchFormColumns, type MatchFormData } from "../components/features/matches/matchFormColumns";
+import {
+  createMatchFormColumns,
+  type MatchFormData,
+} from "../components/features/matches/matchFormColumns";
 import { useNotification } from "../contexts/NotificationContext";
 import { useBattleTypes } from "../hooks/useBattleType";
 import { useBulkCreateMatches } from "../hooks/useMatch";
@@ -77,15 +80,17 @@ export function CreateMatchesPage() {
 
   const onSubmit = (data: MatchFormData) => {
     // Validate and filter out incomplete rows using type guard
-    const validMatches = data.matches
-      .filter((match): match is typeof match & {
+    const validMatches = data.matches.filter(
+      (
+        match
+      ): match is typeof match & {
         weaponId: number;
         stageId: number;
         ruleId: number;
         battleTypeId: number;
         result: "WIN" | "LOSE";
         gameDateTime: string;
-      } => (
+      } =>
         match.weaponId !== undefined &&
         match.stageId !== undefined &&
         match.ruleId !== undefined &&
@@ -94,7 +99,7 @@ export function CreateMatchesPage() {
         isValidResult(match.result) &&
         match.gameDateTime !== undefined &&
         match.gameDateTime !== ""
-      ));
+    );
 
     if (validMatches.length === 0) {
       notification.error({

@@ -1,7 +1,7 @@
 import axios, { AxiosError } from "axios";
 import type { AxiosInstance, InternalAxiosRequestConfig } from "axios";
 import { AuthService } from "../api";
-import { authUtils } from "../utils/auth";
+import { useAuthStore } from "../store/authStore";
 
 let isRefreshing = false;
 let failedQueue: Array<{
@@ -26,10 +26,7 @@ const processQueue = (error: Error | null = null) => {
  * @param axiosInstance - The axios instance to setup interceptors on
  * @param onLogout - Callback function to call when refresh fails (should handle logout)
  */
-export function setupAxiosInterceptor(
-  axiosInstance: AxiosInstance,
-  onLogout: () => void,
-) {
+export function setupAxiosInterceptor(axiosInstance: AxiosInstance, onLogout: () => void) {
   axiosInstance.interceptors.response.use(
     (response) => response,
     async (error: AxiosError) => {
@@ -71,7 +68,7 @@ export function setupAxiosInterceptor(
         const { accessToken } = await AuthService.authControllerRefresh();
 
         // Store new access token
-        authUtils.setAccessToken(accessToken);
+        useAuthStore.getState().setAccessToken(accessToken);
 
         // Process queued requests
         processQueue();
@@ -81,13 +78,13 @@ export function setupAxiosInterceptor(
       } catch (refreshError) {
         // Refresh failed - logout user
         processQueue(refreshError as Error);
-        authUtils.removeAccessToken();
+        useAuthStore.getState().clearAccessToken();
         onLogout();
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
       }
-    },
+    }
   );
 }
 

@@ -1,9 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AnalysisService } from './analysis.service';
-import {
-  GetVictoryRateUseCase,
-  GetPointTransitionUseCase,
-} from './analysis.usecase';
+import { AnalysisUseCase } from './analysis.usecase';
 import {
   GetVictoryRateRequest,
   GetPointTransitionRequest,
@@ -12,31 +9,24 @@ import {
 
 describe('AnalysisService', () => {
   let service: AnalysisService;
-  let getVictoryRateUseCase: jest.Mocked<GetVictoryRateUseCase>;
-  let getPointTransitionUseCase: jest.Mocked<GetPointTransitionUseCase>;
+  let analysisUseCase: jest.Mocked<AnalysisUseCase>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AnalysisService,
         {
-          provide: GetVictoryRateUseCase,
+          provide: AnalysisUseCase,
           useValue: {
-            execute: jest.fn(),
-          },
-        },
-        {
-          provide: GetPointTransitionUseCase,
-          useValue: {
-            execute: jest.fn(),
+            getVictoryRate: jest.fn(),
+            getPointTransition: jest.fn(),
           },
         },
       ],
     }).compile();
 
     service = module.get<AnalysisService>(AnalysisService);
-    getVictoryRateUseCase = module.get(GetVictoryRateUseCase);
-    getPointTransitionUseCase = module.get(GetPointTransitionUseCase);
+    analysisUseCase = module.get(AnalysisUseCase);
   });
 
   afterEach(() => {
@@ -60,15 +50,15 @@ describe('AnalysisService', () => {
         },
       ];
 
-      getVictoryRateUseCase.execute.mockResolvedValue(mockVictoryRates);
+      analysisUseCase.getVictoryRate.mockResolvedValue(mockVictoryRates);
 
       const result = await service.getVictoryRate(userId, request);
 
       expect(result).toEqual({ victoryRates: mockVictoryRates });
-      expect(getVictoryRateUseCase.execute).toHaveBeenCalledWith(
-        userId,
-        [GroupByField.RULE, GroupByField.STAGE],
-      );
+      expect(analysisUseCase.getVictoryRate).toHaveBeenCalledWith(userId, [
+        GroupByField.RULE,
+        GroupByField.STAGE,
+      ]);
     });
 
     it('should return empty victory rates when no data', async () => {
@@ -77,7 +67,7 @@ describe('AnalysisService', () => {
         groupBy: [GroupByField.WEAPON],
       };
 
-      getVictoryRateUseCase.execute.mockResolvedValue([]);
+      analysisUseCase.getVictoryRate.mockResolvedValue([]);
 
       const result = await service.getVictoryRate(userId, request);
 
@@ -97,7 +87,7 @@ describe('AnalysisService', () => {
         { gameDateTime: new Date('2024-11-02T10:00:00Z'), point: 1520 },
       ];
 
-      getPointTransitionUseCase.execute.mockResolvedValue(mockPoints);
+      analysisUseCase.getPointTransition.mockResolvedValue(mockPoints);
 
       const result = await service.getPointTransition(userId, request);
 
@@ -107,7 +97,7 @@ describe('AnalysisService', () => {
           { gameDateTime: '2024-11-02T10:00:00.000Z', point: 1520 },
         ],
       });
-      expect(getPointTransitionUseCase.execute).toHaveBeenCalledWith(
+      expect(analysisUseCase.getPointTransition).toHaveBeenCalledWith(
         userId,
         1,
         undefined,
@@ -123,11 +113,11 @@ describe('AnalysisService', () => {
         endDate: '2024-11-30T23:59:59Z',
       };
 
-      getPointTransitionUseCase.execute.mockResolvedValue([]);
+      analysisUseCase.getPointTransition.mockResolvedValue([]);
 
       await service.getPointTransition(userId, request);
 
-      expect(getPointTransitionUseCase.execute).toHaveBeenCalledWith(
+      expect(analysisUseCase.getPointTransition).toHaveBeenCalledWith(
         userId,
         1,
         new Date(2024, 10, 1, 0, 0, 0),
@@ -141,7 +131,7 @@ describe('AnalysisService', () => {
         ruleId: 999,
       };
 
-      getPointTransitionUseCase.execute.mockResolvedValue([]);
+      analysisUseCase.getPointTransition.mockResolvedValue([]);
 
       const result = await service.getPointTransition(userId, request);
 

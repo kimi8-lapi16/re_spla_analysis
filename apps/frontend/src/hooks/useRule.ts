@@ -1,9 +1,9 @@
-import { useQuery } from '@tanstack/react-query';
-import { RulesService } from '../api';
+import { useQuery } from "@tanstack/react-query";
+import { RulesService } from "../api";
 
 export function useRules() {
   const query = useQuery({
-    queryKey: ['rules'],
+    queryKey: ["rules"],
     queryFn: () => RulesService.ruleControllerFindAll(),
   });
   return {

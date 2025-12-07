@@ -1,10 +1,16 @@
 import { Layout, Menu } from "antd";
 import { type ReactNode, useState } from "react";
-import { DashboardOutlined, MenuFoldOutlined, MenuUnfoldOutlined, TrophyOutlined, UserOutlined } from "@ant-design/icons";
+import {
+  DashboardOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+  TrophyOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
 import { useNavigate, useLocation } from "@tanstack/react-router";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
-import { authUtils } from "../../utils/auth";
+import { useAuthStore } from "../../store/authStore";
 
 const { Sider, Content } = Layout;
 
@@ -16,23 +22,24 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const clearAccessToken = useAuthStore((state) => state.clearAccessToken);
 
   const handleLogout = () => {
-    authUtils.removeAccessToken();
+    clearAccessToken();
     navigate({ to: "/login" });
   };
 
   const getSelectedKey = () => {
-    if (location.pathname.startsWith('/matches')) {
-      return 'matches';
+    if (location.pathname.startsWith("/matches")) {
+      return "matches";
     }
-    if (location.pathname === '/my-page') {
-      return 'my-page';
+    if (location.pathname === "/my-page") {
+      return "my-page";
     }
-    if (location.pathname === '/dashboard') {
-      return 'dashboard';
+    if (location.pathname === "/dashboard") {
+      return "dashboard";
     }
-    return 'dashboard';
+    return "dashboard";
   };
 
   return (

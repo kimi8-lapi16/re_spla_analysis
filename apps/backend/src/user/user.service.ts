@@ -1,14 +1,12 @@
 import {
-  Injectable,
   ConflictException,
+  Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
-import { UserRepository } from './user.repository';
 import { CreateUser, UpdateUser, UserResponse } from './user.dto';
+import { UserRepository } from './user.repository';
 import { UserUseCase } from './user.usecase';
 
 @Injectable()
@@ -16,8 +14,6 @@ export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly userUseCase: UserUseCase,
-    private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
   ) {}
 
   async createUser(dto: CreateUser): Promise<UserResponse> {
@@ -53,10 +49,7 @@ export class UserService {
     return this.toUserResponse(user);
   }
 
-  async updateUser(
-    userId: string,
-    dto: UpdateUser,
-  ): Promise<UserResponse> {
+  async updateUser(userId: string, dto: UpdateUser): Promise<UserResponse> {
     const existingUser = await this.userRepository.findById(userId);
     if (!existingUser) {
       throw new NotFoundException('User not found');
@@ -81,25 +74,6 @@ export class UserService {
     });
 
     return this.toUserResponse(updatedUser);
-  }
-
-  async generateTokens(userId: string, email: string) {
-    const payload = { sub: userId, email };
-
-    const accessToken = this.jwtService.sign(payload, {
-      secret: this.configService.get<string>('JWT_SECRET', 'your-secret-key'),
-      expiresIn: '15m',
-    });
-
-    const refreshToken = this.jwtService.sign(payload, {
-      secret: this.configService.get<string>(
-        'JWT_REFRESH_SECRET',
-        'your-refresh-secret-key',
-      ),
-      expiresIn: '7d',
-    });
-
-    return { accessToken, refreshToken };
   }
 
   private toUserResponse(user: {

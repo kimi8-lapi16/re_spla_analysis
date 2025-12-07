@@ -8,7 +8,7 @@ import { AuthLayout } from "../components/layout/AuthLayout";
 import { Button, Card, Input } from "../components/base";
 import { useNotification } from "../contexts/NotificationContext";
 import { useLogin } from "../hooks/useAuth";
-import { authUtils } from "../utils/auth";
+import { useAuthStore } from "../store/authStore";
 
 const loginSchema = z.object({
   email: z.email("有効なメールアドレスを入力してください"),
@@ -21,6 +21,7 @@ export function LoginPage() {
   const navigate = useNavigate();
   const notification = useNotification();
   const { mutate: login, isPending } = useLogin();
+  const setAccessToken = useAuthStore((state) => state.setAccessToken);
 
   const {
     control,
@@ -37,7 +38,7 @@ export function LoginPage() {
   const onSubmit = (data: LoginFormData) => {
     login(data, {
       onSuccess: (response) => {
-        authUtils.setAccessToken(response.accessToken);
+        setAccessToken(response.accessToken);
         notification.success({
           title: "ログイン成功",
           description: "おかえりなさい！",
@@ -109,10 +110,7 @@ export function LoginPage() {
             </Form.Item>
 
             <div style={{ textAlign: "center", marginTop: "16px" }}>
-              アカウントをお持ちでないですか？{" "}
-              <Link to="/register">
-                新規登録
-              </Link>
+              アカウントをお持ちでないですか？ <Link to="/register">新規登録</Link>
             </div>
           </form>
         </Card>

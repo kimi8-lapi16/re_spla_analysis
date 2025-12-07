@@ -1,9 +1,9 @@
-import { useQuery } from '@tanstack/react-query';
-import { BattleTypesService } from '../api';
+import { useQuery } from "@tanstack/react-query";
+import { BattleTypesService } from "../api";
 
 export function useBattleTypes() {
   const query = useQuery({
-    queryKey: ['battleTypes'],
+    queryKey: ["battleTypes"],
     queryFn: () => BattleTypesService.battleTypeControllerFindAll(),
   });
   return {

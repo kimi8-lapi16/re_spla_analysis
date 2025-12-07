@@ -1,7 +1,7 @@
 import { LogoutOutlined } from "@ant-design/icons";
 import { Layout } from "antd";
 import { colors } from "../../theme/colors";
-import { authUtils } from "../../utils/auth";
+import { useAuthStore } from "../../store/authStore";
 import { Button } from "../base";
 
 const { Header: AntHeader } = Layout;
@@ -11,10 +11,11 @@ interface HeaderProps {
 }
 
 export const Header = ({ onLogout }: HeaderProps) => {
-  const isAuthenticated = authUtils.isAuthenticated();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated());
+  const clearAccessToken = useAuthStore((state) => state.clearAccessToken);
 
   const handleLogout = () => {
-    authUtils.removeAccessToken();
+    clearAccessToken();
     if (onLogout) {
       onLogout();
     }

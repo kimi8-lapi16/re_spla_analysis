@@ -10,7 +10,13 @@ import { MatchRepository } from './match.repository';
 import { MatchUseCase } from './match.usecase';
 
 @Module({
-  imports: [CommonModule, RuleModule, WeaponModule, StageModule, BattleTypeModule],
+  imports: [
+    CommonModule,
+    RuleModule,
+    WeaponModule,
+    StageModule,
+    BattleTypeModule,
+  ],
   controllers: [MatchController],
   providers: [MatchService, MatchRepository, MatchUseCase],
   exports: [MatchService],

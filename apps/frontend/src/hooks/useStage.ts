@@ -1,9 +1,9 @@
-import { useQuery } from '@tanstack/react-query';
-import { StagesService } from '../api';
+import { useQuery } from "@tanstack/react-query";
+import { StagesService } from "../api";
 
 export function useStages() {
   const query = useQuery({
-    queryKey: ['stages'],
+    queryKey: ["stages"],
     queryFn: () => StagesService.stageControllerFindAll(),
   });
   return {

@@ -1,5 +1,5 @@
-import type { ThemeConfig } from 'antd';
-import { colors } from './colors';
+import type { ThemeConfig } from "antd";
+import { colors } from "./colors";
 
 /**
  * Ant Design theme configuration
@@ -70,8 +70,8 @@ export const antdTheme: ThemeConfig = {
 
   components: {
     Button: {
-      primaryShadow: '0 2px 0 rgba(139, 92, 246, 0.1)',
-      defaultShadow: '0 2px 0 rgba(0, 0, 0, 0.02)',
+      primaryShadow: "0 2px 0 rgba(139, 92, 246, 0.1)",
+      defaultShadow: "0 2px 0 rgba(0, 0, 0, 0.02)",
       fontWeight: 500,
     },
 
@@ -82,14 +82,15 @@ export const antdTheme: ThemeConfig = {
 
     Card: {
       headerBg: colors.background.light,
-      boxShadowTertiary: '0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px 0 rgba(0, 0, 0, 0.02)',
+      boxShadowTertiary:
+        "0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px 0 rgba(0, 0, 0, 0.02)",
     },
 
     Layout: {
       headerBg: colors.primary[700],
       headerColor: colors.text.inverse,
       headerHeight: 64,
-      headerPadding: '0 24px',
+      headerPadding: "0 24px",
     },
 
     Menu: {

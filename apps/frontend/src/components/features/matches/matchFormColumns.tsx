@@ -60,7 +60,9 @@ export function createMatchFormColumns({
               {...field}
               style={{ width: "100%" }}
               placeholder="選択してください"
-              status={Array.isArray(errors.matches) && errors.matches[index]?.weaponId ? "error" : ""}
+              status={
+                Array.isArray(errors.matches) && errors.matches[index]?.weaponId ? "error" : ""
+              }
               showSearch
               optionFilterProp="label"
               options={weapons?.map((w) => ({
@@ -86,7 +88,9 @@ export function createMatchFormColumns({
               {...field}
               style={{ width: "100%" }}
               placeholder="選択してください"
-              status={Array.isArray(errors.matches) && errors.matches[index]?.stageId ? "error" : ""}
+              status={
+                Array.isArray(errors.matches) && errors.matches[index]?.stageId ? "error" : ""
+              }
               showSearch
               optionFilterProp="label"
               options={stages?.map((s) => ({
@@ -136,7 +140,9 @@ export function createMatchFormColumns({
               {...field}
               style={{ width: "100%" }}
               placeholder="選択してください"
-              status={Array.isArray(errors.matches) && errors.matches[index]?.battleTypeId ? "error" : ""}
+              status={
+                Array.isArray(errors.matches) && errors.matches[index]?.battleTypeId ? "error" : ""
+              }
               options={battleTypes?.map((bt) => ({
                 value: bt.id,
                 label: bt.name,
@@ -179,7 +185,9 @@ export function createMatchFormColumns({
               format="YYYY-MM-DD HH:mm"
               style={{ width: "100%" }}
               placeholder="日時を選択"
-              status={Array.isArray(errors.matches) && errors.matches[index]?.gameDateTime ? "error" : ""}
+              status={
+                Array.isArray(errors.matches) && errors.matches[index]?.gameDateTime ? "error" : ""
+              }
               value={field.value ? dayjs(field.value) : null}
               onChange={(date) => field.onChange(formatDateTimeAsJstIso(date))}
             />

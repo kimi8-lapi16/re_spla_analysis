@@ -1,8 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import {
-  GetVictoryRateUseCase,
-  GetPointTransitionUseCase,
-} from './analysis.usecase';
+import { AnalysisUseCase } from './analysis.usecase';
 import { PrismaService } from '../prisma/prisma.service';
 import { GroupByField } from './analysis.dto';
 
@@ -13,24 +10,27 @@ type MockPrismaService = {
   };
 };
 
-describe('GetVictoryRateUseCase', () => {
-  let useCase: GetVictoryRateUseCase;
+describe('AnalysisUseCase', () => {
+  let useCase: AnalysisUseCase;
   let prismaService: MockPrismaService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        GetVictoryRateUseCase,
+        AnalysisUseCase,
         {
           provide: PrismaService,
           useValue: {
             $queryRaw: jest.fn(),
+            match: {
+              findMany: jest.fn(),
+            },
           },
         },
       ],
     }).compile();
 
-    useCase = module.get<GetVictoryRateUseCase>(GetVictoryRateUseCase);
+    useCase = module.get<AnalysisUseCase>(AnalysisUseCase);
     prismaService = module.get<MockPrismaService>(PrismaService);
   });
 
@@ -38,7 +38,7 @@ describe('GetVictoryRateUseCase', () => {
     jest.clearAllMocks();
   });
 
-  describe('execute', () => {
+  describe('getVictoryRate', () => {
     it('should return victory rates grouped by rule', async () => {
       const userId = 'test-user-id';
       const groupBy = [GroupByField.RULE];
@@ -48,11 +48,10 @@ describe('GetVictoryRateUseCase', () => {
           rule_name: 'Splat Zones',
           total_count: BigInt(10),
           win_count: BigInt(7),
-          victory_rate: '0.7000',
         },
       ]);
 
-      const result = await useCase.execute(userId, groupBy);
+      const result = await useCase.getVictoryRate(userId, groupBy);
 
       expect(result).toEqual([
         {
@@ -78,18 +77,16 @@ describe('GetVictoryRateUseCase', () => {
           stage_name: 'Scorch Gorge',
           total_count: BigInt(5),
           win_count: BigInt(3),
-          victory_rate: '0.6000',
         },
         {
           rule_name: 'Tower Control',
           stage_name: 'Inkblot Art Academy',
           total_count: BigInt(8),
           win_count: BigInt(6),
-          victory_rate: '0.7500',
         },
       ]);
 
-      const result = await useCase.execute(userId, groupBy);
+      const result = await useCase.getVictoryRate(userId, groupBy);
 
       expect(result).toHaveLength(2);
       expect(result[0]).toEqual({
@@ -129,12 +126,12 @@ describe('GetVictoryRateUseCase', () => {
           battle_type_name: 'Ranked Battle',
           total_count: BigInt(3),
           win_count: BigInt(2),
-          victory_rate: '0.6667',
         },
       ]);
 
-      const result = await useCase.execute(userId, groupBy);
+      const result = await useCase.getVictoryRate(userId, groupBy);
 
+      expect(result[0].victoryRate).toBeCloseTo(0.6667, 4);
       expect(result).toEqual([
         {
           ruleName: 'Splat Zones',
@@ -143,7 +140,7 @@ describe('GetVictoryRateUseCase', () => {
           battleTypeName: 'Ranked Battle',
           totalCount: 3,
           winCount: 2,
-          victoryRate: 0.6667,
+          victoryRate: expect.any(Number),
         },
       ]);
     });
@@ -154,41 +151,13 @@ describe('GetVictoryRateUseCase', () => {
 
       prismaService.$queryRaw.mockResolvedValue([]);
 
-      const result = await useCase.execute(userId, groupBy);
+      const result = await useCase.getVictoryRate(userId, groupBy);
 
       expect(result).toEqual([]);
     });
   });
-});
 
-describe('GetPointTransitionUseCase', () => {
-  let useCase: GetPointTransitionUseCase;
-  let prismaService: MockPrismaService;
-
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        GetPointTransitionUseCase,
-        {
-          provide: PrismaService,
-          useValue: {
-            match: {
-              findMany: jest.fn(),
-            },
-          },
-        },
-      ],
-    }).compile();
-
-    useCase = module.get<GetPointTransitionUseCase>(GetPointTransitionUseCase);
-    prismaService = module.get<MockPrismaService>(PrismaService);
-  });
-
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
-  describe('execute', () => {
+  describe('getPointTransition', () => {
     it('should return point transition data for a specific rule', async () => {
       const userId = 'test-user-id';
       const ruleId = 1;
@@ -201,7 +170,7 @@ describe('GetPointTransitionUseCase', () => {
 
       prismaService.match.findMany.mockResolvedValue(mockMatches);
 
-      const result = await useCase.execute(userId, ruleId);
+      const result = await useCase.getPointTransition(userId, ruleId);
 
       expect(result).toEqual([
         { gameDateTime: new Date('2024-11-01T10:00:00Z'), point: 1500 },
@@ -213,6 +182,7 @@ describe('GetPointTransitionUseCase', () => {
           userId,
           ruleId,
           point: { not: null },
+          gameDateTime: undefined,
         },
         select: {
           gameDateTime: true,
@@ -232,7 +202,7 @@ describe('GetPointTransitionUseCase', () => {
 
       prismaService.match.findMany.mockResolvedValue([]);
 
-      await useCase.execute(userId, ruleId, startDate, endDate);
+      await useCase.getPointTransition(userId, ruleId, startDate, endDate);
 
       expect(prismaService.match.findMany).toHaveBeenCalledWith({
         where: {
@@ -261,7 +231,7 @@ describe('GetPointTransitionUseCase', () => {
 
       prismaService.match.findMany.mockResolvedValue([]);
 
-      await useCase.execute(userId, ruleId, startDate, undefined);
+      await useCase.getPointTransition(userId, ruleId, startDate, undefined);
 
       expect(prismaService.match.findMany).toHaveBeenCalledWith({
         where: {
@@ -289,7 +259,7 @@ describe('GetPointTransitionUseCase', () => {
 
       prismaService.match.findMany.mockResolvedValue([]);
 
-      await useCase.execute(userId, ruleId, undefined, endDate);
+      await useCase.getPointTransition(userId, ruleId, undefined, endDate);
 
       expect(prismaService.match.findMany).toHaveBeenCalledWith({
         where: {
@@ -316,7 +286,7 @@ describe('GetPointTransitionUseCase', () => {
 
       prismaService.match.findMany.mockResolvedValue([]);
 
-      const result = await useCase.execute(userId, ruleId);
+      const result = await useCase.getPointTransition(userId, ruleId);
 
       expect(result).toEqual([]);
     });
