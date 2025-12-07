@@ -1,11 +1,14 @@
-import { Card, Flex, Select, Space, Typography } from "antd";
+import { Card, DatePicker, Flex, Select, Space, Typography } from "antd";
+import { Dayjs } from "dayjs";
 import { useMemo, useState } from "react";
 import { usePointTransition } from "../../../hooks/useAnalysis";
 import { useBattleTypes } from "../../../hooks/useBattleType";
 import { useRules } from "../../../hooks/useRule";
+import { formatDateTimeAsJstIso } from "../../../utils/date";
 import { PointTransitionChart } from "./PointTransitionChart";
 
 const { Text } = Typography;
+const { RangePicker } = DatePicker;
 
 const SELECT_WIDTH = 200;
 
@@ -14,12 +17,18 @@ export function PointTransitionTab() {
   const { data: battleTypes, isLoading: isLoadingBattleTypes } = useBattleTypes();
   const [selectedRuleId, setSelectedRuleId] = useState<number | null>(null);
   const [selectedBattleTypeId, setSelectedBattleTypeId] = useState<number | null>(null);
+  const [dateRange, setDateRange] = useState<[Dayjs, Dayjs] | null>(null);
 
   const isSelectionComplete = selectedRuleId !== null && selectedRuleId > 0 && selectedBattleTypeId !== null && selectedBattleTypeId > 0;
+
+  const startDate = dateRange?.[0] ? formatDateTimeAsJstIso(dateRange[0].startOf("day")) : undefined;
+  const endDate = dateRange?.[1] ? formatDateTimeAsJstIso(dateRange[1].endOf("day")) : undefined;
 
   const { data, isLoading } = usePointTransition({
     ruleId: selectedRuleId ?? 0,
     battleTypeId: selectedBattleTypeId ?? 0,
+    startDate,
+    endDate,
     enabled: isSelectionComplete,
   });
 
@@ -78,6 +87,14 @@ export function PointTransitionTab() {
               loading={isLoadingRules}
               value={selectedRuleId}
               onChange={setSelectedRuleId}
+            />
+          </Space>
+          <Space>
+            <Text strong>期間:</Text>
+            <RangePicker
+              placeholder={["開始日", "終了日"]}
+              value={dateRange}
+              onChange={(dates) => setDateRange(dates as [Dayjs, Dayjs] | null)}
             />
           </Space>
         </Space>
