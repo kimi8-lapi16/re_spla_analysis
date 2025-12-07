@@ -11,6 +11,9 @@
 - `pnpm prisma migrate dev`
 - `pnpm run seed:local`
 
+#### データを1から作り直したかったり、マイグレーションがおかしくなったりした場合（あまりおすすめはしない）
+- `pnpm prisma migrate reset && pnpm seed:local`
+
 ### 準備
 - `pnpm run api:generate`
 
