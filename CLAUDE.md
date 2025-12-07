@@ -578,7 +578,28 @@ async getWeapons(): Promise<{ weapons: Weapon[] }> {
 
 #### Component Guidelines
 
-1. **Use Ant Design Components Instead of Plain HTML**
+1. **Always Use Ant Design Components First**
+   - **First priority**: Always use Ant Design components (`Space`, `Flex`, `Row`, `Col`, `Card`, etc.) for layout
+   - Do not use plain `<div>` with inline styles when Ant Design components can achieve the same result
+   - If Ant Design components need additional styling, add `style` prop to the Ant Design component itself
+
+   ```tsx
+   // ❌ Bad: Using plain div with inline styles
+   <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+   <div style={{ padding: "16px 24px" }}>
+
+   // ✅ Good: Using Ant Design components
+   import { Space, Flex } from "antd";
+
+   <Space vertical size="middle">
+   <Flex vertical gap="middle">
+
+   // ✅ Good: Ant Design component with style prop when needed
+   <Flex vertical style={{ height: 400 }}>
+   <Title level={2} style={{ margin: 0 }}>
+   ```
+
+2. **Use Ant Design Components Instead of Plain HTML**
    - Always use Ant Design's `Typography.Text` instead of raw `<p>` tags
    - Use `Typography.Title` instead of `<h1>`, `<h2>`, etc.
    - This ensures consistent styling and accessibility

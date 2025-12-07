@@ -10,6 +10,7 @@ import { WeaponModule } from './weapon/weapon.module';
 import { StageModule } from './stage/stage.module';
 import { RuleModule } from './rule/rule.module';
 import { BattleTypeModule } from './battle-type/battle-type.module';
+import { AnalysisModule } from './analysis/analysis.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { BattleTypeModule } from './battle-type/battle-type.module';
     StageModule,
     RuleModule,
     BattleTypeModule,
+    AnalysisModule,
   ],
   controllers: [AppController],
   providers: [AppService],
