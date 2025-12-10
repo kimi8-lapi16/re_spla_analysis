@@ -97,6 +97,8 @@ export class MatchRepository {
     operator: 'AND' | 'OR';
     skip: number;
     take: number;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
   }): Promise<{ matches: Match[]; total: number }> {
     const {
       userId,
@@ -110,6 +112,8 @@ export class MatchRepository {
       operator,
       skip,
       take,
+      sortBy = 'gameDateTime',
+      sortOrder = 'desc',
     } = params;
 
     const conditions: Array<Record<string, unknown>> = [];
@@ -143,10 +147,12 @@ export class MatchRepository {
           ? { AND: [{ userId }, ...conditions] }
           : { AND: [{ userId }, { OR: conditions }] };
 
+    const orderBy = { [sortBy]: sortOrder };
+
     const [prismaMatches, total] = await Promise.all([
       this.prisma.match.findMany({
         where,
-        orderBy: { gameDateTime: 'desc' },
+        orderBy,
         skip,
         take,
       }),

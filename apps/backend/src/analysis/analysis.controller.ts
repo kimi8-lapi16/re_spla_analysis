@@ -15,6 +15,8 @@ import {
   GetPointTransitionRequest,
   GetPointTransitionResponse,
   GroupByField,
+  VictoryRateSortBy,
+  SortOrder,
 } from './analysis.dto';
 
 @ApiTags('analysis')
@@ -34,6 +36,36 @@ export class AnalysisController {
     required: true,
     description: 'Fields to group by',
     example: ['rule', 'stage'],
+  })
+  @ApiQuery({
+    name: 'sortBy',
+    type: String,
+    enum: VictoryRateSortBy,
+    required: false,
+    description: 'Field to sort by',
+    example: 'victoryRate',
+  })
+  @ApiQuery({
+    name: 'sortOrder',
+    type: String,
+    enum: SortOrder,
+    required: false,
+    description: 'Sort order (asc or desc)',
+    example: 'desc',
+  })
+  @ApiQuery({
+    name: 'page',
+    type: Number,
+    required: false,
+    description: 'Page number (1-based)',
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'pageSize',
+    type: Number,
+    required: false,
+    description: 'Number of items per page',
+    example: 20,
   })
   @ApiResponse({
     status: 200,

@@ -43,9 +43,9 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
   };
 
   return (
-    <Layout style={{ minHeight: "100vh" }}>
+    <Layout style={{ height: "100vh", overflow: "hidden" }}>
       <Header onLogout={handleLogout} />
-      <Layout>
+      <Layout style={{ overflow: "hidden" }}>
         <Sider
           collapsible
           collapsed={collapsed}
@@ -54,6 +54,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
           style={{
             background: "#fff",
             borderRight: "1px solid #f0f0f0",
+            overflow: "auto",
           }}
         >
           <div
@@ -100,11 +101,12 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
             ]}
           />
         </Sider>
-        <Layout>
+        <Layout style={{ display: "flex", flexDirection: "column", overflow: "hidden" }}>
           <Content
             style={{
               padding: "24px",
-              minHeight: "280px",
+              flex: 1,
+              overflow: "hidden",
             }}
           >
             {children}

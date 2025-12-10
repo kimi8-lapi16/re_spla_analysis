@@ -1,6 +1,7 @@
 import { Card, Checkbox, Typography, Space, Flex } from "antd";
 import { useState } from "react";
-import { useVictoryRate, type GroupByField } from "../../../hooks/useAnalysis";
+import { useVictoryRate, type GroupByField, type VictoryRateSortBy } from "../../../hooks/useAnalysis";
+import { useTableState } from "../../../hooks/useTableState";
 import { VictoryRateTable } from "./VictoryRateTable";
 
 const { Text } = Typography;
@@ -18,19 +19,27 @@ function isGroupByField(value: string): value is GroupByField {
 
 export function VictoryRateTab() {
   const [selectedGroupBy, setSelectedGroupBy] = useState<GroupByField[]>(["rule"]);
+  const { tableState, setTableState, resetPage } = useTableState<VictoryRateSortBy>({
+    defaultSortBy: "victoryRate",
+  });
 
   const { data, isLoading } = useVictoryRate({
     groupBy: selectedGroupBy,
+    sortBy: tableState.sortBy,
+    sortOrder: tableState.sortOrder,
+    page: tableState.page,
+    pageSize: tableState.pageSize,
     enabled: selectedGroupBy.length > 0,
   });
 
   const handleGroupByChange = (checkedValues: string[]) => {
     const validValues = checkedValues.filter(isGroupByField);
     setSelectedGroupBy(validValues);
+    resetPage();
   };
 
   return (
-    <Flex vertical gap="middle">
+    <Flex vertical gap="middle" style={{ height: "100%", minHeight: 0 }}>
       <Card size="small">
         <Space>
           <Text strong>グルーピング:</Text>
@@ -47,11 +56,16 @@ export function VictoryRateTab() {
           <Text type="secondary">グルーピング対象を1つ以上選択してください</Text>
         </Card>
       ) : (
-        <VictoryRateTable
-          data={data?.victoryRates}
-          isLoading={isLoading}
-          groupBy={selectedGroupBy}
-        />
+        <Flex vertical style={{ flex: 1, minHeight: 0 }}>
+          <VictoryRateTable
+            data={data?.victoryRates}
+            total={data?.total ?? 0}
+            isLoading={isLoading}
+            groupBy={selectedGroupBy}
+            tableState={tableState}
+            onChange={setTableState}
+          />
+        </Flex>
       )}
     </Flex>
   );
