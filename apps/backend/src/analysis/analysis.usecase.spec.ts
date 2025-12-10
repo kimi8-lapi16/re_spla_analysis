@@ -43,17 +43,20 @@ describe('AnalysisUseCase', () => {
       const userId = 'test-user-id';
       const groupBy = [GroupByField.RULE];
 
-      prismaService.$queryRaw.mockResolvedValue([
-        {
-          rule_name: 'Splat Zones',
-          total_count: BigInt(10),
-          win_count: BigInt(7),
-        },
-      ]);
+      // Mock both calls - one for data, one for count
+      prismaService.$queryRaw
+        .mockResolvedValueOnce([
+          {
+            rule_name: 'Splat Zones',
+            total_count: BigInt(10),
+            win_count: BigInt(7),
+          },
+        ])
+        .mockResolvedValueOnce([{ count: BigInt(1) }]);
 
-      const result = await useCase.getVictoryRate(userId, groupBy);
+      const result = await useCase.getVictoryRate({ userId, groupBy });
 
-      expect(result).toEqual([
+      expect(result.victoryRates).toEqual([
         {
           ruleName: 'Splat Zones',
           stageName: undefined,
@@ -64,32 +67,35 @@ describe('AnalysisUseCase', () => {
           victoryRate: 0.7,
         },
       ]);
-      expect(prismaService.$queryRaw).toHaveBeenCalled();
+      expect(result.total).toBe(1);
+      expect(prismaService.$queryRaw).toHaveBeenCalledTimes(2);
     });
 
     it('should return victory rates grouped by multiple fields', async () => {
       const userId = 'test-user-id';
       const groupBy = [GroupByField.RULE, GroupByField.STAGE];
 
-      prismaService.$queryRaw.mockResolvedValue([
-        {
-          rule_name: 'Splat Zones',
-          stage_name: 'Scorch Gorge',
-          total_count: BigInt(5),
-          win_count: BigInt(3),
-        },
-        {
-          rule_name: 'Tower Control',
-          stage_name: 'Inkblot Art Academy',
-          total_count: BigInt(8),
-          win_count: BigInt(6),
-        },
-      ]);
+      prismaService.$queryRaw
+        .mockResolvedValueOnce([
+          {
+            rule_name: 'Splat Zones',
+            stage_name: 'Scorch Gorge',
+            total_count: BigInt(5),
+            win_count: BigInt(3),
+          },
+          {
+            rule_name: 'Tower Control',
+            stage_name: 'Inkblot Art Academy',
+            total_count: BigInt(8),
+            win_count: BigInt(6),
+          },
+        ])
+        .mockResolvedValueOnce([{ count: BigInt(2) }]);
 
-      const result = await useCase.getVictoryRate(userId, groupBy);
+      const result = await useCase.getVictoryRate({ userId, groupBy });
 
-      expect(result).toHaveLength(2);
-      expect(result[0]).toEqual({
+      expect(result.victoryRates).toHaveLength(2);
+      expect(result.victoryRates[0]).toEqual({
         ruleName: 'Splat Zones',
         stageName: 'Scorch Gorge',
         weaponName: undefined,
@@ -98,7 +104,7 @@ describe('AnalysisUseCase', () => {
         winCount: 3,
         victoryRate: 0.6,
       });
-      expect(result[1]).toEqual({
+      expect(result.victoryRates[1]).toEqual({
         ruleName: 'Tower Control',
         stageName: 'Inkblot Art Academy',
         weaponName: undefined,
@@ -107,6 +113,7 @@ describe('AnalysisUseCase', () => {
         winCount: 6,
         victoryRate: 0.75,
       });
+      expect(result.total).toBe(2);
     });
 
     it('should return victory rates grouped by all fields', async () => {
@@ -118,21 +125,23 @@ describe('AnalysisUseCase', () => {
         GroupByField.BATTLE_TYPE,
       ];
 
-      prismaService.$queryRaw.mockResolvedValue([
-        {
-          rule_name: 'Splat Zones',
-          stage_name: 'Scorch Gorge',
-          weapon_name: 'Splattershot',
-          battle_type_name: 'Ranked Battle',
-          total_count: BigInt(3),
-          win_count: BigInt(2),
-        },
-      ]);
+      prismaService.$queryRaw
+        .mockResolvedValueOnce([
+          {
+            rule_name: 'Splat Zones',
+            stage_name: 'Scorch Gorge',
+            weapon_name: 'Splattershot',
+            battle_type_name: 'Ranked Battle',
+            total_count: BigInt(3),
+            win_count: BigInt(2),
+          },
+        ])
+        .mockResolvedValueOnce([{ count: BigInt(1) }]);
 
-      const result = await useCase.getVictoryRate(userId, groupBy);
+      const result = await useCase.getVictoryRate({ userId, groupBy });
 
-      expect(result[0].victoryRate).toBeCloseTo(0.6667, 4);
-      expect(result).toEqual([
+      expect(result.victoryRates[0].victoryRate).toBeCloseTo(0.6667, 4);
+      expect(result.victoryRates).toEqual([
         {
           ruleName: 'Splat Zones',
           stageName: 'Scorch Gorge',
@@ -149,11 +158,14 @@ describe('AnalysisUseCase', () => {
       const userId = 'test-user-id';
       const groupBy = [GroupByField.RULE];
 
-      prismaService.$queryRaw.mockResolvedValue([]);
+      prismaService.$queryRaw
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([{ count: BigInt(0) }]);
 
-      const result = await useCase.getVictoryRate(userId, groupBy);
+      const result = await useCase.getVictoryRate({ userId, groupBy });
 
-      expect(result).toEqual([]);
+      expect(result.victoryRates).toEqual([]);
+      expect(result.total).toBe(0);
     });
   });
 

@@ -5,6 +5,8 @@ import {
   IsOptional,
   IsEnum,
   ArrayMinSize,
+  Min,
+  Max,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
@@ -15,6 +17,22 @@ export enum GroupByField {
   STAGE = 'stage',
   WEAPON = 'weapon',
   BATTLE_TYPE = 'battleType',
+}
+
+// 勝率ソート対象の列挙型
+export enum VictoryRateSortBy {
+  VICTORY_RATE = 'victoryRate',
+  TOTAL_COUNT = 'totalCount',
+  WIN_COUNT = 'winCount',
+  RULE_NAME = 'ruleName',
+  STAGE_NAME = 'stageName',
+  WEAPON_NAME = 'weaponName',
+  BATTLE_TYPE_NAME = 'battleTypeName',
+}
+
+export enum SortOrder {
+  ASC = 'asc',
+  DESC = 'desc',
 }
 
 // 勝率API リクエスト
@@ -35,6 +53,53 @@ export class GetVictoryRateRequest {
     return value;
   })
   groupBy: GroupByField[];
+
+  @ApiProperty({
+    description: 'Field to sort by',
+    enum: VictoryRateSortBy,
+    required: false,
+    example: VictoryRateSortBy.VICTORY_RATE,
+    type: String,
+  })
+  @IsOptional()
+  @IsEnum(VictoryRateSortBy)
+  sortBy?: VictoryRateSortBy;
+
+  @ApiProperty({
+    description: 'Sort order (asc or desc)',
+    enum: SortOrder,
+    required: false,
+    example: SortOrder.DESC,
+    type: String,
+  })
+  @IsOptional()
+  @IsEnum(SortOrder)
+  sortOrder?: SortOrder;
+
+  @ApiProperty({
+    description: 'Page number (1-based)',
+    required: false,
+    example: 1,
+    type: Number,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Transform(({ value }) => (value ? parseInt(value, 10) : undefined))
+  page?: number;
+
+  @ApiProperty({
+    description: 'Number of items per page',
+    required: false,
+    example: 20,
+    type: Number,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  @Transform(({ value }) => (value ? parseInt(value, 10) : undefined))
+  pageSize?: number;
 }
 
 // 勝率API レスポンス内の個別データ
@@ -65,6 +130,13 @@ export class VictoryRateItem {
 export class GetVictoryRateResponse {
   @ApiProperty({ type: [VictoryRateItem] })
   victoryRates: VictoryRateItem[];
+
+  @ApiProperty({
+    description: 'Total number of items',
+    example: 100,
+    type: Number,
+  })
+  total: number;
 }
 
 // ポイント推移API リクエスト

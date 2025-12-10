@@ -52,6 +52,8 @@ export class MatchService {
       operator: request.operator,
       skip,
       take,
+      sortBy: request.sortBy,
+      sortOrder: request.sortOrder,
     });
 
     const matchResponses: MatchResponse[] = matches.map((match) => ({

@@ -16,12 +16,16 @@ export class AnalysisService {
     userId: string,
     request: GetVictoryRateRequest,
   ): Promise<GetVictoryRateResponse> {
-    const victoryRates = await this.analysisUseCase.getVictoryRate(
+    const { victoryRates, total } = await this.analysisUseCase.getVictoryRate({
       userId,
-      request.groupBy,
-    );
+      groupBy: request.groupBy,
+      sortBy: request.sortBy,
+      sortOrder: request.sortOrder,
+      page: request.page,
+      pageSize: request.pageSize,
+    });
 
-    return { victoryRates };
+    return { victoryRates, total };
   }
 
   async getPointTransition(

@@ -143,3 +143,47 @@ p {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-neutral-400);
 }
+
+/* Flex table container - allows table to fill available height */
+.flex-table-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.flex-table-container .ant-spin-nested-loading,
+.flex-table-container .ant-spin-container,
+.flex-table-container .ant-table-wrapper,
+.flex-table-container .ant-table,
+.flex-table-container .ant-table-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.flex-table-container .ant-table-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto !important;
+}
+
+/* Ant Design Tabs content height fix */
+.ant-tabs {
+  display: flex;
+  flex-direction: column;
+}
+
+.ant-tabs-content-holder {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
+.ant-tabs-content {
+  height: 100%;
+}
+
+.ant-tabs-tabpane {
+  height: 100%;
+}

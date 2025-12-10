@@ -1,8 +1,10 @@
 import { Empty, Spin, Table } from "antd";
-import type { ColumnsType } from "antd/es/table";
+import type { ColumnsType, TableProps } from "antd/es/table";
+import type { SortOrder } from "antd/es/table/interface";
 import dayjs from "dayjs";
 import { useMemo } from "react";
 import type { MatchResponse } from "../../../api";
+import { SearchMatchesRequest } from "../../../api";
 import { useBattleTypes } from "../../../hooks/useBattleType";
 import { useRules } from "../../../hooks/useRule";
 import { useStages } from "../../../hooks/useStage";
@@ -17,16 +19,50 @@ type MatchTableProps = {
     total: number;
     onChange: (page: number) => void;
   };
+  sortBy?: SearchMatchesRequest.sortBy;
+  sortOrder?: SearchMatchesRequest.sortOrder;
+  onSortChange?: (
+    sortBy: SearchMatchesRequest.sortBy,
+    sortOrder: SearchMatchesRequest.sortOrder
+  ) => void;
   selectedRowKeys?: string[];
   onSelectionChange?: (selectedKeys: string[], selectedRows: MatchResponse[]) => void;
 };
 
 type TableRow = MatchResponse & { key: string };
 
+// sortBy enum values match the dataIndex names (gameDateTime, point, etc.)
+// So we can use simple string mappings
+
+// Map column dataIndex to API sortBy
+const dataIndexToSortBy: Record<string, SearchMatchesRequest.sortBy | undefined> = {
+  gameDateTime: SearchMatchesRequest.sortBy.GAME_DATE_TIME,
+  point: SearchMatchesRequest.sortBy.POINT,
+  weaponId: SearchMatchesRequest.sortBy.WEAPON_ID,
+  stageId: SearchMatchesRequest.sortBy.STAGE_ID,
+  ruleId: SearchMatchesRequest.sortBy.RULE_ID,
+  battleTypeId: SearchMatchesRequest.sortBy.BATTLE_TYPE_ID,
+  result: SearchMatchesRequest.sortBy.RESULT,
+};
+
+// Map API sortBy back to dataIndex for controlled sort display
+const sortByToDataIndex: Record<SearchMatchesRequest.sortBy, string> = {
+  [SearchMatchesRequest.sortBy.GAME_DATE_TIME]: "gameDateTime",
+  [SearchMatchesRequest.sortBy.POINT]: "point",
+  [SearchMatchesRequest.sortBy.WEAPON_ID]: "weaponId",
+  [SearchMatchesRequest.sortBy.STAGE_ID]: "stageId",
+  [SearchMatchesRequest.sortBy.RULE_ID]: "ruleId",
+  [SearchMatchesRequest.sortBy.BATTLE_TYPE_ID]: "battleTypeId",
+  [SearchMatchesRequest.sortBy.RESULT]: "result",
+};
+
 export function MatchTable({
   matches,
   isLoading,
   pagination,
+  sortBy,
+  sortOrder,
+  onSortChange,
   selectedRowKeys,
   onSelectionChange,
 }: MatchTableProps) {
@@ -48,12 +84,22 @@ export function MatchTable({
     [matches]
   );
 
+  // Helper to get sortOrder for a column
+  const getSortOrder = (dataIndex: string): SortOrder | undefined => {
+    if (!sortBy) return undefined;
+    const currentDataIndex = sortByToDataIndex[sortBy];
+    if (currentDataIndex !== dataIndex) return undefined;
+    return sortOrder === SearchMatchesRequest.sortOrder.ASC ? "ascend" : "descend";
+  };
+
   const columns: ColumnsType<TableRow> = [
     {
       title: "日時",
       dataIndex: "gameDateTime",
       key: "gameDateTime",
       width: 150,
+      sorter: true,
+      sortOrder: getSortOrder("gameDateTime"),
       render: (value: string) => dayjs(value).format("YYYY/MM/DD HH:mm"),
     },
     {
@@ -61,6 +107,8 @@ export function MatchTable({
       dataIndex: "ruleId",
       key: "rule",
       width: 120,
+      sorter: true,
+      sortOrder: getSortOrder("ruleId"),
       render: (ruleId: number) => ruleMap.get(ruleId) || "-",
     },
     {
@@ -68,6 +116,8 @@ export function MatchTable({
       dataIndex: "stageId",
       key: "stage",
       width: 150,
+      sorter: true,
+      sortOrder: getSortOrder("stageId"),
       render: (stageId: number) => stageMap.get(stageId) || "-",
     },
     {
@@ -75,6 +125,8 @@ export function MatchTable({
       dataIndex: "weaponId",
       key: "weapon",
       width: 150,
+      sorter: true,
+      sortOrder: getSortOrder("weaponId"),
       render: (weaponId: number) => weaponMap.get(weaponId) || "-",
     },
     {
@@ -82,6 +134,8 @@ export function MatchTable({
       dataIndex: "battleTypeId",
       key: "battleType",
       width: 120,
+      sorter: true,
+      sortOrder: getSortOrder("battleTypeId"),
       render: (battleTypeId: number) => battleTypeMap.get(battleTypeId) || "-",
     },
     {
@@ -89,6 +143,8 @@ export function MatchTable({
       dataIndex: "result",
       key: "result",
       width: 80,
+      sorter: true,
+      sortOrder: getSortOrder("result"),
       render: (result: string) => (result === "WIN" ? "勝ち" : "負け"),
     },
     {
@@ -96,9 +152,31 @@ export function MatchTable({
       dataIndex: "point",
       key: "point",
       width: 100,
+      sorter: true,
+      sortOrder: getSortOrder("point"),
       render: (point: number | null) => point ?? "-",
     },
   ];
+
+  const handleTableChange: TableProps<TableRow>["onChange"] = (_pagination, _filters, sorter) => {
+    if (!onSortChange) return;
+    // sorter can be an array for multi-column sort, but we only support single
+    const singleSorter = Array.isArray(sorter) ? sorter[0] : sorter;
+    // Only handle when column header is clicked (column property exists)
+    if (!singleSorter || !singleSorter.column) return;
+
+    const field = String(singleSorter.field);
+    const newSortBy = dataIndexToSortBy[field];
+    if (!newSortBy) return;
+
+    // If clicking same column, toggle order; if no order, default to desc
+    const newSortOrder =
+      singleSorter.order === "ascend"
+        ? SearchMatchesRequest.sortOrder.ASC
+        : SearchMatchesRequest.sortOrder.DESC;
+
+    onSortChange(newSortBy, newSortOrder);
+  };
 
   const rowSelection = onSelectionChange
     ? {
@@ -127,7 +205,7 @@ export function MatchTable({
         dataSource={tableData}
         columns={columns}
         rowSelection={rowSelection}
-        scroll={{ y: "calc(100vh - 480px)" }}
+        scroll={{ y: "calc(100vh - 488px)" }}
         locale={{
           emptyText: (
             <Empty description="試合データがありません" image={Empty.PRESENTED_IMAGE_SIMPLE} />
@@ -140,6 +218,7 @@ export function MatchTable({
           showSizeChanger: false,
           onChange: pagination.onChange,
         }}
+        onChange={handleTableChange}
       />
     </Spin>
   );

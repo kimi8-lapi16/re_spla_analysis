@@ -3,6 +3,8 @@ import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   GroupByField,
+  VictoryRateSortBy,
+  SortOrder,
   VictoryRateResult,
   PointTransitionResult,
 } from './analysis.dto';
@@ -16,17 +18,48 @@ type VictoryRateRawResult = {
   win_count: bigint;
 };
 
+type VictoryRateCountResult = {
+  count: bigint;
+};
+
+export interface GetVictoryRateParams {
+  userId: string;
+  groupBy: GroupByField[];
+  sortBy?: VictoryRateSortBy;
+  sortOrder?: SortOrder;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface GetVictoryRateResult {
+  victoryRates: VictoryRateResult[];
+  total: number;
+}
+
 @Injectable()
 export class AnalysisUseCase {
   constructor(private readonly prisma: PrismaService) {}
 
   async getVictoryRate(
-    userId: string,
-    groupBy: GroupByField[],
-  ): Promise<VictoryRateResult[]> {
+    params: GetVictoryRateParams,
+  ): Promise<GetVictoryRateResult> {
+    const {
+      userId,
+      groupBy,
+      sortBy = VictoryRateSortBy.VICTORY_RATE,
+      sortOrder = SortOrder.DESC,
+      page = 1,
+      pageSize = 20,
+    } = params;
+
     const { selectColumns, joinClauses, groupColumns } =
       this.buildVictoryRateQueryParts(groupBy);
 
+    const orderByColumn = this.buildOrderByColumn(sortBy);
+    const orderDirection = sortOrder === SortOrder.ASC ? 'ASC' : 'DESC';
+    const offset = (page - 1) * pageSize;
+
+    // Main query with ORDER BY, LIMIT, OFFSET
     const query = Prisma.sql`
       SELECT
         ${Prisma.raw(selectColumns.join(', '))},
@@ -36,11 +69,29 @@ export class AnalysisUseCase {
       ${Prisma.raw(joinClauses.join(' '))}
       WHERE match.user_id = ${userId}
       GROUP BY ${Prisma.raw(groupColumns.join(', '))}
+      ORDER BY ${Prisma.raw(orderByColumn)} ${Prisma.raw(orderDirection)}
+      LIMIT ${pageSize} OFFSET ${offset}
     `;
 
-    const results = await this.prisma.$queryRaw<VictoryRateRawResult[]>(query);
+    // Count query for total
+    const countQuery = Prisma.sql`
+      SELECT COUNT(*) AS count FROM (
+        SELECT 1
+        FROM \`match\`
+        ${Prisma.raw(joinClauses.join(' '))}
+        WHERE match.user_id = ${userId}
+        GROUP BY ${Prisma.raw(groupColumns.join(', '))}
+      ) AS subquery
+    `;
 
-    return results.map((row) => {
+    const [results, countResults] = await Promise.all([
+      this.prisma.$queryRaw<VictoryRateRawResult[]>(query),
+      this.prisma.$queryRaw<VictoryRateCountResult[]>(countQuery),
+    ]);
+
+    const total = Number(countResults[0]?.count ?? 0);
+
+    const victoryRates = results.map((row) => {
       const totalCount = Number(row.total_count);
       const winCount = Number(row.win_count);
       return {
@@ -53,6 +104,29 @@ export class AnalysisUseCase {
         victoryRate: totalCount > 0 ? winCount / totalCount : 0,
       };
     });
+
+    return { victoryRates, total };
+  }
+
+  private buildOrderByColumn(sortBy: VictoryRateSortBy): string {
+    switch (sortBy) {
+      case VictoryRateSortBy.VICTORY_RATE:
+        return 'win_count / total_count';
+      case VictoryRateSortBy.TOTAL_COUNT:
+        return 'total_count';
+      case VictoryRateSortBy.WIN_COUNT:
+        return 'win_count';
+      case VictoryRateSortBy.RULE_NAME:
+        return 'rule_name';
+      case VictoryRateSortBy.STAGE_NAME:
+        return 'stage_name';
+      case VictoryRateSortBy.WEAPON_NAME:
+        return 'weapon_name';
+      case VictoryRateSortBy.BATTLE_TYPE_NAME:
+        return 'battle_type_name';
+      default:
+        return 'win_count / total_count';
+    }
   }
 
   async getPointTransition(

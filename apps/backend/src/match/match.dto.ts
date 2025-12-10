@@ -93,6 +93,21 @@ export enum SearchOperator {
   OR = 'OR',
 }
 
+export enum MatchSortBy {
+  GAME_DATE_TIME = 'gameDateTime',
+  POINT = 'point',
+  WEAPON_ID = 'weaponId',
+  STAGE_ID = 'stageId',
+  RULE_ID = 'ruleId',
+  BATTLE_TYPE_ID = 'battleTypeId',
+  RESULT = 'result',
+}
+
+export enum SortOrder {
+  ASC = 'asc',
+  DESC = 'desc',
+}
+
 export class SearchMatchesRequest {
   @ApiProperty({
     description: 'Weapon IDs to filter by',
@@ -196,6 +211,28 @@ export class SearchMatchesRequest {
   @IsInt()
   @Min(1)
   pageCount: number;
+
+  @ApiProperty({
+    description: 'Field to sort by',
+    enum: MatchSortBy,
+    required: false,
+    example: MatchSortBy.GAME_DATE_TIME,
+    type: String,
+  })
+  @IsOptional()
+  @IsEnum(MatchSortBy)
+  sortBy?: MatchSortBy;
+
+  @ApiProperty({
+    description: 'Sort order (asc or desc)',
+    enum: SortOrder,
+    required: false,
+    example: SortOrder.DESC,
+    type: String,
+  })
+  @IsOptional()
+  @IsEnum(SortOrder)
+  sortOrder?: SortOrder;
 }
 
 export class MatchResponse {

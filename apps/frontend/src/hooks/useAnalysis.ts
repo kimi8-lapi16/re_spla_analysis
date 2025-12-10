@@ -2,16 +2,44 @@ import { useQuery } from "@tanstack/react-query";
 import { AnalysisService } from "../api";
 
 export type GroupByField = "rule" | "stage" | "weapon" | "battleType";
+export type VictoryRateSortBy =
+  | "victoryRate"
+  | "totalCount"
+  | "winCount"
+  | "ruleName"
+  | "stageName"
+  | "weaponName"
+  | "battleTypeName";
+export type SortOrder = "asc" | "desc";
 
 export interface UseVictoryRateParams {
   groupBy: GroupByField[];
+  sortBy?: VictoryRateSortBy;
+  sortOrder?: SortOrder;
+  page?: number;
+  pageSize?: number;
   enabled?: boolean;
 }
 
 export function useVictoryRate(params: UseVictoryRateParams) {
   return useQuery({
-    queryKey: ["analysis", "victoryRate", params.groupBy],
-    queryFn: () => AnalysisService.analysisControllerGetVictoryRate(params.groupBy),
+    queryKey: [
+      "analysis",
+      "victoryRate",
+      params.groupBy,
+      params.sortBy,
+      params.sortOrder,
+      params.page,
+      params.pageSize,
+    ],
+    queryFn: () =>
+      AnalysisService.analysisControllerGetVictoryRate(
+        params.groupBy,
+        params.pageSize,
+        params.page,
+        params.sortOrder,
+        params.sortBy
+      ),
     enabled: params.enabled !== false && params.groupBy.length > 0,
   });
 }

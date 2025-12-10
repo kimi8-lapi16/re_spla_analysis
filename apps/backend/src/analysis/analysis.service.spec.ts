@@ -50,15 +50,22 @@ describe('AnalysisService', () => {
         },
       ];
 
-      analysisUseCase.getVictoryRate.mockResolvedValue(mockVictoryRates);
+      analysisUseCase.getVictoryRate.mockResolvedValue({
+        victoryRates: mockVictoryRates,
+        total: 1,
+      });
 
       const result = await service.getVictoryRate(userId, request);
 
-      expect(result).toEqual({ victoryRates: mockVictoryRates });
-      expect(analysisUseCase.getVictoryRate).toHaveBeenCalledWith(userId, [
-        GroupByField.RULE,
-        GroupByField.STAGE,
-      ]);
+      expect(result).toEqual({ victoryRates: mockVictoryRates, total: 1 });
+      expect(analysisUseCase.getVictoryRate).toHaveBeenCalledWith({
+        userId,
+        groupBy: [GroupByField.RULE, GroupByField.STAGE],
+        sortBy: undefined,
+        sortOrder: undefined,
+        page: undefined,
+        pageSize: undefined,
+      });
     });
 
     it('should return empty victory rates when no data', async () => {
@@ -67,11 +74,14 @@ describe('AnalysisService', () => {
         groupBy: [GroupByField.WEAPON],
       };
 
-      analysisUseCase.getVictoryRate.mockResolvedValue([]);
+      analysisUseCase.getVictoryRate.mockResolvedValue({
+        victoryRates: [],
+        total: 0,
+      });
 
       const result = await service.getVictoryRate(userId, request);
 
-      expect(result).toEqual({ victoryRates: [] });
+      expect(result).toEqual({ victoryRates: [], total: 0 });
     });
   });
 

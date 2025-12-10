@@ -1,9 +1,7 @@
-import { Flex, Tabs, Typography } from "antd";
+import { Tabs } from "antd";
 import { PointTransitionTab } from "../components/features/dashboard/PointTransitionTab";
 import { VictoryRateTab } from "../components/features/dashboard/VictoryRateTab";
 import { MainLayout } from "../components/layout/MainLayout";
-
-const { Title } = Typography;
 
 export function DashboardPage() {
   const tabItems = [
@@ -21,12 +19,11 @@ export function DashboardPage() {
 
   return (
     <MainLayout>
-      <Flex vertical gap={24}>
-        <Title level={2} style={{ margin: 0 }}>
-          ダッシュボード
-        </Title>
-        <Tabs items={tabItems} defaultActiveKey="victoryRate" />
-      </Flex>
+      <Tabs
+        items={tabItems}
+        defaultActiveKey="victoryRate"
+        style={{ height: "100%" }}
+      />
     </MainLayout>
   );
 }

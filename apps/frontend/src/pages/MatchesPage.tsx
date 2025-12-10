@@ -27,6 +27,8 @@ type SearchFilters = {
   operator: SearchMatchesRequest.operator;
   page: number;
   pageCount: number;
+  sortBy?: SearchMatchesRequest.sortBy;
+  sortOrder?: SearchMatchesRequest.sortOrder;
 };
 
 export function MatchesPage() {
@@ -38,6 +40,8 @@ export function MatchesPage() {
     operator: SearchMatchesRequest.operator.AND,
     page: 1,
     pageCount: 50,
+    sortBy: SearchMatchesRequest.sortBy.GAME_DATE_TIME,
+    sortOrder: SearchMatchesRequest.sortOrder.DESC,
   });
 
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
@@ -57,6 +61,8 @@ export function MatchesPage() {
       operator: filters.operator,
       page: filters.page,
       pageCount: filters.pageCount,
+      sortBy: filters.sortBy,
+      sortOrder: filters.sortOrder,
     }),
     [filters]
   );
@@ -70,6 +76,13 @@ export function MatchesPage() {
 
   const handleFiltersChange = (newFilters: Partial<SearchFilters>) => {
     setFilters((prev) => ({ ...prev, ...newFilters, page: 1 }));
+  };
+
+  const handleSortChange = (
+    sortBy: SearchMatchesRequest.sortBy,
+    sortOrder: SearchMatchesRequest.sortOrder
+  ) => {
+    setFilters((prev) => ({ ...prev, sortBy, sortOrder, page: 1 }));
   };
 
   const handleSelectionChange = (keys: string[], rows: MatchResponse[]) => {
@@ -123,7 +136,7 @@ export function MatchesPage() {
 
   return (
     <MainLayout>
-      <Space vertical size="large">
+      <Flex vertical gap="large" style={{ height: "100%" }}>
         <Flex justify="space-between" align="center">
           <Title level={2} style={{ margin: 0 }}>
             試合履歴
@@ -150,19 +163,24 @@ export function MatchesPage() {
           </Space>
         </Flex>
         <MatchSearchFilters filters={filters} onFiltersChange={handleFiltersChange} />
-        <MatchTable
-          matches={searchData?.matches}
-          isLoading={isSearching}
-          pagination={{
-            current: filters.page,
-            pageSize: filters.pageCount,
-            total: searchData?.total ?? 0,
-            onChange: (page) => setFilters((prev) => ({ ...prev, page })),
-          }}
-          selectedRowKeys={selectedRowKeys}
-          onSelectionChange={handleSelectionChange}
-        />
-      </Space>
+        <Flex vertical style={{ flex: 1, minHeight: 0 }}>
+          <MatchTable
+            matches={searchData?.matches}
+            isLoading={isSearching}
+            pagination={{
+              current: filters.page,
+              pageSize: filters.pageCount,
+              total: searchData?.total ?? 0,
+              onChange: (page) => setFilters((prev) => ({ ...prev, page })),
+            }}
+            sortBy={filters.sortBy}
+            sortOrder={filters.sortOrder}
+            onSortChange={handleSortChange}
+            selectedRowKeys={selectedRowKeys}
+            onSelectionChange={handleSelectionChange}
+          />
+        </Flex>
+      </Flex>
       <MatchEditModal
         open={isEditModalOpen}
         matches={selectedMatches}
