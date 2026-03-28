@@ -144,6 +144,7 @@ This project follows a layered architecture pattern with clear separation of con
   - Should NOT use Prisma's `include` or `select` to fetch related data from other tables
   - Only contain basic CRUD operations: `create`, `findById`, `findByEmail`, `update`, `delete`, etc.
   - **Must support transactions** by accepting an optional transaction parameter
+  - **Exception for tightly-coupled 1:1 relations**: When a relation is always fetched together and never queried independently (e.g., Weapon → SubWeapon, Weapon → SpecialWeapon), the Repository MAY use `include` for those specific relations. The criteria is: "there is no use case where the parent is fetched without this relation."
 - **Transaction Support**:
 
   ```typescript
@@ -342,6 +343,38 @@ This project follows a layered architecture pattern with clear separation of con
 | Multi-table read            | UseCase                  | `findUserWithSecretUseCase.byEmail()` |
 | Multi-table write           | UseCase with transaction | `createUserUseCase.execute()`         |
 | Business logic + validation | Service                  | `userService.createUser()`            |
+
+#### Validation Responsibility by Layer
+
+| Layer | Validation Type | Example |
+| ----- | --------------- | ------- |
+| DTO / ValidationPipe | Type & format validation | `@IsEmail()`, `@IsInt()`, `@Min(1)` |
+| Service | Business rule validation | Email uniqueness, ownership checks, authorization |
+| UseCase | Referential integrity validation | FK target existence checks (e.g., ruleId, weaponId) before transaction |
+
+- **UseCase validates FK references before transactions**: Bulk operations in UseCase validate that all referenced IDs (rule, weapon, stage, battleType) exist before starting the transaction. This prevents partial writes and gives clear error messages.
+- **Service handles authorization**: Ownership checks (`verifyOwnership`) and business constraints (email uniqueness) belong in the Service layer.
+
+#### Entity Layer Design Philosophy
+
+Entity classes in this project serve primarily as **type boundaries to prevent Prisma type leakage** into upper layers (Service, Controller). They are intentionally kept thin.
+
+- **Primary purpose**: Decouple upper layers from Prisma's generated types. Repository's `toDomain()` converts Prisma models to Entity types, ensuring Service/Controller never depend on `@prisma/client` types directly.
+- **Thin by design**: Most entities (Stage, Rule, Weapon, BattleType) are pure data holders with no behavior. This is intentional — they represent reference data that rarely needs domain logic.
+- **When to add behavior**: Entities that involve user input and complex state transitions (e.g., User, Match/Analysis) may carry domain validation or computed properties when the need arises.
+- **What NOT to do**: Do not add Prisma decorators, Prisma-specific types, or `include`/`select` result types to Entity classes.
+
+#### Raw SQL Usage Policy
+
+This project uses Prisma's `$queryRaw` with `Prisma.raw()` in `AnalysisUseCase` for complex analytical queries (GROUP BY with JOINs, calculated columns like victory rate).
+
+**Why raw SQL**: Prisma's `groupBy` has limitations — it cannot join related tables for name resolution or compute derived columns (e.g., `win_count / total_count`) in the same query.
+
+**Safety rules for `Prisma.raw()`**:
+- All column/table names passed to `Prisma.raw()` MUST come from hardcoded mappings (enum → string), never from user input
+- Use `Prisma.sql` with template literals for parameterized values (e.g., `${userId}`, `${pageSize}`)
+- The `buildVictoryRateQueryParts()` and `buildOrderByColumn()` methods act as whitelist validators — they only produce values from a fixed set of known-safe strings
+- Any new `Prisma.raw()` usage must follow this same whitelist pattern
 
 ### TypeScript Best Practices
 
