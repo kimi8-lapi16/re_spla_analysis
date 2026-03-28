@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ForbiddenException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { MatchService } from './match.service';
 import { MatchUseCase } from './match.usecase';
 import { MatchRepository } from './match.repository';
@@ -279,6 +279,56 @@ describe('MatchService', () => {
       expect(result.total).toBe(2);
       expect(result.matches[0].id).toBe('test-match-id');
       expect(result.matches[1].id).toBe('test-match-id-2');
+    });
+  });
+
+  describe('bulkCreateMatches', () => {
+    it('should call matchUseCase.bulkCreateMatches and return success', async () => {
+      const userId = 'test-user-id';
+      const request = {
+        matches: [
+          {
+            ruleId: 1,
+            weaponId: 1,
+            stageId: 1,
+            battleTypeId: 1,
+            result: MatchResult.WIN,
+            gameDateTime: '2024-11-24T10:30:00Z',
+            point: 1500,
+          },
+        ],
+      };
+
+      matchUseCase.bulkCreateMatches.mockResolvedValue(undefined);
+
+      const result = await service.bulkCreateMatches(userId, request);
+
+      expect(result).toEqual({ success: true });
+      expect(matchUseCase.bulkCreateMatches).toHaveBeenCalledWith(userId, request.matches);
+    });
+
+    it('should propagate errors from useCase during create', async () => {
+      const userId = 'test-user-id';
+      const request = {
+        matches: [
+          {
+            ruleId: 999,
+            weaponId: 1,
+            stageId: 1,
+            battleTypeId: 1,
+            result: MatchResult.WIN,
+            gameDateTime: '2024-11-24T10:30:00Z',
+          },
+        ],
+      };
+
+      matchUseCase.bulkCreateMatches.mockRejectedValue(
+        new BadRequestException('Invalid rule IDs: 999'),
+      );
+
+      await expect(service.bulkCreateMatches(userId, request)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 

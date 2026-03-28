@@ -152,6 +152,31 @@ describe('AuthService', () => {
         UnauthorizedException,
       );
     });
+
+    it('should throw UnauthorizedException when user has no secret', async () => {
+      const request: LoginRequest = {
+        email: 'test@example.com',
+        password: 'password',
+      };
+
+      const userWithoutSecret = { ...mockUser, secret: null };
+      userService.findByEmail.mockResolvedValue(userWithoutSecret);
+
+      await expect(service.login(request)).rejects.toThrow(UnauthorizedException);
+      expect(tokenService.generateTokens).not.toHaveBeenCalled();
+    });
+
+    it('should throw UnauthorizedException when user does not exist during login', async () => {
+      const request: LoginRequest = {
+        email: 'nonexistent@example.com',
+        password: 'password',
+      };
+
+      userService.findByEmail.mockResolvedValue(null);
+
+      await expect(service.login(request)).rejects.toThrow(UnauthorizedException);
+      expect(tokenService.generateTokens).not.toHaveBeenCalled();
+    });
   });
 
   describe('refresh', () => {
@@ -177,6 +202,19 @@ describe('AuthService', () => {
       expect(result).toEqual({ accessToken: 'new-access-token' });
       expect(tokenService.generateAccessToken).toHaveBeenCalledWith({
         userId: 'non-existent-id',
+        email: '',
+      });
+    });
+
+    it('should handle refresh when user is deleted between token issue and refresh', async () => {
+      userService.findById.mockResolvedValue(null);
+      tokenService.generateAccessToken.mockReturnValue('new-access-token');
+
+      const result = await service.refresh('deleted-user-id');
+
+      expect(result).toEqual({ accessToken: 'new-access-token' });
+      expect(tokenService.generateAccessToken).toHaveBeenCalledWith({
+        userId: 'deleted-user-id',
         email: '',
       });
     });
