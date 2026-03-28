@@ -1,7 +1,12 @@
+import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AnalysisUseCase } from './analysis.usecase';
 import { PrismaService } from '../prisma/prisma.service';
-import { GroupByField } from './analysis.dto';
+import {
+  GroupByField,
+  VictoryRateSortBy,
+  SortOrder,
+} from './analysis.dto';
 
 type MockPrismaService = {
   $queryRaw: jest.Mock;
@@ -166,6 +171,183 @@ describe('AnalysisUseCase', () => {
 
       expect(result.victoryRates).toEqual([]);
       expect(result.total).toBe(0);
+    });
+
+    describe('parameter validation', () => {
+      it('should throw BadRequestException for invalid groupBy field', async () => {
+        const userId = 'test-user-id';
+        const groupBy = ['invalidField'] as unknown as GroupByField[];
+
+        await expect(
+          useCase.getVictoryRate({ userId, groupBy }),
+        ).rejects.toThrow(BadRequestException);
+        await expect(
+          useCase.getVictoryRate({ userId, groupBy }),
+        ).rejects.toThrow('Invalid groupBy field: invalidField');
+        expect(prismaService.$queryRaw).not.toHaveBeenCalled();
+      });
+
+      it('should throw BadRequestException for invalid sortBy field', async () => {
+        const userId = 'test-user-id';
+        const groupBy = [GroupByField.RULE];
+        const sortBy = 'DROP TABLE users' as unknown as VictoryRateSortBy;
+
+        await expect(
+          useCase.getVictoryRate({ userId, groupBy, sortBy }),
+        ).rejects.toThrow(BadRequestException);
+        expect(prismaService.$queryRaw).not.toHaveBeenCalled();
+      });
+
+      it('should throw BadRequestException for invalid sortOrder', async () => {
+        const userId = 'test-user-id';
+        const groupBy = [GroupByField.RULE];
+        const sortOrder = 'invalid' as unknown as SortOrder;
+
+        await expect(
+          useCase.getVictoryRate({ userId, groupBy, sortOrder }),
+        ).rejects.toThrow(BadRequestException);
+        expect(prismaService.$queryRaw).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('sorting', () => {
+      it('should apply custom sort by total count ascending', async () => {
+        const userId = 'test-user-id';
+        const groupBy = [GroupByField.RULE];
+
+        prismaService.$queryRaw
+          .mockResolvedValueOnce([
+            {
+              rule_name: 'Splat Zones',
+              total_count: BigInt(10),
+              win_count: BigInt(7),
+            },
+          ])
+          .mockResolvedValueOnce([{ count: BigInt(1) }]);
+
+        await useCase.getVictoryRate({
+          userId,
+          groupBy,
+          sortBy: VictoryRateSortBy.TOTAL_COUNT,
+          sortOrder: SortOrder.ASC,
+        });
+
+        expect(prismaService.$queryRaw).toHaveBeenCalledTimes(2);
+      });
+
+      it('should sort by each valid sortBy value without error', async () => {
+        const userId = 'test-user-id';
+        const groupBy = [
+          GroupByField.RULE,
+          GroupByField.STAGE,
+          GroupByField.WEAPON,
+          GroupByField.BATTLE_TYPE,
+        ];
+
+        for (const sortBy of Object.values(VictoryRateSortBy)) {
+          prismaService.$queryRaw
+            .mockResolvedValueOnce([])
+            .mockResolvedValueOnce([{ count: BigInt(0) }]);
+
+          await expect(
+            useCase.getVictoryRate({ userId, groupBy, sortBy }),
+          ).resolves.not.toThrow();
+        }
+      });
+    });
+
+    describe('pagination', () => {
+      it('should apply custom page and pageSize', async () => {
+        const userId = 'test-user-id';
+        const groupBy = [GroupByField.RULE];
+
+        prismaService.$queryRaw
+          .mockResolvedValueOnce([])
+          .mockResolvedValueOnce([{ count: BigInt(0) }]);
+
+        await useCase.getVictoryRate({
+          userId,
+          groupBy,
+          page: 3,
+          pageSize: 10,
+        });
+
+        expect(prismaService.$queryRaw).toHaveBeenCalledTimes(2);
+      });
+
+      it('should handle zero victory rate when total count is zero', async () => {
+        const userId = 'test-user-id';
+        const groupBy = [GroupByField.WEAPON];
+
+        prismaService.$queryRaw
+          .mockResolvedValueOnce([
+            {
+              weapon_name: 'Splattershot',
+              total_count: BigInt(0),
+              win_count: BigInt(0),
+            },
+          ])
+          .mockResolvedValueOnce([{ count: BigInt(1) }]);
+
+        const result = await useCase.getVictoryRate({ userId, groupBy });
+
+        expect(result.victoryRates[0].victoryRate).toBe(0);
+      });
+
+      it('should handle missing count result', async () => {
+        const userId = 'test-user-id';
+        const groupBy = [GroupByField.RULE];
+
+        prismaService.$queryRaw
+          .mockResolvedValueOnce([])
+          .mockResolvedValueOnce([]);
+
+        const result = await useCase.getVictoryRate({ userId, groupBy });
+
+        expect(result.total).toBe(0);
+      });
+    });
+
+    describe('groupBy combinations', () => {
+      it('should handle single weapon groupBy', async () => {
+        const userId = 'test-user-id';
+        const groupBy = [GroupByField.WEAPON];
+
+        prismaService.$queryRaw
+          .mockResolvedValueOnce([
+            {
+              weapon_name: 'Splattershot',
+              total_count: BigInt(5),
+              win_count: BigInt(3),
+            },
+          ])
+          .mockResolvedValueOnce([{ count: BigInt(1) }]);
+
+        const result = await useCase.getVictoryRate({ userId, groupBy });
+
+        expect(result.victoryRates[0].weaponName).toBe('Splattershot');
+        expect(result.victoryRates[0].ruleName).toBeUndefined();
+      });
+
+      it('should handle single battle type groupBy', async () => {
+        const userId = 'test-user-id';
+        const groupBy = [GroupByField.BATTLE_TYPE];
+
+        prismaService.$queryRaw
+          .mockResolvedValueOnce([
+            {
+              battle_type_name: 'Ranked',
+              total_count: BigInt(20),
+              win_count: BigInt(12),
+            },
+          ])
+          .mockResolvedValueOnce([{ count: BigInt(1) }]);
+
+        const result = await useCase.getVictoryRate({ userId, groupBy });
+
+        expect(result.victoryRates[0].battleTypeName).toBe('Ranked');
+        expect(result.victoryRates[0].victoryRate).toBe(0.6);
+      });
     });
   });
 
