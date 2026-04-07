@@ -1,7 +1,7 @@
-import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AnalysisUseCase } from './analysis.usecase';
 import { PrismaService } from '../prisma/prisma.service';
+import { ValidationException } from '../common/exceptions';
 import {
   GroupByField,
   VictoryRateSortBy,
@@ -174,38 +174,38 @@ describe('AnalysisUseCase', () => {
     });
 
     describe('parameter validation', () => {
-      it('should throw BadRequestException for invalid groupBy field', async () => {
+      it('should throw ValidationException for invalid groupBy field', async () => {
         const userId = 'test-user-id';
         const groupBy = ['invalidField'] as unknown as GroupByField[];
 
         await expect(
           useCase.getVictoryRate({ userId, groupBy }),
-        ).rejects.toThrow(BadRequestException);
+        ).rejects.toThrow(ValidationException);
         await expect(
           useCase.getVictoryRate({ userId, groupBy }),
         ).rejects.toThrow('Invalid groupBy field: invalidField');
         expect(prismaService.$queryRaw).not.toHaveBeenCalled();
       });
 
-      it('should throw BadRequestException for invalid sortBy field', async () => {
+      it('should throw ValidationException for invalid sortBy field', async () => {
         const userId = 'test-user-id';
         const groupBy = [GroupByField.RULE];
         const sortBy = 'DROP TABLE users' as unknown as VictoryRateSortBy;
 
         await expect(
           useCase.getVictoryRate({ userId, groupBy, sortBy }),
-        ).rejects.toThrow(BadRequestException);
+        ).rejects.toThrow(ValidationException);
         expect(prismaService.$queryRaw).not.toHaveBeenCalled();
       });
 
-      it('should throw BadRequestException for invalid sortOrder', async () => {
+      it('should throw ValidationException for invalid sortOrder', async () => {
         const userId = 'test-user-id';
         const groupBy = [GroupByField.RULE];
         const sortOrder = 'invalid' as unknown as SortOrder;
 
         await expect(
           useCase.getVictoryRate({ userId, groupBy, sortOrder }),
-        ).rejects.toThrow(BadRequestException);
+        ).rejects.toThrow(ValidationException);
         expect(prismaService.$queryRaw).not.toHaveBeenCalled();
       });
     });

@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { InternalServerErrorException } from '@nestjs/common';
 import {
-  ConflictException,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
+  DuplicateEntityException,
+  EntityNotFoundException,
+} from '../common/exceptions';
 import * as bcrypt from 'bcrypt';
 import { UserSecret } from 'generated/prisma/client';
 import { UserService } from './user.service';
@@ -103,7 +103,7 @@ describe('UserService', () => {
       });
     });
 
-    it('should throw ConflictException if email already exists', async () => {
+    it('should throw DuplicateEntityException if email already exists', async () => {
       const existingUser = {
         id: 'existing-user-id',
         name: 'Existing User',
@@ -115,7 +115,7 @@ describe('UserService', () => {
       repository.findByEmail.mockResolvedValue(existingUser);
 
       await expect(service.createUser(createUser)).rejects.toThrow(
-        ConflictException,
+        DuplicateEntityException,
       );
       await expect(service.createUser(createUser)).rejects.toThrow(
         'Email already exists',
@@ -277,12 +277,12 @@ describe('UserService', () => {
       expect(userUseCase.updateUserWithSecret).toHaveBeenCalled();
     });
 
-    it('should throw NotFoundException if user does not exist', async () => {
+    it('should throw EntityNotFoundException if user does not exist', async () => {
       repository.findById.mockResolvedValue(null);
 
       await expect(
         service.updateUser('non-existent-id', updateUser),
-      ).rejects.toThrow(NotFoundException);
+      ).rejects.toThrow(EntityNotFoundException);
       await expect(
         service.updateUser('non-existent-id', updateUser),
       ).rejects.toThrow('User not found');
@@ -291,7 +291,7 @@ describe('UserService', () => {
       expect(userUseCase.updateUserWithSecret).not.toHaveBeenCalled();
     });
 
-    it('should throw ConflictException if new email already exists', async () => {
+    it('should throw DuplicateEntityException if new email already exists', async () => {
       repository.findById.mockResolvedValue(mockUserWithoutSecret);
       const existingUser = {
         id: 'another-user-id',
@@ -305,7 +305,7 @@ describe('UserService', () => {
 
       await expect(
         service.updateUser('test-user-id', { email: 'taken@example.com' }),
-      ).rejects.toThrow(ConflictException);
+      ).rejects.toThrow(DuplicateEntityException);
       await expect(
         service.updateUser('test-user-id', { email: 'taken@example.com' }),
       ).rejects.toThrow('Email already exists');

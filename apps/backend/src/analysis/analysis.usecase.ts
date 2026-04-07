@@ -1,4 +1,5 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { ValidationException } from '../common/exceptions';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import {
@@ -119,16 +120,16 @@ export class AnalysisUseCase {
   private validateParams(params: GetVictoryRateParams): void {
     for (const field of params.groupBy) {
       if (!ALLOWED_GROUP_BY_FIELDS.has(field)) {
-        throw new BadRequestException(`Invalid groupBy field: ${field}`);
+        throw new ValidationException(`Invalid groupBy field: ${field}`);
       }
     }
 
     if (params.sortBy && !ALLOWED_SORT_BY_FIELDS.has(params.sortBy)) {
-      throw new BadRequestException(`Invalid sortBy field: ${params.sortBy}`);
+      throw new ValidationException(`Invalid sortBy field: ${params.sortBy}`);
     }
 
     if (params.sortOrder && !ALLOWED_SORT_ORDERS.has(params.sortOrder)) {
-      throw new BadRequestException(`Invalid sortOrder: ${params.sortOrder}`);
+      throw new ValidationException(`Invalid sortOrder: ${params.sortOrder}`);
     }
   }
 

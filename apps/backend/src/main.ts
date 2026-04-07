@@ -4,6 +4,7 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
+import { DomainExceptionFilter } from './common/filters/domain-exception.filter';
 import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter';
 
 async function bootstrap() {
@@ -31,7 +32,10 @@ async function bootstrap() {
     }),
   );
 
-  app.useGlobalFilters(new PrismaExceptionFilter());
+  app.useGlobalFilters(
+    new PrismaExceptionFilter(),
+    new DomainExceptionFilter(),
+  );
 
   const config = new DocumentBuilder()
     .setTitle('Re Spla Analysis API')
