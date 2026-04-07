@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import {
@@ -8,6 +8,12 @@ import {
   VictoryRateResult,
   PointTransitionResult,
 } from './analysis.dto';
+
+const ALLOWED_GROUP_BY_FIELDS = new Set<string>(Object.values(GroupByField));
+const ALLOWED_SORT_BY_FIELDS = new Set<string>(
+  Object.values(VictoryRateSortBy),
+);
+const ALLOWED_SORT_ORDERS = new Set<string>(Object.values(SortOrder));
 
 type VictoryRateRawResult = {
   rule_name?: string;
@@ -43,6 +49,8 @@ export class AnalysisUseCase {
   async getVictoryRate(
     params: GetVictoryRateParams,
   ): Promise<GetVictoryRateResult> {
+    this.validateParams(params);
+
     const {
       userId,
       groupBy,
@@ -106,6 +114,22 @@ export class AnalysisUseCase {
     });
 
     return { victoryRates, total };
+  }
+
+  private validateParams(params: GetVictoryRateParams): void {
+    for (const field of params.groupBy) {
+      if (!ALLOWED_GROUP_BY_FIELDS.has(field)) {
+        throw new BadRequestException(`Invalid groupBy field: ${field}`);
+      }
+    }
+
+    if (params.sortBy && !ALLOWED_SORT_BY_FIELDS.has(params.sortBy)) {
+      throw new BadRequestException(`Invalid sortBy field: ${params.sortBy}`);
+    }
+
+    if (params.sortOrder && !ALLOWED_SORT_ORDERS.has(params.sortOrder)) {
+      throw new BadRequestException(`Invalid sortOrder: ${params.sortOrder}`);
+    }
   }
 
   private buildOrderByColumn(sortBy: VictoryRateSortBy): string {
