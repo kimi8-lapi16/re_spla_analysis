@@ -314,6 +314,60 @@ describe('UserService', () => {
       expect(userUseCase.updateUserWithSecret).not.toHaveBeenCalled();
     });
 
+    it('should hash password when updating with new password', async () => {
+      const mockUserWithoutSecret = {
+        id: 'test-user-id',
+        name: 'Test User',
+        email: 'test@example.com',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        deletedAt: null,
+      };
+
+      repository.findById.mockResolvedValue(mockUserWithoutSecret);
+      (bcrypt.hash as jest.Mock).mockResolvedValue('new-hashed-password');
+      const updatedUser = {
+        ...mockUserWithoutSecret,
+        secret: { userId: 'test-user-id', password: 'new-hashed-password' },
+      };
+      userUseCase.updateUserWithSecret.mockResolvedValue(updatedUser);
+
+      await service.updateUser('test-user-id', { password: 'newpassword123' });
+
+      expect(bcrypt.hash).toHaveBeenCalledWith('newpassword123', 10);
+      expect(userUseCase.updateUserWithSecret).toHaveBeenCalledWith(
+        'test-user-id',
+        expect.objectContaining({
+          password: 'new-hashed-password',
+        }),
+      );
+    });
+
+    it('should not hash password when password is not provided', async () => {
+      const mockUserWithoutSecret = {
+        id: 'test-user-id',
+        name: 'Test User',
+        email: 'test@example.com',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        deletedAt: null,
+      };
+
+      repository.findById.mockResolvedValue(mockUserWithoutSecret);
+      const updatedUser = { ...mockUserWithoutSecret, secret: null };
+      userUseCase.updateUserWithSecret.mockResolvedValue(updatedUser);
+
+      await service.updateUser('test-user-id', { name: 'New Name' });
+
+      expect(bcrypt.hash).not.toHaveBeenCalled();
+      expect(userUseCase.updateUserWithSecret).toHaveBeenCalledWith(
+        'test-user-id',
+        expect.objectContaining({
+          password: undefined,
+        }),
+      );
+    });
+
     it('should not check email availability if email is not being changed', async () => {
       repository.findById.mockResolvedValue(mockUserWithoutSecret);
       const mockUserWithSecretNull = {

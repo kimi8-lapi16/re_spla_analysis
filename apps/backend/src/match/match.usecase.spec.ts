@@ -240,6 +240,94 @@ describe('MatchUseCase', () => {
       );
     });
 
+    it('should handle point as null when not provided', async () => {
+      const userId = 'test-user-id';
+      const matchWithoutPoint: CreateMatchBody = {
+        ruleId: 1,
+        weaponId: 1,
+        stageId: 1,
+        battleTypeId: 1,
+        result: MatchResult.WIN,
+        gameDateTime: '2024-11-24T10:30:00Z',
+      };
+
+      ruleRepository.findByIds.mockResolvedValue([mockRule]);
+      weaponRepository.findByIds.mockResolvedValue([mockWeapon]);
+      stageRepository.findByIds.mockResolvedValue([mockStage]);
+      battleTypeRepository.findByIds.mockResolvedValue([mockBattleType]);
+
+      prismaService.$transaction.mockImplementation(async (callback) => {
+        return callback({
+          match: { createMany: matchRepository.createMany },
+        });
+      });
+
+      await useCase.bulkCreateMatches(userId, [matchWithoutPoint]);
+
+      expect(matchRepository.createMany).toHaveBeenCalledWith(
+        [
+          expect.objectContaining({
+            point: null,
+          }),
+        ],
+        expect.anything(),
+      );
+    });
+
+    it('should not call createMany when validation fails', async () => {
+      const userId = 'test-user-id';
+      const matches = [mockMatchData];
+
+      ruleRepository.findByIds.mockResolvedValue([]);
+      weaponRepository.findByIds.mockResolvedValue([mockWeapon]);
+      stageRepository.findByIds.mockResolvedValue([mockStage]);
+      battleTypeRepository.findByIds.mockResolvedValue([mockBattleType]);
+
+      await expect(useCase.bulkCreateMatches(userId, matches)).rejects.toThrow(BadRequestException);
+
+      expect(prismaService.$transaction).not.toHaveBeenCalled();
+      expect(matchRepository.createMany).not.toHaveBeenCalled();
+    });
+
+    it('should propagate transaction errors', async () => {
+      const userId = 'test-user-id';
+      const matches = [mockMatchData];
+
+      ruleRepository.findByIds.mockResolvedValue([mockRule]);
+      weaponRepository.findByIds.mockResolvedValue([mockWeapon]);
+      stageRepository.findByIds.mockResolvedValue([mockStage]);
+      battleTypeRepository.findByIds.mockResolvedValue([mockBattleType]);
+
+      prismaService.$transaction.mockRejectedValue(new Error('Transaction failed'));
+
+      await expect(useCase.bulkCreateMatches(userId, matches)).rejects.toThrow('Transaction failed');
+    });
+
+    it('should deduplicate IDs when validating multiple matches with same references', async () => {
+      const userId = 'test-user-id';
+      const matches = [
+        mockMatchData,
+        { ...mockMatchData, gameDateTime: '2024-11-25T10:30:00Z' },
+      ];
+
+      ruleRepository.findByIds.mockResolvedValue([mockRule]);
+      weaponRepository.findByIds.mockResolvedValue([mockWeapon]);
+      stageRepository.findByIds.mockResolvedValue([mockStage]);
+      battleTypeRepository.findByIds.mockResolvedValue([mockBattleType]);
+
+      prismaService.$transaction.mockImplementation(async (callback) => {
+        return callback({
+          match: { createMany: matchRepository.createMany },
+        });
+      });
+
+      await useCase.bulkCreateMatches(userId, matches);
+
+      // Should only query for unique IDs, not duplicated
+      expect(ruleRepository.findByIds).toHaveBeenCalledWith([1]);
+      expect(weaponRepository.findByIds).toHaveBeenCalledWith([1]);
+    });
+
     it('should validate multiple matches with different IDs', async () => {
       const userId = 'test-user-id';
       const matches = [
@@ -324,6 +412,33 @@ describe('MatchUseCase', () => {
       await expect(useCase.bulkUpdateMatches(matches)).rejects.toThrow(
         'Invalid rule IDs: 1',
       );
+    });
+
+    it('should not call updateOne when validation fails', async () => {
+      const matches = [{ id: 'match-1', ruleId: 1, weaponId: 1, stageId: 1, battleTypeId: 1, result: MatchResult.WIN, gameDateTime: '2024-11-24T10:30:00Z', point: 1500 }];
+
+      ruleRepository.findByIds.mockResolvedValue([]);
+      weaponRepository.findByIds.mockResolvedValue([mockWeapon]);
+      stageRepository.findByIds.mockResolvedValue([mockStage]);
+      battleTypeRepository.findByIds.mockResolvedValue([mockBattleType]);
+
+      await expect(useCase.bulkUpdateMatches(matches)).rejects.toThrow(BadRequestException);
+
+      expect(prismaService.$transaction).not.toHaveBeenCalled();
+      expect(matchRepository.updateOne).not.toHaveBeenCalled();
+    });
+
+    it('should propagate transaction errors during update', async () => {
+      const matches = [{ id: 'match-1', ruleId: 1, weaponId: 1, stageId: 1, battleTypeId: 1, result: MatchResult.WIN, gameDateTime: '2024-11-24T10:30:00Z', point: 1500 }];
+
+      ruleRepository.findByIds.mockResolvedValue([mockRule]);
+      weaponRepository.findByIds.mockResolvedValue([mockWeapon]);
+      stageRepository.findByIds.mockResolvedValue([mockStage]);
+      battleTypeRepository.findByIds.mockResolvedValue([mockBattleType]);
+
+      prismaService.$transaction.mockRejectedValue(new Error('Transaction failed'));
+
+      await expect(useCase.bulkUpdateMatches(matches)).rejects.toThrow('Transaction failed');
     });
 
     it('should update multiple matches in a transaction', async () => {
