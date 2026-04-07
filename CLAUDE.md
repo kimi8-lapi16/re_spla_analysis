@@ -142,6 +142,7 @@ This project follows a layered architecture pattern with clear separation of con
   - One repository per database table (e.g., `UserRepository` for `User` table, `UserSecretRepository` for `UserSecret` table)
   - Should NOT directly access or join other tables
   - Should NOT use Prisma's `include` or `select` to fetch related data from other tables
+  - **Exception**: For 1:1 relationships that are always fetched together (e.g., Weapon→SubWeapon, Weapon→SpecialWeapon), `include` is permitted within the Repository. The criteria is: "there is no use case where the entity is fetched without its related data."
   - Only contain basic CRUD operations: `create`, `findById`, `findByEmail`, `update`, `delete`, etc.
   - **Must support transactions** by accepting an optional transaction parameter
 - **Transaction Support**:
@@ -193,6 +194,14 @@ This project follows a layered architecture pattern with clear separation of con
   }
   ```
 
+#### Entity Layer
+
+- **Purpose**: Define domain models that serve as the **boundary interface** between Repository and Service layers
+- **Design Intent**: Entity classes are intentionally kept thin. Their primary role is to **prevent Prisma's generated types from leaking into the Service layer**, not to hold domain logic.
+  - Prisma's generated types are tied to schema versions and ORM internals. By converting to domain entities via `toDomain()` in repositories, schema changes are absorbed within the Repository layer.
+  - For entities with user input and business rules (e.g., User, Match), adding validation or behavior methods is appropriate.
+  - For reference data entities (e.g., Stage, Rule, Weapon), keeping them as simple data classes is intentional and correct.
+
 #### UseCase Layer
 
 - **Purpose**: Orchestrate **multi-table operations with transactions** ONLY
@@ -205,6 +214,7 @@ This project follows a layered architecture pattern with clear separation of con
   - Place UseCases in `{module}.usecase.ts` (e.g., `user.usecase.ts`)
   - Name classes based on the primary entity (e.g., `CreateUserUseCase` for User + UserSecret)
   - **Business logic (ownership checks, authorization) belongs in Service layer, not UseCase**
+  - **Validation responsibility**: Reference integrity validation (FK existence checks) belongs in UseCase as it must run before transaction starts. Business rule validation (uniqueness, authorization) belongs in Service.
 - **File Organization**:
   - Use a single `{module}.usecase.ts` file per module instead of a `usecases/` directory
   - Define composite types in `dto.ts` to avoid duplication
@@ -342,6 +352,23 @@ This project follows a layered architecture pattern with clear separation of con
 | Multi-table read            | UseCase                  | `findUserWithSecretUseCase.byEmail()` |
 | Multi-table write           | UseCase with transaction | `createUserUseCase.execute()`         |
 | Business logic + validation | Service                  | `userService.createUser()`            |
+
+#### Validation Responsibility
+
+| Validation Type | Layer | Example |
+| --- | --- | --- |
+| Format/type validation | DTO (class-validator) | `@IsEmail()`, `@IsInt()`, `@MinLength()` |
+| Business rule validation | Service | Email uniqueness, ownership checks, authorization |
+| Reference integrity validation | UseCase | FK existence checks (rule ID, weapon ID exist in DB) |
+| Data constraint validation | Repository/DB | Unique constraints, NOT NULL, foreign keys |
+
+#### Raw SQL Usage Guidelines
+
+The `AnalysisUseCase` uses `Prisma.$queryRaw` with `Prisma.raw()` for complex analytical queries (GROUP BY with JOINs, aggregation) that exceed Prisma's query builder capabilities.
+
+- **Security**: All column/table names passed to `Prisma.raw()` MUST go through whitelist validation. Dynamic user input must NEVER be interpolated directly. Use `Prisma.sql` template literals for parameterized values (e.g., `userId`, `LIMIT`, `OFFSET`).
+- **Rationale**: Prisma's `groupBy` does not support JOINs or computed columns (e.g., `win_count / total_count`), making raw SQL necessary for victory rate analysis.
+- **Testing**: Raw SQL query builders must have comprehensive unit tests covering all groupBy/sortBy combinations and edge cases.
 
 ### TypeScript Best Practices
 
