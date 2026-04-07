@@ -370,6 +370,39 @@ The `AnalysisUseCase` uses `Prisma.$queryRaw` with `Prisma.raw()` for complex an
 - **Rationale**: Prisma's `groupBy` does not support JOINs or computed columns (e.g., `win_count / total_count`), making raw SQL necessary for victory rate analysis.
 - **Testing**: Raw SQL query builders must have comprehensive unit tests covering all groupBy/sortBy combinations and edge cases.
 
+#### Exception Handling Policy
+
+**CRITICAL: Service/UseCase layers must NOT throw HTTP exceptions (e.g., `BadRequestException`, `NotFoundException`, `ForbiddenException`)**
+
+HTTP exceptions are controller-layer concerns. Service and UseCase layers throw domain-specific exceptions, which are mapped to HTTP responses by `DomainExceptionFilter`.
+
+**Domain Exception Classes** (`src/common/exceptions/`):
+
+| Domain Exception | HTTP Mapping | Use Case |
+| --- | --- | --- |
+| `EntityNotFoundException` | 404 Not Found | Entity lookup failed |
+| `DuplicateEntityException` | 409 Conflict | Unique constraint violation (e.g., email) |
+| `ValidationException` | 400 Bad Request | Invalid FK references, invalid params for raw SQL |
+| `OwnershipViolationException` | 403 Forbidden | User does not own the resource |
+| `AuthenticationException` | 401 Unauthorized | Invalid credentials |
+
+**Rules**:
+- Service/UseCase: throw domain exceptions only (`import from '../common/exceptions'`)
+- Controller: may throw NestJS HTTP exceptions directly for controller-specific validation
+- `DomainExceptionFilter`: registered globally in `main.ts`, maps domain exceptions to HTTP responses
+- `PrismaExceptionFilter`: handles Prisma-level errors (P2002, P2025, etc.) separately
+- `InternalServerErrorException` (NestJS): acceptable for truly unexpected errors that don't map to domain concepts
+
+```typescript
+// ❌ Bad: HTTP exception in Service/UseCase
+import { BadRequestException } from '@nestjs/common';
+throw new BadRequestException('Invalid rule IDs: 1');
+
+// ✅ Good: Domain exception in Service/UseCase
+import { ValidationException } from '../common/exceptions';
+throw new ValidationException('Invalid rule IDs: 1');
+```
+
 ### TypeScript Best Practices
 
 #### Type Safety Rules

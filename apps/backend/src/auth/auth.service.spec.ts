@@ -1,5 +1,5 @@
-import { UnauthorizedException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { AuthenticationException } from '../common/exceptions';
 import * as bcrypt from 'bcrypt';
 import { TokenService } from '../token/token.service';
 import { UserService } from '../user/user.service';
@@ -79,35 +79,35 @@ describe('AuthService', () => {
       );
     });
 
-    it('should throw UnauthorizedException when user does not exist', async () => {
+    it('should throw AuthenticationException when user does not exist', async () => {
       userService.findByEmail.mockResolvedValue(null);
 
       await expect(
         service.validateUser('test@example.com', 'password'),
-      ).rejects.toThrow(UnauthorizedException);
+      ).rejects.toThrow(AuthenticationException);
 
       expect(userService.findByEmail).toHaveBeenCalledWith('test@example.com');
       expect(bcrypt.compare).not.toHaveBeenCalled();
     });
 
-    it('should throw UnauthorizedException when user has no secret', async () => {
+    it('should throw AuthenticationException when user has no secret', async () => {
       const userWithoutSecret = { ...mockUser, secret: null };
       userService.findByEmail.mockResolvedValue(userWithoutSecret);
 
       await expect(
         service.validateUser('test@example.com', 'password'),
-      ).rejects.toThrow(UnauthorizedException);
+      ).rejects.toThrow(AuthenticationException);
 
       expect(bcrypt.compare).not.toHaveBeenCalled();
     });
 
-    it('should throw UnauthorizedException when password is invalid', async () => {
+    it('should throw AuthenticationException when password is invalid', async () => {
       userService.findByEmail.mockResolvedValue(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
       await expect(
         service.validateUser('test@example.com', 'wrong-password'),
-      ).rejects.toThrow(UnauthorizedException);
+      ).rejects.toThrow(AuthenticationException);
 
       expect(bcrypt.compare).toHaveBeenCalledWith(
         'wrong-password',
@@ -144,16 +144,16 @@ describe('AuthService', () => {
       });
     });
 
-    it('should throw UnauthorizedException on invalid credentials', async () => {
+    it('should throw AuthenticationException on invalid credentials', async () => {
       userService.findByEmail.mockResolvedValue(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
       await expect(service.login(request)).rejects.toThrow(
-        UnauthorizedException,
+        AuthenticationException,
       );
     });
 
-    it('should throw UnauthorizedException when user has no secret', async () => {
+    it('should throw AuthenticationException when user has no secret', async () => {
       const request: LoginRequest = {
         email: 'test@example.com',
         password: 'password',
@@ -162,11 +162,11 @@ describe('AuthService', () => {
       const userWithoutSecret = { ...mockUser, secret: null };
       userService.findByEmail.mockResolvedValue(userWithoutSecret);
 
-      await expect(service.login(request)).rejects.toThrow(UnauthorizedException);
+      await expect(service.login(request)).rejects.toThrow(AuthenticationException);
       expect(tokenService.generateTokens).not.toHaveBeenCalled();
     });
 
-    it('should throw UnauthorizedException when user does not exist during login', async () => {
+    it('should throw AuthenticationException when user does not exist during login', async () => {
       const request: LoginRequest = {
         email: 'nonexistent@example.com',
         password: 'password',
@@ -174,7 +174,7 @@ describe('AuthService', () => {
 
       userService.findByEmail.mockResolvedValue(null);
 
-      await expect(service.login(request)).rejects.toThrow(UnauthorizedException);
+      await expect(service.login(request)).rejects.toThrow(AuthenticationException);
       expect(tokenService.generateTokens).not.toHaveBeenCalled();
     });
   });

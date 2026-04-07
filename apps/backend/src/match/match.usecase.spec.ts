@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { BadRequestException } from '@nestjs/common';
 import { MatchUseCase } from './match.usecase';
+import { ValidationException } from '../common/exceptions';
 import { MatchRepository } from './match.repository';
 import { RuleRepository } from '../rule/rule.repository';
 import { WeaponRepository } from '../weapon/weapon.repository';
@@ -155,7 +155,7 @@ describe('MatchUseCase', () => {
       );
     });
 
-    it('should throw BadRequestException when rule ID is invalid', async () => {
+    it('should throw ValidationException when rule ID is invalid', async () => {
       const userId = 'test-user-id';
       const matches = [mockMatchData];
 
@@ -165,14 +165,14 @@ describe('MatchUseCase', () => {
       battleTypeRepository.findByIds.mockResolvedValue([mockBattleType]);
 
       await expect(useCase.bulkCreateMatches(userId, matches)).rejects.toThrow(
-        BadRequestException,
+        ValidationException,
       );
       await expect(useCase.bulkCreateMatches(userId, matches)).rejects.toThrow(
         'Invalid rule IDs: 1',
       );
     });
 
-    it('should throw BadRequestException when weapon ID is invalid', async () => {
+    it('should throw ValidationException when weapon ID is invalid', async () => {
       const userId = 'test-user-id';
       const matches = [mockMatchData];
 
@@ -182,14 +182,14 @@ describe('MatchUseCase', () => {
       battleTypeRepository.findByIds.mockResolvedValue([mockBattleType]);
 
       await expect(useCase.bulkCreateMatches(userId, matches)).rejects.toThrow(
-        BadRequestException,
+        ValidationException,
       );
       await expect(useCase.bulkCreateMatches(userId, matches)).rejects.toThrow(
         'Invalid weapon IDs: 1',
       );
     });
 
-    it('should throw BadRequestException when stage ID is invalid', async () => {
+    it('should throw ValidationException when stage ID is invalid', async () => {
       const userId = 'test-user-id';
       const matches = [mockMatchData];
 
@@ -199,14 +199,14 @@ describe('MatchUseCase', () => {
       battleTypeRepository.findByIds.mockResolvedValue([mockBattleType]);
 
       await expect(useCase.bulkCreateMatches(userId, matches)).rejects.toThrow(
-        BadRequestException,
+        ValidationException,
       );
       await expect(useCase.bulkCreateMatches(userId, matches)).rejects.toThrow(
         'Invalid stage IDs: 1',
       );
     });
 
-    it('should throw BadRequestException when battle type ID is invalid', async () => {
+    it('should throw ValidationException when battle type ID is invalid', async () => {
       const userId = 'test-user-id';
       const matches = [mockMatchData];
 
@@ -216,14 +216,14 @@ describe('MatchUseCase', () => {
       battleTypeRepository.findByIds.mockResolvedValue([]);
 
       await expect(useCase.bulkCreateMatches(userId, matches)).rejects.toThrow(
-        BadRequestException,
+        ValidationException,
       );
       await expect(useCase.bulkCreateMatches(userId, matches)).rejects.toThrow(
         'Invalid battle type IDs: 1',
       );
     });
 
-    it('should throw BadRequestException with multiple errors when multiple IDs are invalid', async () => {
+    it('should throw ValidationException with multiple errors when multiple IDs are invalid', async () => {
       const userId = 'test-user-id';
       const matches = [mockMatchData];
 
@@ -233,7 +233,7 @@ describe('MatchUseCase', () => {
       battleTypeRepository.findByIds.mockResolvedValue([mockBattleType]);
 
       await expect(useCase.bulkCreateMatches(userId, matches)).rejects.toThrow(
-        BadRequestException,
+        ValidationException,
       );
       await expect(useCase.bulkCreateMatches(userId, matches)).rejects.toThrow(
         /Invalid rule IDs: 1.*Invalid weapon IDs: 1/,
@@ -283,7 +283,7 @@ describe('MatchUseCase', () => {
       stageRepository.findByIds.mockResolvedValue([mockStage]);
       battleTypeRepository.findByIds.mockResolvedValue([mockBattleType]);
 
-      await expect(useCase.bulkCreateMatches(userId, matches)).rejects.toThrow(BadRequestException);
+      await expect(useCase.bulkCreateMatches(userId, matches)).rejects.toThrow(ValidationException);
 
       expect(prismaService.$transaction).not.toHaveBeenCalled();
       expect(matchRepository.createMany).not.toHaveBeenCalled();
@@ -398,7 +398,7 @@ describe('MatchUseCase', () => {
       expect(matchRepository.updateOne).toHaveBeenCalled();
     });
 
-    it('should throw BadRequestException when rule ID is invalid', async () => {
+    it('should throw ValidationException when rule ID is invalid', async () => {
       const matches = [mockUpdateMatchData];
 
       ruleRepository.findByIds.mockResolvedValue([]);
@@ -407,7 +407,7 @@ describe('MatchUseCase', () => {
       battleTypeRepository.findByIds.mockResolvedValue([mockBattleType]);
 
       await expect(useCase.bulkUpdateMatches(matches)).rejects.toThrow(
-        BadRequestException,
+        ValidationException,
       );
       await expect(useCase.bulkUpdateMatches(matches)).rejects.toThrow(
         'Invalid rule IDs: 1',
@@ -422,7 +422,7 @@ describe('MatchUseCase', () => {
       stageRepository.findByIds.mockResolvedValue([mockStage]);
       battleTypeRepository.findByIds.mockResolvedValue([mockBattleType]);
 
-      await expect(useCase.bulkUpdateMatches(matches)).rejects.toThrow(BadRequestException);
+      await expect(useCase.bulkUpdateMatches(matches)).rejects.toThrow(ValidationException);
 
       expect(prismaService.$transaction).not.toHaveBeenCalled();
       expect(matchRepository.updateOne).not.toHaveBeenCalled();
