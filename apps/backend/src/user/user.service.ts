@@ -1,9 +1,8 @@
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import {
-  ConflictException,
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
+  DuplicateEntityException,
+  EntityNotFoundException,
+} from '../common/exceptions';
 import * as bcrypt from 'bcrypt';
 import { CreateUser, UpdateUser, UserResponse } from './user.dto';
 import { UserRepository } from './user.repository';
@@ -19,7 +18,7 @@ export class UserService {
   async createUser(dto: CreateUser): Promise<UserResponse> {
     const existingUser = await this.userRepository.findByEmail(dto.email);
     if (existingUser) {
-      throw new ConflictException('Email already exists');
+      throw new DuplicateEntityException('Email already exists');
     }
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
@@ -52,13 +51,13 @@ export class UserService {
   async updateUser(userId: string, dto: UpdateUser): Promise<UserResponse> {
     const existingUser = await this.userRepository.findById(userId);
     if (!existingUser) {
-      throw new NotFoundException('User not found');
+      throw new EntityNotFoundException('User not found');
     }
 
     if (dto.email && dto.email !== existingUser.email) {
       const userWithEmail = await this.userRepository.findByEmail(dto.email);
       if (userWithEmail) {
-        throw new ConflictException('Email already exists');
+        throw new DuplicateEntityException('Email already exists');
       }
     }
 

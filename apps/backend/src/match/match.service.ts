@@ -1,4 +1,5 @@
-import { Injectable, ForbiddenException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { OwnershipViolationException } from '../common/exceptions';
 import { MatchUseCase } from './match.usecase';
 import { MatchRepository } from './match.repository';
 import {
@@ -106,7 +107,7 @@ export class MatchService {
       matchIds,
     );
     if (ownedMatches.length !== matchIds.length) {
-      throw new ForbiddenException('Not all matches belong to the user');
+      throw new OwnershipViolationException('Not all matches belong to the user');
     }
   }
 }

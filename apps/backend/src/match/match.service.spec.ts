@@ -1,6 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { MatchService } from './match.service';
+import {
+  OwnershipViolationException,
+  ValidationException,
+} from '../common/exceptions';
 import { MatchUseCase } from './match.usecase';
 import { MatchRepository } from './match.repository';
 import {
@@ -323,11 +326,11 @@ describe('MatchService', () => {
       };
 
       matchUseCase.bulkCreateMatches.mockRejectedValue(
-        new BadRequestException('Invalid rule IDs: 999'),
+        new ValidationException('Invalid rule IDs: 999'),
       );
 
       await expect(service.bulkCreateMatches(userId, request)).rejects.toThrow(
-        BadRequestException,
+        ValidationException,
       );
     });
   });
@@ -364,7 +367,7 @@ describe('MatchService', () => {
       expect(result).toEqual({ success: true });
     });
 
-    it('should throw ForbiddenException when user does not own all matches', async () => {
+    it('should throw OwnershipViolationException when user does not own all matches', async () => {
       const userId = 'test-user-id';
       const request: BulkUpdateMatchesRequest = {
         matches: [
@@ -393,7 +396,7 @@ describe('MatchService', () => {
       matchRepository.findByUserIdAndIds.mockResolvedValue([mockMatch]);
 
       await expect(service.bulkUpdateMatches(userId, request)).rejects.toThrow(
-        ForbiddenException,
+        OwnershipViolationException,
       );
       expect(matchUseCase.bulkUpdateMatches).not.toHaveBeenCalled();
     });
@@ -447,7 +450,7 @@ describe('MatchService', () => {
       expect(result).toEqual({ success: true });
     });
 
-    it('should throw ForbiddenException when user does not own all matches', async () => {
+    it('should throw OwnershipViolationException when user does not own all matches', async () => {
       const userId = 'test-user-id';
       const request: BulkDeleteMatchesRequest = {
         ids: ['match-1', 'match-2'],
@@ -457,7 +460,7 @@ describe('MatchService', () => {
       matchRepository.findByUserIdAndIds.mockResolvedValue([mockMatch]);
 
       await expect(service.bulkDeleteMatches(userId, request)).rejects.toThrow(
-        ForbiddenException,
+        OwnershipViolationException,
       );
       expect(matchRepository.deleteMany).not.toHaveBeenCalled();
     });

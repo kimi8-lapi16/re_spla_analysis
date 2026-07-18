@@ -1,4 +1,5 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { ValidationException } from '../common/exceptions';
 import { PrismaService } from '../prisma/prisma.service';
 import { MatchRepository } from './match.repository';
 import { RuleRepository } from '../rule/rule.repository';
@@ -126,7 +127,7 @@ export class MatchUseCase {
     }
 
     if (errors.length > 0) {
-      throw new BadRequestException(errors.join('; '));
+      throw new ValidationException(errors.join('; '));
     }
   }
 }

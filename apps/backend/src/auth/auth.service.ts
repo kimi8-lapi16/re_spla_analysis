@@ -1,4 +1,5 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { AuthenticationException } from '../common/exceptions';
 import * as bcrypt from 'bcrypt';
 import { TokenService } from '../token/token.service';
 import { UserService } from '../user/user.service';
@@ -15,7 +16,7 @@ export class AuthService {
     const user = await this.userService.findByEmail(email);
 
     if (!user || !user.secret) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new AuthenticationException('Invalid credentials');
     }
 
     const isPasswordValid = await bcrypt.compare(
@@ -24,7 +25,7 @@ export class AuthService {
     );
 
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new AuthenticationException('Invalid credentials');
     }
 
     return user.id;
