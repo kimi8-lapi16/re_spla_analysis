@@ -15,6 +15,10 @@
 - `pnpm prisma migrate reset && pnpm seed:local`
 
 ### 準備
+- `pnpm --filter @app/backend exec prisma generate`
+
+ (Prisma Client を `apps/backend/generated/prisma` に生成します、これがないとビルドが通りません)
+
 - `pnpm run api:generate`
 
  (swaggerの生成とopenapiクライアントの生成をやってくれます、これを実行しないとファイルがいろいろ足りません)
@@ -32,6 +36,11 @@
 - Repository層 要はPrismaのラッパー
 - UseCase層 複雑なリレーションや複数テーブルを跨ぐためにトランザクションを張る場合などに使用
 - 気持ちとしてはこんな感じ Module > Controller > Service > (UseCase) > Repository
+
+## インフラ
+- AWS CDK 一式は `infra/` にあります → [infra/README.md](infra/README.md)
+- 分析サマリー機能（統計処理＋日次バッチ）の設計メモ → [docs/analysis-summary-design.md](docs/analysis-summary-design.md)
+- バッチの実行: `pnpm --filter @app/backend batch <jobName>` (例: `smoke`)
 
 ## 生成AI
 - ClaudeCodeにほとんど書かせてます

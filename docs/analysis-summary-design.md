@@ -189,7 +189,7 @@ CLAUDE.md の「レスポンスは必ず名前付きキーのオブジェクト�
 | DB | RDS MySQL 8.0 `db.t4g.micro` Single-AZ | 料金が固定で読みやすい。Aurora Serverless v2（min 0 ACU）はアイドル時に止まるがレジューム待ちと I/O 課金の読みにくさがある。個人利用なら t4g.micro が無難 |
 | バッチ | EventBridge Rule → ECS RunTask | API と同じイメージを command override で起動するだけ。Lambda はタイムアウト15分とパッケージサイズの制約があり、将来重くなったときに詰む |
 | イメージ | ECR（lifecycle rule で直近10世代のみ保持） | |
-| シークレット | SSM Parameter Store (SecureString) | Secrets Manager は 1シークレット $0.40/月。RDS のマスターパスワードだけは Secrets Manager 自動生成を使う |
+| シークレット | Secrets Manager | 当初は SSM Parameter Store (SecureString) を想定したが、**CloudFormation は SecureString パラメータを作成できない**（手動作成＋名前参照になる）。RDS のマスターパスワードも Secrets Manager 自動生成なので統一した。JWT 用2件で約 $0.80/月 |
 | ログ | CloudWatch Logs（保持期間 1〜2週間） | デフォルトの無期限保持はコストが効いてくるので必ず縮める |
 
 ### 4.3 NAT Gateway を使わない
@@ -214,12 +214,18 @@ ECR / CloudWatch Logs / SSM へは Internet Gateway 経由で到達するので 
 infra/
   bin/app.ts
   lib/
+    config.ts           // ステージ別設定
     network-stack.ts    // VPC / Subnet / SecurityGroup
-    data-stack.ts       // RDS / SSM Parameter / Secrets
-    app-stack.ts        // ECR / ECS Cluster / Service / ALB / CloudWatch
+    registry-stack.ts   // ECR
+    data-stack.ts       // RDS / Secrets Manager
+    app-stack.ts        // ECS Cluster / Service / ALB / CloudWatch
     batch-stack.ts      // batch TaskDefinition / EventBridge Rule / 失敗通知
     frontend-stack.ts   // S3 / CloudFront / BucketDeployment
+    constructs/backend-container.ts  // API とバッチで共通のコンテナ定義
 ```
+
+ECR を独立スタックにしているのは、ECS サービスが「イメージが既に push されている」前提で
+起動するため。デプロイ順は Network → Registry →（イメージ push）→ Data → App → Batch → Frontend。
 
 - ライフサイクル（変更頻度）でスタックを分けるのが基本。VPC と RDS はほぼ変わらず、App と Batch は頻繁に変わる
 - スタック間参照は props 渡し（`new AppStack(app, 'App', { vpc: network.vpc, ... })`）
@@ -255,15 +261,21 @@ new events.Rule(this, 'DailyReportRule', {
 
 ## 5. 本番用 Dockerfile
 
-**現在の root `Dockerfile` は devcontainer 用**（`node:current-bullseye` に vim を入れて sleep するだけ）なので、
-本番用は別途 `apps/backend/Dockerfile` として multi-stage で作る必要がある。
+root の `Dockerfile` は devcontainer 用（`node:current-bullseye` に vim を入れて sleep するだけ）なので、
+本番用は `apps/backend/Dockerfile` として multi-stage で用意した。
 
 注意点:
 
 - Prisma client の出力先が `apps/backend/generated/prisma`（カスタムパス）なので、runtime stage へのコピー対象に含める
-- Prisma の query engine は OpenSSL に依存する。`node:22-slim` を使うなら `openssl` を明示的に入れる
-- pnpm workspace なので `pnpm deploy --filter @app/backend --prod` で依存を刈り込む
+- Prisma の query engine は OpenSSL に依存する。`node:22-bookworm-slim` に `openssl` を明示的に入れている
+- pnpm はシンボリックリンク構成なので、ルートの `node_modules`（`.pnpm` ストア）とパッケージ側の
+  `node_modules` を**同じパス構成のまま**コピーする
+- `prisma` CLI と `tsx` を devDependencies から dependencies に移した。
+  本番イメージ内で `prisma migrate deploy` と `pnpm seed`（tsx 実行）を動かすため
 - API とバッチは **同一イメージ**。ENTRYPOINT を分けず、command override で切り替える
+- 接続 URL は `docker-entrypoint.sh` が `DB_HOST` / `DB_USER` / `DB_PASSWORD` などから組み立てる。
+  Secrets Manager が返すのは個別値であり、URL を CloudFormation 側で組むとパスワードがテンプレートに露出しうるため
+- `SHADOW_DATABASE_URL` は `migrate deploy` では不要（`migrate dev` 専用）なので本番では設定しない
 
 ---
 
@@ -308,13 +320,22 @@ GitHub Actions (OIDC で AssumeRole、長期キーは持たない)
 
 ## 8. 進め方
 
-| Phase | 内容 | インフラ依存 |
-| --- | --- | --- |
-| **0** | 統計エンジン（純粋関数）+ テンプレート文生成 + `GET /analysis/report` をオンデマンド計算で返す | なし |
-| **1** | `analysis_report` テーブル追加 / `Match.createdAt` 追加 / `src/batch/main.ts` 実装 | なし（ローカル実行） |
-| **2** | 本番 Dockerfile + CDK（Network / Data / App / Frontend）でデプロイ | AWS |
-| **3** | BatchStack（EventBridge → ECS RunTask）で日次実行に切り替え | AWS |
-| **4** | （任意）LLM 実装を `SummaryGenerator` の別実装として追加、feature flag で切替 | AWS |
+| Phase | 内容 | インフラ依存 | 状態 |
+| --- | --- | --- | --- |
+| **0** | 統計エンジン（純粋関数）+ テンプレート文生成 + `GET /analysis/report` をオンデマンド計算で返す | なし | 未着手 |
+| **1** | `analysis_report` テーブル追加 / `Match.createdAt` 追加 / 日次ジョブ実装 | なし（ローカル実行） | バッチ CLI の枠のみ実装済み |
+| **2** | 本番 Dockerfile + CDK（Network / Registry / Data / App / Frontend）でデプロイ | AWS | 実装済み（未デプロイ） |
+| **3** | BatchStack（EventBridge → ECS RunTask）で日次実行に切り替え | AWS | 実装済み・ルールは無効状態 |
+| **4** | （任意）LLM 実装を `SummaryGenerator` の別実装として追加、feature flag で切替 | AWS | 未着手 |
+
+Phase 2 / 3 の成果物:
+
+- `infra/` … CDK アプリ（6スタック）。手順は [infra/README.md](../infra/README.md)
+- `apps/backend/Dockerfile` … API とバッチ兼用の本番イメージ
+- `apps/backend/src/batch/` … ジョブランナー CLI。`smoke`（DB 疎通確認）のみ登録済み
+
+`DailyReportRule` は **無効状態でデプロイされる**。Phase 0/1 の `daily-report` ジョブを
+実装してから `infra/lib/config.ts` の `batch.ruleEnabled` を `true` にする。
 
 Phase 0 を先に済ませると **インフラの決定を後ろ倒しにできる**（数百件ならオンデマンド計算でも数十msで返る）。
 所見が実際に役立つかを検証してから、インフラに投資する順番が安全。
