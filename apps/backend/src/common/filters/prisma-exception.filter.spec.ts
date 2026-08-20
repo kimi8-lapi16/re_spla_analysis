@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { Prisma } from 'generated/prisma/client';
 import { PrismaExceptionFilter } from './prisma-exception.filter';
 
 type MockResponse = {

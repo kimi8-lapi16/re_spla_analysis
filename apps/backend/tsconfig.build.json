@@ -1,4 +1,6 @@
 {
   "extends": "./tsconfig.json",
-  "exclude": ["node_modules", "test", "dist", "**/*spec.ts"]
+  // prisma/ の seed スクリプトは tsx で直接実行するためビルド対象から外す。
+  // 含めると rootDir がパッケージ直下まで広がり、出力が dist/src/main.js になってしまう。
+  "exclude": ["node_modules", "test", "dist", "prisma", "**/*spec.ts"]
 }
