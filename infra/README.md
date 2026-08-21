@@ -145,22 +145,48 @@ batch: {
 
 失敗通知を受け取るには `config.ts` の `alertEmail` を設定する (SNS のメール購読)。
 
-## コスト目安 (ap-northeast-1)
+## コスト目安 (ap-northeast-1, dev ステージ1環境, 730時間/月)
 
-| 項目 | 月額(USD) |
-| --- | --- |
-| ALB | 約 18 + LCU 約 1 |
-| ECS Fargate (0.25 vCPU / 0.5 GB 常時1タスク) | 約 9 |
-| RDS db.t4g.micro Single-AZ + gp3 20GB | 約 14 |
-| ECR / S3 / CloudFront / Logs / Secrets Manager | 約 4 |
-| バッチ Fargate (1日1分程度) | ほぼ 0 |
-| **合計** | **約 45〜46** |
+単価は AWS Price List API 実測値 (2026-08 時点)。
 
-下げる打ち手:
+| 項目 | 計算 | 月額(USD) |
+| --- | --- | --- |
+| ALB (時間課金) | $0.0243/h × 730 | 17.7 |
+| ALB LCU | 個人利用の低トラフィック想定 | 1〜3 |
+| パブリック IPv4 (ALB, AZ 2つ) | $0.005/h × 2 × 730 | 7.3 |
+| パブリック IPv4 (API タスク) | $0.005/h × 1 × 730 | 3.7 |
+| Fargate vCPU | $0.05056/vCPU-h × 0.25 × 730 | 9.2 |
+| Fargate メモリ | $0.00553/GB-h × 0.5 × 730 | 2.0 |
+| RDS db.t4g.micro Single-AZ | $0.025/h × 730 | 18.3 |
+| RDS gp3 20GB | $0.138/GB-月 × 20 | 2.8 |
+| Secrets Manager (3件) | $0.40 × 3 | 1.2 |
+| ECR (10世代 ≒ 4GB) | $0.10/GB-月 | 0.4 |
+| CloudWatch Logs | 取り込み数百MB 想定 | 0.5 |
+| S3 + CloudFront | CloudFront 無料枠 (1TB/月) 内 | 0.1 |
+| バッチ Fargate (1日1分) | | ≒0 |
+| **合計** | | **約 64 USD (1ドル150円で約9,600円)** |
 
-1. ALB をやめて App Runner にする (約 $18 → 約 $5)。ただし CDK は alpha construct
-2. `api.desiredCount` をスケジュールで 0/1 制御する
-3. RDS を Aurora Serverless v2 (min 0 ACU) にしてアイドル時に止める
+### 注意
+
+- **パブリック IPv4 の課金 ($0.005/時/アドレス) が約 $11/月ある**。NAT Gateway (約 $45/月) を
+  避けた代償で、それでも NAT より安いが、無視できる額ではない。
+- 固定費がほぼ全額。アクセスが月に数回でも金額はほとんど変わらない。
+- **ALB + Fargate + IPv4 の常時起動分だけで約 $40/月＝全体の6割**。
+- RDS の t 系インスタンスは unlimited モードのため、継続的に高負荷だと CPU クレジット課金が乗る。
+- アカウントが従来の12ヶ月無料利用枠の対象なら RDS db.t4g.micro 750時間/月 + 20GB が無料になり
+  約 $21 減る。2025年以降に作成したアカウントはクレジット方式なので条件が異なる。
+
+### 下げる打ち手 (効果順)
+
+| 手 | 効果 | トレードオフ |
+| --- | --- | --- |
+| ALB をやめて App Runner にする | −$25 (ALB $17.7 + ALB の IPv4 $7.3)、App Runner が +$5〜10 なので **差引 −$15〜20/月** | CDK の App Runner は alpha construct |
+| API を夜間停止 (desiredCount 0 を 8h/日) | −$5/月 | 停止中はアクセス不可 |
+| ログ保持をさらに縮める / ECR 世代を減らす | −$0.5/月 | ほぼ誤差 |
+| Aurora Serverless v2 (min 0 ACU) に置換 | **使い方次第で逆効果**。常時 0.5 ACU 稼働だと $0.15/ACU-h × 0.5 × 730 = **$55/月** で t4g.micro より高い。1日2時間程度しか起動しないなら約 $4.5/月 | レジューム待ち十数秒 |
+
+「毎日ほぼ使う」なら t4g.micro 据え置き、「たまにしか触らない」なら Aurora Serverless v2、
+という分岐になる。最安構成は App Runner + Aurora Serverless v2 (自動停止) で **$15〜25/月**。
 
 ## 既知の注意点
 

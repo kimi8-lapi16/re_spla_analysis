@@ -296,25 +296,36 @@ GitHub Actions (OIDC で AssumeRole、長期キーは持たない)
 
 ---
 
-## 7. コスト試算（ap-northeast-1、概算）
+## 7. コスト試算（ap-northeast-1、1環境、730時間/月）
+
+単価は AWS Price List API の実測値（2026-08 時点）。内訳と削減案は
+[infra/README.md](../infra/README.md) を参照。
 
 | 項目 | 月額(USD) |
 | --- | --- |
-| ALB | 約 18（固定）+ LCU 約 1 |
-| ECS Fargate（0.25 vCPU / 0.5 GB 常時1タスク） | 約 9 |
-| RDS db.t4g.micro Single-AZ + gp3 20GB | 約 14 |
-| ECR / S3 / CloudFront / Logs | 約 3 |
+| ALB（$0.0243/h）+ LCU | 約 19 |
+| パブリック IPv4（ALB 2つ + タスク 1つ、$0.005/h） | 約 11 |
+| ECS Fargate（0.25 vCPU / 0.5 GB 常時1タスク） | 約 11 |
+| RDS db.t4g.micro Single-AZ（$0.025/h）+ gp3 20GB | 約 21 |
+| Secrets Manager / ECR / S3 / CloudFront / Logs | 約 2 |
 | バッチ Fargate（1日1分程度） | ほぼ 0 |
-| **合計** | **約 45 USD（6,000〜7,000円）/月** |
+| **合計** | **約 64 USD（1ドル150円で約9,600円）/月** |
+
+ほぼ全額が固定費で、アクセス頻度を落としても金額は変わらない。
+**ALB + Fargate + パブリック IPv4 の常時起動分だけで約 $40（全体の6割）**。
 
 コストを下げる打ち手（効果順）:
 
-1. **ALB をやめて App Runner にする** → 約 $18 → 約 $5、合計 3,000円台に落ちる。
-   ただし CDK の App Runner L2 は alpha construct
-2. ECS Service の desiredCount を 0/1 でスケジュール制御（夜だけ落とす）
-3. RDS を Aurora Serverless v2 min 0 ACU にしてアイドル時に止める（レジューム待ち十数秒を許容できるなら）
+1. **ALB をやめて App Runner にする** → ALB $17.7 + その IPv4 $7.3 が消えて App Runner が
+   $5〜10 なので差引 −$15〜20/月。ただし CDK の App Runner L2 は alpha construct
+2. ECS Service の desiredCount を 0/1 でスケジュール制御（夜だけ落とす）→ −$5/月
+3. RDS を Aurora Serverless v2 min 0 ACU にする → **使い方次第で逆効果**。
+   常時 0.5 ACU 稼働だと $55/月で t4g.micro より高くつく。1日数時間しか起動しない前提でのみ有効
 
-新規 AWS アカウントの無料利用枠に該当するかは、アカウント作成時期によって条件が変わっているので要確認。
+パブリック IPv4 の課金（約 $11/月）は NAT Gateway を避けた代償。それでも NAT（約 $45/月）よりは安い。
+
+新規 AWS アカウントの無料利用枠に該当するかは、アカウント作成時期によって条件が変わっているので要確認
+（従来枠なら RDS db.t4g.micro 750時間/月が無料で約 $21 減る）。
 
 ---
 
