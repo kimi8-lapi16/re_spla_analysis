@@ -1,6 +1,10 @@
 import { Card, Checkbox, Typography, Space, Flex } from "antd";
 import { useState } from "react";
-import { useVictoryRate, type GroupByField, type VictoryRateSortBy } from "../../../hooks/useAnalysis";
+import {
+  useVictoryRate,
+  type GroupByField,
+  type VictoryRateSortBy,
+} from "../../../hooks/useAnalysis";
 import { useTableState } from "../../../hooks/useTableState";
 import { VictoryRateTable } from "./VictoryRateTable";
 
@@ -13,14 +17,24 @@ const GROUP_BY_OPTIONS: { label: string; value: GroupByField }[] = [
   { label: "バトルタイプ", value: "battleType" },
 ];
 
+const DEFAULT_SORT_BY: VictoryRateSortBy = "victoryRate";
+
+// 名前カラムのソートは、対応するグルーピングが有効なときのみバックエンドで扱える
+const SORT_BY_REQUIRED_GROUP_BY: Partial<Record<VictoryRateSortBy, GroupByField>> = {
+  ruleName: "rule",
+  stageName: "stage",
+  weaponName: "weapon",
+  battleTypeName: "battleType",
+};
+
 function isGroupByField(value: string): value is GroupByField {
   return ["rule", "stage", "weapon", "battleType"].includes(value);
 }
 
 export function VictoryRateTab() {
   const [selectedGroupBy, setSelectedGroupBy] = useState<GroupByField[]>(["rule"]);
-  const { tableState, setTableState, resetPage } = useTableState<VictoryRateSortBy>({
-    defaultSortBy: "victoryRate",
+  const { tableState, setTableState } = useTableState<VictoryRateSortBy>({
+    defaultSortBy: DEFAULT_SORT_BY,
   });
 
   const { data, isLoading } = useVictoryRate({
@@ -35,7 +49,16 @@ export function VictoryRateTab() {
   const handleGroupByChange = (checkedValues: string[]) => {
     const validValues = checkedValues.filter(isGroupByField);
     setSelectedGroupBy(validValues);
-    resetPage();
+
+    // グルーピングから外れた列でソートしたままだとリクエストが不正になるため、既定のソートに戻す
+    const requiredGroupBy = SORT_BY_REQUIRED_GROUP_BY[tableState.sortBy];
+    const isSortByAvailable = !requiredGroupBy || validValues.includes(requiredGroupBy);
+
+    setTableState({
+      ...tableState,
+      page: 1,
+      sortBy: isSortByAvailable ? tableState.sortBy : DEFAULT_SORT_BY,
+    });
   };
 
   return (

@@ -208,6 +208,72 @@ describe('AnalysisUseCase', () => {
         ).rejects.toThrow(ValidationException);
         expect(prismaService.$queryRaw).not.toHaveBeenCalled();
       });
+
+      it('should throw ValidationException for empty groupBy', async () => {
+        const userId = 'test-user-id';
+
+        await expect(
+          useCase.getVictoryRate({ userId, groupBy: [] }),
+        ).rejects.toThrow('groupBy must contain at least one field');
+        expect(prismaService.$queryRaw).not.toHaveBeenCalled();
+      });
+
+      it.each([
+        [VictoryRateSortBy.RULE_NAME, GroupByField.RULE],
+        [VictoryRateSortBy.STAGE_NAME, GroupByField.STAGE],
+        [VictoryRateSortBy.WEAPON_NAME, GroupByField.WEAPON],
+        [VictoryRateSortBy.BATTLE_TYPE_NAME, GroupByField.BATTLE_TYPE],
+      ])(
+        'should throw ValidationException when sorting by %s without grouping by %s',
+        async (sortBy, requiredGroupBy) => {
+          const userId = 'test-user-id';
+          const groupBy = Object.values(GroupByField).filter(
+            (field) => field !== requiredGroupBy,
+          );
+
+          await expect(
+            useCase.getVictoryRate({ userId, groupBy, sortBy }),
+          ).rejects.toThrow(ValidationException);
+          await expect(
+            useCase.getVictoryRate({ userId, groupBy, sortBy }),
+          ).rejects.toThrow(
+            `sortBy "${sortBy}" requires groupBy to include "${requiredGroupBy}"`,
+          );
+          expect(prismaService.$queryRaw).not.toHaveBeenCalled();
+        },
+      );
+
+      it('should allow sorting by a name column that is grouped by', async () => {
+        const userId = 'test-user-id';
+
+        prismaService.$queryRaw
+          .mockResolvedValueOnce([])
+          .mockResolvedValueOnce([{ count: BigInt(0) }]);
+
+        await expect(
+          useCase.getVictoryRate({
+            userId,
+            groupBy: [GroupByField.RULE, GroupByField.STAGE],
+            sortBy: VictoryRateSortBy.STAGE_NAME,
+          }),
+        ).resolves.toEqual({ victoryRates: [], total: 0 });
+      });
+
+      it('should allow sorting by an aggregate column regardless of groupBy', async () => {
+        const userId = 'test-user-id';
+
+        prismaService.$queryRaw
+          .mockResolvedValueOnce([])
+          .mockResolvedValueOnce([{ count: BigInt(0) }]);
+
+        await expect(
+          useCase.getVictoryRate({
+            userId,
+            groupBy: [GroupByField.WEAPON],
+            sortBy: VictoryRateSortBy.TOTAL_COUNT,
+          }),
+        ).resolves.toEqual({ victoryRates: [], total: 0 });
+      });
     });
 
     describe('sorting', () => {
