@@ -59,7 +59,7 @@ export function LoginPage() {
   return (
     <AuthLayout>
       <Spin spinning={isPending} tip="ログイン中...">
-        <Card title="ログイン" variant="elevated" style={{ width: 400 }}>
+        <Card title="ログイン" tone="raised" style={{ width: 400 }}>
           <form onSubmit={handleSubmit(onSubmit)}>
             <Form.Item validateStatus={errors.email ? "error" : ""} help={errors.email?.message}>
               <Controller
@@ -98,7 +98,7 @@ export function LoginPage() {
 
             <Form.Item>
               <Button
-                variant="primary"
+                intent="primary"
                 htmlType="submit"
                 size="large"
                 block

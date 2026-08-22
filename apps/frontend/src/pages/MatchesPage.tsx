@@ -144,20 +144,19 @@ export function MatchesPage() {
           <Space>
             {selectedRowKeys.length > 0 && (
               <>
-                <Button variant="secondary" icon={<EditOutlined />} onClick={handleEditClick}>
+                <Button intent="neutral" icon={<EditOutlined />} onClick={handleEditClick}>
                   編集 ({selectedRowKeys.length})
                 </Button>
                 <Button
-                  variant="secondary"
+                  intent="dangerSubtle"
                   icon={<DeleteOutlined />}
                   onClick={handleDeleteClick}
-                  style={{ color: "#ff4d4f", borderColor: "#ff4d4f" }}
                 >
                   削除 ({selectedRowKeys.length})
                 </Button>
               </>
             )}
-            <Button variant="primary" icon={<PlusOutlined />} onClick={handleCreateNew}>
+            <Button intent="primary" icon={<PlusOutlined />} onClick={handleCreateNew}>
               新規登録
             </Button>
           </Space>

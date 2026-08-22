@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Modal, Typography } from "antd";
 import { useNotification } from "../../../contexts/NotificationContext";
 import { useBulkDeleteMatches } from "../../../hooks/useMatch";
+import { semantic } from "../../../theme";
 
 const { Text } = Typography;
 
@@ -51,7 +52,9 @@ export function MatchDeleteConfirmModal({
     <Modal
       title={
         <Text>
-          <ExclamationCircleOutlined style={{ color: "#faad14", marginRight: 8 }} />
+          <ExclamationCircleOutlined
+            style={{ color: semantic.status.warning, marginRight: 8 }}
+          />
           削除の確認
         </Text>
       }

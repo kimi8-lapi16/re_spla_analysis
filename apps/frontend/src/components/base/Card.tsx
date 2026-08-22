@@ -1,51 +1,42 @@
 import { Card as AntCard, type CardProps as AntCardProps } from "antd";
 import { forwardRef } from "react";
-import { colors } from "../../theme";
 
-export interface CardProps extends Omit<AntCardProps, "variant"> {
-  variant?: "default" | "bordered" | "elevated";
+/**
+ * Visual weight of a card.
+ *
+ * Named `tone` rather than `variant` so Ant Design v6's own
+ * `variant="outlined" | "borderless"` stays available to callers. Shadowing a
+ * library prop with a different meaning makes the library's API unreachable.
+ */
+export type CardTone = "plain" | "highlight" | "raised";
+
+const TONE_CLASS_NAMES: Record<CardTone, string> = {
+  plain: "app-card app-card--plain",
+  highlight: "app-card app-card--highlight",
+  raised: "app-card app-card--raised",
+};
+
+export interface CardProps extends AntCardProps {
+  tone?: CardTone;
 }
 
 /**
- * Custom Card component with theme colors
- * Extends Ant Design Card with custom variant styles
+ * Ant Design Card with the project's tone presets applied.
+ *
+ * Tone styling lives in base.css so it stays overridable by the cascade;
+ * inline styles here would beat every later rule, including the caller's own.
  */
 export const Card = forwardRef<HTMLDivElement, CardProps>(
-  ({ variant = "default", style, bordered, ...props }, ref) => {
-    const getCardStyle = (): React.CSSProperties => {
-      const baseStyle: React.CSSProperties = {
-        borderRadius: 12,
-        ...style,
-      };
-
-      switch (variant) {
-        case "default":
-          return {
-            ...baseStyle,
-            border: `1px solid ${colors.neutral[200]}`,
-          };
-
-        case "bordered":
-          return {
-            ...baseStyle,
-            border: `2px solid ${colors.primary[200]}`,
-            backgroundColor: colors.primary[50],
-          };
-
-        case "elevated":
-          return {
-            ...baseStyle,
-            boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
-            border: "none",
-          };
-
-        default:
-          return baseStyle;
-      }
-    };
+  ({ tone = "plain", className, variant, ...props }, ref) => {
+    const toneClassName = TONE_CLASS_NAMES[tone];
 
     return (
-      <AntCard ref={ref} bordered={variant !== "elevated"} style={getCardStyle()} {...props} />
+      <AntCard
+        ref={ref}
+        variant={variant ?? (tone === "raised" ? "borderless" : "outlined")}
+        className={className ? `${toneClassName} ${className}` : toneClassName}
+        {...props}
+      />
     );
   }
 );

@@ -1,6 +1,7 @@
 import { DeleteOutlined } from "@ant-design/icons";
 import type { TableColumnsType } from "antd";
-import { Button, DatePicker, InputNumber, Radio, Select } from "antd";
+import { DatePicker, InputNumber, Radio, Select } from "antd";
+import { Button } from "../../base";
 import dayjs from "dayjs";
 import type { Control, FieldErrors } from "react-hook-form";
 import { Controller } from "react-hook-form";
@@ -223,9 +224,9 @@ export function createMatchFormColumns({
       fixed: "right" as const,
       render: (_: unknown, __: unknown, index: number) => (
         <Button
-          type="text"
-          danger
+          intent="dangerQuiet"
           icon={<DeleteOutlined />}
+          aria-label="この行を削除"
           onClick={() => remove(index)}
           disabled={fieldsLength === 1}
         />

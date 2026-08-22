@@ -170,12 +170,12 @@ export function MatchEditModal({
             bordered
           />
           <Flex justify="flex-end" align="center" gap={"middle"} style={{ marginTop: "24px" }}>
-            <Button htmlType="button" variant="secondary" onClick={onCancel} disabled={isUpdating}>
+            <Button htmlType="button" intent="neutral" onClick={onCancel} disabled={isUpdating}>
               キャンセル
             </Button>
             <Button
               htmlType="submit"
-              variant="primary"
+              intent="primary"
               icon={<SaveOutlined />}
               disabled={isUpdating}
             >
