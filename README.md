@@ -15,6 +15,10 @@
 - `pnpm prisma migrate reset && pnpm seed:local`
 
 ### 準備
+- `pnpm --filter @app/backend exec prisma generate`
+
+ (Prisma Client を `apps/backend/generated/prisma` に生成します、これがないとビルドが通りません)
+
 - `pnpm run api:generate`
 
  (swaggerの生成とopenapiクライアントの生成をやってくれます、これを実行しないとファイルがいろいろ足りません)
