@@ -1,0 +1,24 @@
+{
+  "name": "@app/infra",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "build": "tsc --noEmit",
+    "lint": "tsc --noEmit",
+    "synth": "cdk synth",
+    "diff": "cdk diff",
+    "deploy": "cdk deploy",
+    "destroy": "cdk destroy",
+    "format": "prettier --write \"bin/**/*.ts\" \"lib/**/*.ts\""
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2.219.0",
+    "constructs": "^10.4.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.18.13",
+    "aws-cdk": "^2.1031.0",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  }
+}
