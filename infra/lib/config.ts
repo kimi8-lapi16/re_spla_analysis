@@ -19,6 +19,10 @@ export interface StageConfig {
     readonly removalPolicy: cdk.RemovalPolicy;
     readonly databaseName: string;
   };
+  readonly registry: {
+    /** dev は使い捨て前提。RETAIN にするとイメージが残り cdk destroy が失敗する */
+    readonly removalPolicy: cdk.RemovalPolicy;
+  };
   readonly api: {
     readonly cpu: number;
     readonly memoryLimitMiB: number;
@@ -70,6 +74,7 @@ const dev: StageConfig = {
     removalPolicy: cdk.RemovalPolicy.DESTROY,
     databaseName: "re_spla_analysis_db",
   },
+  registry: { removalPolicy: cdk.RemovalPolicy.DESTROY },
   api: {
     cpu: 256,
     memoryLimitMiB: 512,
@@ -95,6 +100,7 @@ const dev: StageConfig = {
 const prod: StageConfig = {
   ...dev,
   stageName: "prod",
+  registry: { removalPolicy: cdk.RemovalPolicy.RETAIN },
   database: {
     ...dev.database,
     backupRetentionDays: 7,

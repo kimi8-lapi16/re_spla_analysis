@@ -145,6 +145,45 @@ batch: {
 
 失敗通知を受け取るには `config.ts` の `alertEmail` を設定する (SNS のメール購読)。
 
+## 使うときだけ立てて壊す運用
+
+このスタックは常時稼働させる前提ではない。**課金はほぼ全部が時間単位なので、
+見たいときに立てて、見終わったら壊すのが一番安い。**
+
+| 稼働時間 | おおよその金額 |
+| --- | --- |
+| 1時間 | $0.09 (約13円) |
+| 半日 (12時間) | $1.1 (約160円) |
+| 1日 | $2.1 (約320円) |
+| 1ヶ月 (730時間) | $64 (約9,600円) |
+
+所要時間の目安:
+
+- `cdk deploy` 一式: **約20分** (RDS 作成が約10分、CloudFront が約5分)
+- `cdk destroy` 一式: **約20分** (CloudFront の無効化＋削除が約15分)
+
+```bash
+# 壊す (依存の逆順。--force で確認プロンプトを省略)
+pnpm --filter @app/infra exec cdk destroy --force \
+  ReSplaAnalysis-dev-Frontend ReSplaAnalysis-dev-Batch ReSplaAnalysis-dev-App \
+  ReSplaAnalysis-dev-Data ReSplaAnalysis-dev-Registry ReSplaAnalysis-dev-Network
+```
+
+dev ステージは RDS / S3 / ECR / ロググループすべて `DESTROY` 設定なので、
+そのまま消える (prod ステージは RETAIN なので残る)。
+
+### destroy 後に残るもの
+
+| 残るもの | 費用 | 対処 |
+| --- | --- | --- |
+| Secrets Manager の3件 (削除待ち状態) | 最大30日間 約$1.2 | すぐ消すなら `aws secretsmanager delete-secret --secret-id <name> --force-delete-without-recovery` |
+| CDK bootstrap スタック (アセット用 S3 / ECR) | 月数セント | 次に使うなら残しておいてよい。消すなら `CDKToolkit` スタックを削除 |
+
+### 消し忘れ対策
+
+立てっぱなしが唯一のリスクなので、AWS Budgets で $5 くらいの閾値アラートを
+1つ作っておくと安心 (無料)。
+
 ## コスト目安 (ap-northeast-1, dev ステージ1環境, 730時間/月)
 
 単価は AWS Price List API 実測値 (2026-08 時点)。
