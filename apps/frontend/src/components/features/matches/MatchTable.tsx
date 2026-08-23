@@ -1,10 +1,11 @@
-import { Empty, Spin, Table } from "antd";
+import { Empty, Flex, Spin, Table, Typography } from "antd";
 import type { ColumnsType, TableProps } from "antd/es/table";
 import type { SortOrder } from "antd/es/table/interface";
 import dayjs from "dayjs";
 import { useMemo } from "react";
 import type { MatchResponse } from "../../../api";
 import { SearchMatchesRequest } from "../../../api";
+import { MatchResultTag } from "./MatchResultTag";
 import { useBattleTypes } from "../../../hooks/useBattleType";
 import { useRules } from "../../../hooks/useRule";
 import { useStages } from "../../../hooks/useStage";
@@ -35,6 +36,8 @@ type TableRow = MatchResponse & { key: string };
 
 // sortBy enum values match the dataIndex names (gameDateTime, point, etc.)
 // So we can use simple string mappings
+
+const { Text } = Typography;
 
 // Map column dataIndex to API sortBy
 const dataIndexToSortBy: Record<string, SearchMatchesRequest.sortBy | undefined> = {
@@ -144,19 +147,21 @@ export function MatchTable({
       title: "勝敗",
       dataIndex: "result",
       key: "result",
-      width: 80,
+      width: 90,
       sorter: true,
       sortOrder: getSortOrder("result"),
-      render: (result: string) => (result === "WIN" ? "勝ち" : "負け"),
+      render: (result: string) => <MatchResultTag result={result} />,
     },
     {
       title: "ポイント",
       dataIndex: "point",
       key: "point",
       width: 100,
+      align: "right",
       sorter: true,
       sortOrder: getSortOrder("point"),
-      render: (point: number | null) => point ?? "-",
+      render: (point: number | null) =>
+        point === null ? "-" : <Text style={{ fontVariantNumeric: "tabular-nums" }}>{point}</Text>,
     },
   ];
 
@@ -214,25 +219,37 @@ export function MatchTable({
     : undefined;
 
   return (
-    <Spin spinning={isLoading}>
-      <Table
-        dataSource={tableData}
-        columns={columns}
-        rowSelection={rowSelection}
-        scroll={{ y: "calc(100vh - 488px)" }}
-        locale={{
-          emptyText: (
-            <Empty description="試合データがありません" image={Empty.PRESENTED_IMAGE_SIMPLE} />
-          ),
-        }}
-        pagination={{
-          current: pagination.current,
-          pageSize: pagination.pageSize,
-          total: pagination.total,
-          showSizeChanger: false,
-        }}
-        onChange={handleTableChange}
-      />
-    </Spin>
+    // `flex-table-container` (index.css) makes the table body the flexible part,
+    // so the scroll area grows and shrinks with the viewport and with the filter
+    // panel. Do not replace this with a `calc(100vh - N)` height: N encodes
+    // whatever happened to be above the table on the day it was written.
+    <Flex vertical className="flex-table-container">
+      <Spin spinning={isLoading}>
+        <Table
+          dataSource={tableData}
+          columns={columns}
+          rowSelection={rowSelection}
+          // `x: max-content` so narrow viewports scroll the columns instead of
+          // clipping the rightmost one off the screen.
+          scroll={{ x: "max-content", y: "100%" }}
+          locale={{
+            emptyText: (
+              <Empty description="試合データがありません" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+            ),
+          }}
+          pagination={{
+            current: pagination.current,
+            pageSize: pagination.pageSize,
+            total: pagination.total,
+            showSizeChanger: false,
+            showTotal: (total, [from, to]) => `${total} 件中 ${from}–${to} 件`,
+            // No `onChange` here: paging and sorting are both resolved in
+            // `handleTableChange`, so that a page change is not mistaken for a
+            // sort change and does not reset back to page 1.
+          }}
+          onChange={handleTableChange}
+        />
+      </Spin>
+    </Flex>
   );
 }

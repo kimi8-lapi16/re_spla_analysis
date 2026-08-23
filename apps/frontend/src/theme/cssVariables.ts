@@ -32,6 +32,11 @@ const cssVariables: Record<string, string> = {
   "--app-action-primary-tint": semantic.action.primaryTint,
   "--app-action-primary-border": semantic.action.primaryBorder,
 
+  "--app-meter-track": semantic.meter.track,
+  "--app-meter-fill": semantic.meter.fill,
+  "--app-meter-fill-muted": semantic.meter.fillMuted,
+  "--app-meter-reference": semantic.meter.reference,
+
   "--app-shadow-card": semantic.shadow.card,
   "--app-shadow-raised": semantic.shadow.raised,
   "--app-shadow-header": semantic.shadow.header,
