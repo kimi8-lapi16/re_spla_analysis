@@ -11,6 +11,12 @@ import { useRules } from "../../../hooks/useRule";
 import { useStages } from "../../../hooks/useStage";
 import { useWeapons } from "../../../hooks/useWeapon";
 
+export type MatchTableState = {
+  page: number;
+  sortBy?: SearchMatchesRequest.sortBy;
+  sortOrder?: SearchMatchesRequest.sortOrder;
+};
+
 type MatchTableProps = {
   matches?: MatchResponse[];
   isLoading: boolean;
@@ -18,14 +24,10 @@ type MatchTableProps = {
     current: number;
     pageSize: number;
     total: number;
-    onChange: (page: number) => void;
   };
   sortBy?: SearchMatchesRequest.sortBy;
   sortOrder?: SearchMatchesRequest.sortOrder;
-  onSortChange?: (
-    sortBy: SearchMatchesRequest.sortBy,
-    sortOrder: SearchMatchesRequest.sortOrder
-  ) => void;
+  onTableChange: (state: MatchTableState) => void;
   selectedRowKeys?: string[];
   onSelectionChange?: (selectedKeys: string[], selectedRows: MatchResponse[]) => void;
 };
@@ -65,7 +67,7 @@ export function MatchTable({
   pagination,
   sortBy,
   sortOrder,
-  onSortChange,
+  onTableChange,
   selectedRowKeys,
   onSelectionChange,
 }: MatchTableProps) {
@@ -163,24 +165,36 @@ export function MatchTable({
     },
   ];
 
-  const handleTableChange: TableProps<TableRow>["onChange"] = (_pagination, _filters, sorter) => {
-    if (!onSortChange) return;
+  // antd calls this for both pagination and sorting changes, and it always reports the
+  // currently active sorter. Sorting and paging must therefore be resolved together:
+  // handling them separately made a page change also look like a sort change and reset
+  // the page back to 1.
+  const handleTableChange: TableProps<TableRow>["onChange"] = (
+    nextPagination,
+    _filters,
+    sorter
+  ) => {
     // sorter can be an array for multi-column sort, but we only support single
     const singleSorter = Array.isArray(sorter) ? sorter[0] : sorter;
-    // Only handle when column header is clicked (column property exists)
-    if (!singleSorter || !singleSorter.column) return;
 
-    const field = String(singleSorter.field);
-    const newSortBy = dataIndexToSortBy[field];
-    if (!newSortBy) return;
+    let newSortBy = sortBy;
+    let newSortOrder = sortOrder;
+    // column is only set while a sorter is active
+    if (singleSorter?.column) {
+      const mappedSortBy = dataIndexToSortBy[String(singleSorter.field)];
+      if (mappedSortBy) {
+        newSortBy = mappedSortBy;
+        newSortOrder =
+          singleSorter.order === "ascend"
+            ? SearchMatchesRequest.sortOrder.ASC
+            : SearchMatchesRequest.sortOrder.DESC;
+      }
+    }
 
-    // If clicking same column, toggle order; if no order, default to desc
-    const newSortOrder =
-      singleSorter.order === "ascend"
-        ? SearchMatchesRequest.sortOrder.ASC
-        : SearchMatchesRequest.sortOrder.DESC;
+    const sortChanged = newSortBy !== sortBy || newSortOrder !== sortOrder;
+    const newPage = sortChanged ? 1 : (nextPagination.current ?? pagination.current);
 
-    onSortChange(newSortBy, newSortOrder);
+    onTableChange({ page: newPage, sortBy: newSortBy, sortOrder: newSortOrder });
   };
 
   const rowSelection = onSelectionChange
@@ -229,7 +243,9 @@ export function MatchTable({
             total: pagination.total,
             showSizeChanger: false,
             showTotal: (total, [from, to]) => `${total} 件中 ${from}–${to} 件`,
-            onChange: pagination.onChange,
+            // No `onChange` here: paging and sorting are both resolved in
+            // `handleTableChange`, so that a page change is not mistaken for a
+            // sort change and does not reset back to page 1.
           }}
           onChange={handleTableChange}
         />

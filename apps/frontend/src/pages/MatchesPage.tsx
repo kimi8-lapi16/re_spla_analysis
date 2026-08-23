@@ -10,7 +10,7 @@ import { Button } from "../components/base";
 import { MatchDeleteConfirmModal } from "../components/features/matches/MatchDeleteConfirmModal";
 import { MatchEditModal } from "../components/features/matches/MatchEditModal";
 import { MatchSearchFilters } from "../components/features/matches/MatchSearchFilters";
-import { MatchTable } from "../components/features/matches/MatchTable";
+import { MatchTable, type MatchTableState } from "../components/features/matches/MatchTable";
 import { MainLayout } from "../components/layout/MainLayout";
 import { useNotification } from "../contexts/NotificationContext";
 import { useBulkUpdateMatches, useSearchMatches } from "../hooks/useMatch";
@@ -78,11 +78,8 @@ export function MatchesPage() {
     setFilters((prev) => ({ ...prev, ...newFilters, page: 1 }));
   };
 
-  const handleSortChange = (
-    sortBy: SearchMatchesRequest.sortBy,
-    sortOrder: SearchMatchesRequest.sortOrder
-  ) => {
-    setFilters((prev) => ({ ...prev, sortBy, sortOrder, page: 1 }));
+  const handleTableChange = ({ page, sortBy, sortOrder }: MatchTableState) => {
+    setFilters((prev) => ({ ...prev, page, sortBy, sortOrder }));
   };
 
   const handleSelectionChange = (keys: string[], rows: MatchResponse[]) => {
@@ -170,11 +167,10 @@ export function MatchesPage() {
               current: filters.page,
               pageSize: filters.pageCount,
               total: searchData?.total ?? 0,
-              onChange: (page) => setFilters((prev) => ({ ...prev, page })),
             }}
             sortBy={filters.sortBy}
             sortOrder={filters.sortOrder}
-            onSortChange={handleSortChange}
+            onTableChange={handleTableChange}
             selectedRowKeys={selectedRowKeys}
             onSelectionChange={handleSelectionChange}
           />

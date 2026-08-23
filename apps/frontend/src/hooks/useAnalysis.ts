@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { AnalysisService } from "../api";
 
 export type GroupByField = "rule" | "stage" | "weapon" | "battleType";
@@ -40,6 +40,9 @@ export function useVictoryRate(params: UseVictoryRateParams) {
         params.sortOrder,
         params.sortBy
       ),
+    // Keep the previous page rendered while the next one loads so `total` (and with it the
+    // pager) does not momentarily collapse to 0
+    placeholderData: keepPreviousData,
     enabled: params.enabled !== false && params.groupBy.length > 0,
   });
 }

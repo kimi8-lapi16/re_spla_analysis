@@ -16,6 +16,17 @@ const ALLOWED_SORT_BY_FIELDS = new Set<string>(
 );
 const ALLOWED_SORT_ORDERS = new Set<string>(Object.values(SortOrder));
 
+// 名前カラムでのソートは、対応するフィールドでグルーピングしている場合のみ有効。
+// グルーピングされていない名前カラムは SELECT されないため、ORDER BY に指定すると SQL エラーになる。
+const SORT_BY_REQUIRED_GROUP_BY: Partial<
+  Record<VictoryRateSortBy, GroupByField>
+> = {
+  [VictoryRateSortBy.RULE_NAME]: GroupByField.RULE,
+  [VictoryRateSortBy.STAGE_NAME]: GroupByField.STAGE,
+  [VictoryRateSortBy.WEAPON_NAME]: GroupByField.WEAPON,
+  [VictoryRateSortBy.BATTLE_TYPE_NAME]: GroupByField.BATTLE_TYPE,
+};
+
 type VictoryRateRawResult = {
   rule_name?: string;
   stage_name?: string;
@@ -118,6 +129,10 @@ export class AnalysisUseCase {
   }
 
   private validateParams(params: GetVictoryRateParams): void {
+    if (params.groupBy.length === 0) {
+      throw new ValidationException('groupBy must contain at least one field');
+    }
+
     for (const field of params.groupBy) {
       if (!ALLOWED_GROUP_BY_FIELDS.has(field)) {
         throw new ValidationException(`Invalid groupBy field: ${field}`);
@@ -126,6 +141,15 @@ export class AnalysisUseCase {
 
     if (params.sortBy && !ALLOWED_SORT_BY_FIELDS.has(params.sortBy)) {
       throw new ValidationException(`Invalid sortBy field: ${params.sortBy}`);
+    }
+
+    if (params.sortBy) {
+      const requiredGroupBy = SORT_BY_REQUIRED_GROUP_BY[params.sortBy];
+      if (requiredGroupBy && !params.groupBy.includes(requiredGroupBy)) {
+        throw new ValidationException(
+          `sortBy "${params.sortBy}" requires groupBy to include "${requiredGroupBy}"`,
+        );
+      }
     }
 
     if (params.sortOrder && !ALLOWED_SORT_ORDERS.has(params.sortOrder)) {

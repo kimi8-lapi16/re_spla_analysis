@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import { MatchesService } from "../api";
 import type {
   BulkCreateMatchesRequest,
@@ -18,6 +18,9 @@ export function useSearchMatches(searchParams: SearchMatchesRequest) {
   return useQuery({
     queryKey: ["matches", "search", searchParams],
     queryFn: () => MatchesService.matchControllerSearchMatches(searchParams),
+    // Keep the previous page rendered while the next one loads so `total` (and with it the
+    // pager) does not momentarily collapse to 0
+    placeholderData: keepPreviousData,
     enabled: !!searchParams.operator,
   });
 }
