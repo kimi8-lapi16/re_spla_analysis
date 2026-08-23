@@ -99,7 +99,18 @@ p {
   background: var(--app-text-tertiary);
 }
 
-/* Flex table container - allows table to fill available height */
+/*
+ * Flex table container.
+ *
+ * Lets a Table fill whatever height is left over instead of being given a
+ * `calc(100vh - N)` guess. Every wrapper Ant Design puts between the container
+ * and the scrolling body has to pass the height down, so each one is a flex
+ * column that grows; `min-height: 0` is what allows them to shrink below their
+ * content and actually scroll.
+ *
+ * `.ant-table` grows but the pagination beside it does not - that is what keeps
+ * the pager on screen.
+ */
 .flex-table-container {
   display: flex;
   flex-direction: column;
@@ -112,15 +123,21 @@ p {
 .flex-table-container .ant-table-wrapper,
 .flex-table-container .ant-table,
 .flex-table-container .ant-table-container {
-  height: 100%;
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 .flex-table-container .ant-table-body {
   flex: 1;
   min-height: 0;
   overflow: auto !important;
+}
+
+/* The pager keeps its natural height and stays inside the viewport. */
+.flex-table-container .ant-table-wrapper > .ant-pagination {
+  flex: none;
 }
 
 /* Ant Design Tabs content height fix */

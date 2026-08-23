@@ -73,6 +73,18 @@ export const semantic = {
     info: colors.info[600],
   },
 
+  /**
+   * Meter (a ratio against a limit). One hue: length carries the ratio, so
+   * lightness is free to carry confidence - `fillMuted` marks a value computed
+   * from too few samples to trust.
+   */
+  meter: {
+    track: colors.primary[100],
+    fill: colors.primary[600],
+    fillMuted: colors.primary[300],
+    reference: colors.neutral[400],
+  },
+
   /** Chart.js does not read the Ant Design theme, so it needs its own tokens. */
   chart: {
     line: colors.primary[600],

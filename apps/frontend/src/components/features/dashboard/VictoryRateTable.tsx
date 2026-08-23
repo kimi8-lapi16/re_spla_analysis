@@ -1,10 +1,11 @@
-import { Spin, Table } from "antd";
+import { Empty, Flex, Spin, Table } from "antd";
 import type { ColumnsType, TableProps } from "antd/es/table";
 import type { SortOrder as AntSortOrder } from "antd/es/table/interface";
 import { useMemo } from "react";
 import type { VictoryRateItem } from "../../../api";
 import type { GroupByField, VictoryRateSortBy } from "../../../hooks/useAnalysis";
 import type { TableState } from "../../../hooks/useTableState";
+import { VictoryRateCell } from "./VictoryRateCell";
 
 type VictoryRateTableProps = {
   data?: VictoryRateItem[];
@@ -126,11 +127,12 @@ export function VictoryRateTable({
         title: "勝率",
         dataIndex: "victoryRate",
         key: "victoryRate",
-        width: 100,
-        align: "right",
+        width: 200,
         sorter: true,
         sortOrder: getSortOrder("victoryRate"),
-        render: (value: number) => `${(value * 100).toFixed(1)}%`,
+        render: (value: number, row: TableRow) => (
+          <VictoryRateCell victoryRate={value} totalCount={row.totalCount} />
+        ),
       }
     );
 
@@ -165,19 +167,27 @@ export function VictoryRateTable({
   };
 
   return (
-    <Spin spinning={isLoading}>
-      <Table
-        dataSource={tableData}
-        columns={columns}
-        scroll={{ y: "calc(100vh - 376px)" }}
-        pagination={{
-          current: page,
-          pageSize: pageSize,
-          total: total,
-          showSizeChanger: false,
-        }}
-        onChange={handleTableChange}
-      />
-    </Spin>
+    <Flex vertical className="flex-table-container">
+      <Spin spinning={isLoading}>
+        <Table
+          dataSource={tableData}
+          columns={columns}
+          scroll={{ y: "100%" }}
+          locale={{
+            emptyText: (
+              <Empty description="集計できる試合がありません" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+            ),
+          }}
+          pagination={{
+            current: page,
+            pageSize: pageSize,
+            total: total,
+            showSizeChanger: false,
+            showTotal: (count, [from, to]) => `${count} 件中 ${from}–${to} 件`,
+          }}
+          onChange={handleTableChange}
+        />
+      </Spin>
+    </Flex>
   );
 }

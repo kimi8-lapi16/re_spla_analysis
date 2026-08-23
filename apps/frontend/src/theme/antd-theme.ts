@@ -85,6 +85,13 @@ export const antdTheme: ThemeConfig = {
       footerPadding: "12px 24px",
     },
 
+    Table: {
+      // The header arrow already says which column is sorted. Tinting the body
+      // column too paints a grey band that runs past the last row into the empty
+      // area below it, which reads as a rendering artifact rather than emphasis.
+      bodySortBg: "transparent",
+    },
+
     Menu: {
       itemSelectedBg: semantic.selected.background,
       itemSelectedColor: semantic.selected.foreground,

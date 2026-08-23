@@ -21,3 +21,32 @@
   border: none;
   box-shadow: var(--app-shadow-raised);
 }
+
+/* Meter: a thin mark on a same-hue track, with an optional reference hairline. */
+.app-meter {
+  position: relative;
+  flex: 1;
+  min-width: 40px;
+  height: 6px;
+  border-radius: 3px;
+  background-color: var(--app-meter-track);
+  overflow: hidden;
+}
+
+.app-meter__fill {
+  height: 100%;
+  border-radius: 3px;
+  background-color: var(--app-meter-fill);
+}
+
+.app-meter__fill--muted {
+  background-color: var(--app-meter-fill-muted);
+}
+
+.app-meter__reference {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background-color: var(--app-meter-reference);
+}
