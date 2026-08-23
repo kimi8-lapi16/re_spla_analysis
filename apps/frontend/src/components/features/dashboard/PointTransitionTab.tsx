@@ -1,4 +1,5 @@
-import { Card, DatePicker, Flex, Select, Space, Typography } from "antd";
+import { DatePicker, Flex, Select, Space, Typography } from "antd";
+import { Card } from "../../base";
 import { Dayjs } from "dayjs";
 import { useMemo, useState } from "react";
 import { usePointTransition } from "../../../hooks/useAnalysis";

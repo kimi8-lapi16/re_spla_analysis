@@ -18,7 +18,7 @@ export const UserProfileView = ({ name, email, onEdit }: UserProfileViewProps) =
           <Title level={2} style={{ margin: 0 }}>
             ユーザー情報
           </Title>
-          <Button variant="primary" icon={<EditOutlined />} onClick={onEdit}>
+          <Button intent="primary" icon={<EditOutlined />} onClick={onEdit}>
             編集
           </Button>
         </Flex>

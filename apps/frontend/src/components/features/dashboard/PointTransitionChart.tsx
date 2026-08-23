@@ -12,6 +12,7 @@ import { Line } from "react-chartjs-2";
 import { Spin, Empty, Flex } from "antd";
 import dayjs from "dayjs";
 import type { PointTransitionItem } from "../../../api";
+import { semantic } from "../../../theme";
 
 // Chart.js の登録
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
@@ -43,8 +44,9 @@ export function PointTransitionChart({ data, isLoading, ruleName }: PointTransit
       {
         label: ruleName ? `${ruleName} ポイント` : "ポイント",
         data: data.map((item) => item.point),
-        borderColor: "rgb(75, 192, 192)",
-        backgroundColor: "rgba(75, 192, 192, 0.5)",
+        borderColor: semantic.chart.line,
+        backgroundColor: semantic.chart.fill,
+        pointBackgroundColor: semantic.chart.point,
         tension: 0.1,
       },
     ],

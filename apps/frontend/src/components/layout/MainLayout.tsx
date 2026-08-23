@@ -11,6 +11,7 @@ import { useNavigate, useLocation } from "@tanstack/react-router";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 import { useAuthStore } from "../../store/authStore";
+import { semantic } from "../../theme";
 
 const { Sider, Content } = Layout;
 
@@ -52,8 +53,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
           onCollapse={setCollapsed}
           trigger={null}
           style={{
-            background: "#fff",
-            borderRight: "1px solid #f0f0f0",
+            borderRight: `1px solid ${semantic.border.subtle}`,
             overflow: "auto",
           }}
         >
@@ -61,7 +61,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
             style={{
               padding: "16px",
               textAlign: "center",
-              borderBottom: "1px solid #f0f0f0",
+              borderBottom: `1px solid ${semantic.border.subtle}`,
             }}
           >
             {collapsed ? (

@@ -636,6 +636,62 @@ async getWeapons(): Promise<{ weapons: Weapon[] }> {
 
 ### Frontend Best Practices
 
+#### Design System
+
+Full guide: [apps/frontend/src/theme/README.md](apps/frontend/src/theme/README.md).
+
+**CRITICAL: NEVER write a color literal in a component.**
+
+Colors live in exactly one place and flow outward from it:
+
+```
+colors.ts (palette) → semantic.ts (meaning) → antd-theme.ts / cssVariables.ts → components
+```
+
+An inline color wins over every stylesheet, including Ant Design's own hover, active,
+and disabled rules. Writing one silently deletes those states — and silently discards
+whatever the caller passed in `style`. Both of those were real bugs in this codebase.
+
+```tsx
+// ❌ Bad: color literal in a component
+<Button style={{ color: "#ff4d4f", borderColor: "#ff4d4f" }}>削除</Button>
+<div style={{ background: "#f0f2f5" }} />
+
+// ✅ Good: a semantic intent, or a token
+import { Button } from "../components/base";
+import { semantic } from "../theme";
+
+<Button intent="dangerSubtle">削除</Button>
+<AntFooter style={{ borderTop: `1px solid ${semantic.border.default}` }} />
+```
+
+**Buttons** are selected by `intent`, never by color. Two tones × three emphasis levels:
+
+| | solid | outlined | text |
+| --- | --- | --- | --- |
+| brand | `primary` | — | — |
+| neutral | — | `neutral` | `quiet` |
+| destructive | `danger` | `dangerSubtle` | `dangerQuiet` |
+
+- `primary` is limited to one per screen.
+- Cancel / back / add-row are `neutral`. They are never a status color — a yellow
+  cancel button reads as a warning about cancelling.
+- Destructive actions escalate: `dangerSubtle` opens the confirmation, `danger`
+  is the button inside it that actually deletes.
+- There is no `success` / `warning` intent. Status belongs on `Tag`, `Alert`, `Badge`.
+
+**Contrast**: filled surfaces carrying white text use shade **600** (hover 700, active 800).
+Shade 500 fails WCAG AA — `primary[500]` reaches only 4.22:1 and `error[500]` only 3.76:1.
+
+**Do not shadow a library prop name.** `Card` uses `tone`, not `variant`, so that Ant
+Design v6's own `variant="outlined" | "borderless"` stays reachable. The previous wrappers
+shadowed `variant` on both `Card` and `Input` and made those APIs permanently unavailable.
+
+Two ESLint rules enforce the above (`apps/frontend/eslint.config.js`): color literals are
+banned outside `colors.ts` / `semantic.ts`, and `Button` / `Card` / `Input` may not be
+imported from `antd` outside `components/base`. Being stopped by either rule means the
+concept you need is missing from `semantic.ts` — add a token, don't write a literal.
+
 #### Component Guidelines
 
 1. **Always Use Ant Design Components First**
@@ -677,21 +733,21 @@ async getWeapons(): Promise<{ weapons: Weapon[] }> {
    <Text type="danger">Error message</Text>
    ```
 
-2. **Use Custom Button Component**
-   - This project has a custom `Button` component in `components/base`
-   - Always prefer the custom Button over Ant Design's Button for consistency
+3. **Use the base components, not `antd` directly, for Button / Card / Input**
+   - `components/base` wraps these three with the project's presets
+   - Enforced by `no-restricted-imports` in `apps/frontend/eslint.config.js`
 
    ```tsx
    // ❌ Bad: Using AntButton directly
    import { Button as AntButton } from "antd";
    <AntButton type="text" danger icon={<DeleteOutlined />} />
 
-   // ✅ Good: Using custom Button
+   // ✅ Good: Using the base Button with a semantic intent
    import { Button } from "../components/base";
-   <Button variant="secondary" icon={<DeleteOutlined />} />
+   <Button intent="dangerQuiet" icon={<DeleteOutlined />} />
    ```
 
-3. **DRY Principle for Shared UI Logic**
+4. **DRY Principle for Shared UI Logic**
    - Extract common column definitions, form schemas, or UI patterns into shared utilities
    - Place shared components in appropriate feature folders or utils
 

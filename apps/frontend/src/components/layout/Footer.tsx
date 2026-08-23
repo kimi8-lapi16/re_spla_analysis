@@ -1,6 +1,8 @@
-import { Layout } from "antd";
+import { Layout, Typography } from "antd";
+import { semantic } from "../../theme";
 
 const { Footer: AntFooter } = Layout;
+const { Text } = Typography;
 
 export const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -9,13 +11,12 @@ export const Footer = () => {
     <AntFooter
       style={{
         textAlign: "center",
-        background: "#f0f2f5",
-        borderTop: "1px solid #d9d9d9",
-        padding: "12px 50px",
-        fontSize: "12px",
+        borderTop: `1px solid ${semantic.border.default}`,
       }}
     >
-      Splatoon Analysis ©{currentYear}
+      <Text type="secondary" style={{ fontSize: 12 }}>
+        Splatoon Analysis ©{currentYear}
+      </Text>
     </AntFooter>
   );
 };

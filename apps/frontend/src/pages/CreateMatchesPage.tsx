@@ -1,7 +1,7 @@
 import { PlusOutlined, SaveOutlined } from "@ant-design/icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "@tanstack/react-router";
-import { Space, Spin, Table } from "antd";
+import { Flex, Space, Spin, Table, Typography } from "antd";
 import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import { CreateMatchBody } from "../api";
@@ -34,6 +34,8 @@ const matchSchema = z.object({
     )
     .min(1, "最低1試合は入力してください"),
 });
+
+const { Title, Text } = Typography;
 
 function isValidResult(result: string): result is CreateMatchBody.result {
   return result === "WIN" || result === "LOSE";
@@ -161,16 +163,9 @@ export function CreateMatchesPage() {
   if (isLoading) {
     return (
       <MainLayout>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            height: "400px",
-          }}
-        >
+        <Flex justify="center" align="center" style={{ height: 400 }}>
           <Spin size="large" />
-        </div>
+        </Flex>
       </MainLayout>
     );
   }
@@ -188,13 +183,15 @@ export function CreateMatchesPage() {
 
   return (
     <MainLayout>
-      <div style={{ padding: "24px" }}>
-        <div style={{ marginBottom: "24px" }}>
-          <h1 style={{ margin: 0, fontSize: "24px", fontWeight: 600 }}>試合データ登録</h1>
-          <p style={{ margin: "8px 0 0", color: "#666" }}>
+      <Flex vertical gap="large">
+        <Flex vertical gap={4}>
+          <Title level={2} style={{ margin: 0 }}>
+            試合データ登録
+          </Title>
+          <Text type="secondary">
             複数の試合を一度に登録できます。必要に応じて行を追加してください。
-          </p>
-        </div>
+          </Text>
+        </Flex>
 
         <form onSubmit={handleSubmit(onSubmit)}>
           <Table
@@ -206,36 +203,34 @@ export function CreateMatchesPage() {
             bordered
           />
 
-          <div style={{ marginTop: "16px" }}>
-            <Button variant="secondary" icon={<PlusOutlined />} onClick={handleAddRow}>
+          <Flex vertical align="flex-start" gap="middle" style={{ marginTop: 16 }}>
+            <Button intent="neutral" icon={<PlusOutlined />} onClick={handleAddRow}>
               行を追加
             </Button>
-          </div>
 
-          {errors.matches && (
-            <div style={{ marginTop: "16px", color: "#ff4d4f" }}>{errors.matches.message}</div>
-          )}
+            {errors.matches && <Text type="danger">{errors.matches.message}</Text>}
 
-          <Space style={{ marginTop: "24px" }}>
-            <Button
-              htmlType="submit"
-              variant="primary"
-              icon={<SaveOutlined />}
-              disabled={isCreating}
-            >
-              {isCreating ? "登録中..." : "登録する"}
-            </Button>
-            <Button
-              htmlType="button"
-              variant="secondary"
-              onClick={() => navigate({ to: "/matches" })}
-              disabled={isCreating}
-            >
-              キャンセル
-            </Button>
-          </Space>
+            <Space>
+              <Button
+                htmlType="submit"
+                intent="primary"
+                icon={<SaveOutlined />}
+                loading={isCreating}
+              >
+                登録する
+              </Button>
+              <Button
+                htmlType="button"
+                intent="neutral"
+                onClick={() => navigate({ to: "/matches" })}
+                disabled={isCreating}
+              >
+                キャンセル
+              </Button>
+            </Space>
+          </Flex>
         </form>
-      </div>
+      </Flex>
     </MainLayout>
   );
 }

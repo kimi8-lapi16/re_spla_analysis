@@ -67,7 +67,7 @@ export function SignupPage() {
   return (
     <AuthLayout>
       <Spin spinning={isPending} tip="アカウント作成中...">
-        <Card title="新規登録" variant="elevated" style={{ width: 400 }}>
+        <Card title="新規登録" tone="raised" style={{ width: 400 }}>
           <form onSubmit={handleSubmit(onSubmit)}>
             <Form.Item validateStatus={errors.name ? "error" : ""} help={errors.name?.message}>
               <Controller
@@ -122,7 +122,7 @@ export function SignupPage() {
 
             <Form.Item>
               <Button
-                variant="primary"
+                intent="primary"
                 htmlType="submit"
                 size="large"
                 block

@@ -1,10 +1,11 @@
 import { LogoutOutlined } from "@ant-design/icons";
-import { Layout } from "antd";
-import { colors } from "../../theme/colors";
+import { Layout, Typography } from "antd";
+import { semantic } from "../../theme";
 import { useAuthStore } from "../../store/authStore";
 import { Button } from "../base";
 
 const { Header: AntHeader } = Layout;
+const { Text } = Typography;
 
 interface HeaderProps {
   onLogout?: () => void;
@@ -27,30 +28,23 @@ export const Header = ({ onLogout }: HeaderProps) => {
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        background: `linear-gradient(135deg, ${colors.primary[700]} 0%, ${colors.primary[600]} 100%)`,
+        background: `linear-gradient(135deg, ${semantic.surface.brand} 0%, ${semantic.surface.brandGradientEnd} 100%)`,
         padding: "0 24px",
-        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
+        boxShadow: semantic.shadow.header,
       }}
     >
-      <div
+      <Text
         style={{
-          color: colors.text.inverse,
-          fontSize: "24px",
-          fontWeight: "700",
+          color: semantic.text.inverse,
+          fontSize: 24,
+          fontWeight: 700,
           letterSpacing: "-0.5px",
         }}
       >
         Splatoon Analysis
-      </div>
+      </Text>
       {isAuthenticated && (
-        <Button
-          variant="danger"
-          icon={<LogoutOutlined />}
-          onClick={handleLogout}
-          style={{
-            fontWeight: 500,
-          }}
-        >
+        <Button intent="neutral" icon={<LogoutOutlined />} onClick={handleLogout}>
           ログアウト
         </Button>
       )}

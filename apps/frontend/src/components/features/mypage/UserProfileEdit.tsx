@@ -107,11 +107,11 @@ export const UserProfileEdit = ({ name, email, onCancel, onSuccess }: UserProfil
           </Form.Item>
 
           <Flex gap={8} justify="flex-end">
-            <Button variant="secondary" icon={<CloseOutlined />} onClick={onCancel}>
+            <Button intent="neutral" icon={<CloseOutlined />} onClick={onCancel}>
               キャンセル
             </Button>
             <Button
-              variant="primary"
+              intent="primary"
               icon={<SaveOutlined />}
               onClick={handleSave}
               loading={updateMutation.isPending}

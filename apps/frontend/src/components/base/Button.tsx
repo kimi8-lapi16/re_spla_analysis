@@ -1,91 +1,68 @@
 import { Button as AntButton, type ButtonProps as AntButtonProps } from "antd";
 import { forwardRef } from "react";
-import { colors } from "../../theme";
 
-export interface ButtonProps extends Omit<AntButtonProps, "variant"> {
-  variant?: "primary" | "secondary" | "success" | "danger" | "warning" | "ghost" | "text" | "link";
+/**
+ * Semantic button intents.
+ *
+ * Two tones (brand / danger) x three emphasis levels. Nothing else is offered
+ * on purpose: status colors (success, warning) belong on Tag and Alert, not on
+ * a button, and a yellow "cancel" reads as a warning about the cancel itself.
+ *
+ *              | solid          | outlined       | text
+ *   -----------|----------------|----------------|---------------
+ *   brand      | primary        | -              | -
+ *   neutral    | -              | neutral        | quiet
+ *   danger     | danger         | dangerSubtle   | dangerQuiet
+ *
+ * `primary` is limited to one per screen. Cancel / back / add-row are
+ * `neutral`. A delete that opens a confirmation is `dangerSubtle`; the button
+ * that actually deletes, inside that confirmation, is `danger`.
+ */
+export type ButtonIntent =
+  | "primary"
+  | "neutral"
+  | "quiet"
+  | "danger"
+  | "dangerSubtle"
+  | "dangerQuiet";
+
+type IntentPreset = Required<Pick<AntButtonProps, "color" | "variant">>;
+
+const INTENT_PRESETS: Record<ButtonIntent, IntentPreset> = {
+  primary: { color: "primary", variant: "solid" },
+  neutral: { color: "default", variant: "outlined" },
+  quiet: { color: "default", variant: "text" },
+  danger: { color: "danger", variant: "solid" },
+  dangerSubtle: { color: "danger", variant: "outlined" },
+  dangerQuiet: { color: "danger", variant: "text" },
+};
+
+export interface ButtonProps extends AntButtonProps {
+  /** Defaults to `neutral` so an unlabelled button is never the loudest one. */
+  intent?: ButtonIntent;
 }
 
 /**
- * Custom Button component with theme colors
- * Extends Ant Design Button with custom variant styles
+ * Ant Design Button with the project's intent presets applied.
+ *
+ * Colors are resolved by Ant Design from the theme, never written here. An
+ * inline `backgroundColor` would beat Ant Design's hover / active / disabled
+ * rules and silently delete those states, so this component only ever chooses
+ * `color` and `variant`. Callers may still pass `color` / `variant` directly
+ * for a one-off combination; those win over the preset.
  */
-export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ variant = "primary", type, style, ...props }, ref) => {
-    // Map custom variants to Ant Design types and styles
-    const getButtonStyle = (): React.CSSProperties => {
-      const baseStyle = style || {};
+export const Button = forwardRef<HTMLAnchorElement | HTMLButtonElement, ButtonProps>(
+  ({ intent = "neutral", color, variant, ...props }, ref) => {
+    const preset = INTENT_PRESETS[intent];
 
-      switch (variant) {
-        case "primary":
-          return {
-            ...baseStyle,
-            backgroundColor: colors.primary[500],
-            borderColor: colors.primary[500],
-          };
-
-        case "secondary":
-          return {
-            ...baseStyle,
-            backgroundColor: colors.secondary[500],
-            borderColor: colors.secondary[500],
-            color: colors.text.primary,
-          };
-
-        case "success":
-          return {
-            ...baseStyle,
-            backgroundColor: colors.success[500],
-            borderColor: colors.success[500],
-          };
-
-        case "danger":
-          return {
-            ...baseStyle,
-            backgroundColor: colors.error[500],
-            borderColor: colors.error[500],
-          };
-
-        case "warning":
-          return {
-            ...baseStyle,
-            backgroundColor: colors.warning[500],
-            borderColor: colors.warning[500],
-          };
-
-        case "ghost":
-          return baseStyle;
-
-        case "text":
-          return baseStyle;
-
-        case "link":
-          return {
-            ...baseStyle,
-            color: colors.primary[500],
-          };
-
-        default:
-          return baseStyle;
-      }
-    };
-
-    const getButtonType = (): AntButtonProps["type"] => {
-      if (type) return type;
-
-      switch (variant) {
-        case "ghost":
-          return "default";
-        case "text":
-          return "text";
-        case "link":
-          return "link";
-        default:
-          return "primary";
-      }
-    };
-
-    return <AntButton ref={ref} type={getButtonType()} style={getButtonStyle()} {...props} />;
+    return (
+      <AntButton
+        ref={ref}
+        color={color ?? preset.color}
+        variant={variant ?? preset.variant}
+        {...props}
+      />
+    );
   }
 );
 

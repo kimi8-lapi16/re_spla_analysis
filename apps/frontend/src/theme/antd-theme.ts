@@ -1,52 +1,46 @@
 import type { ThemeConfig } from "antd";
-import { colors } from "./colors";
+import { semantic } from "./semantic";
 
 /**
- * Ant Design theme configuration
- * Customizes Ant Design components with brand colors
+ * Ant Design theme configuration.
+ *
+ * Every value here is derived from semantic.ts. Nothing in this file may be a
+ * raw hex literal, and no component may re-declare a color that this theme
+ * already owns - inline styles win over Ant Design's own hover/active/disabled
+ * CSS, which silently removes those states.
  */
 export const antdTheme: ThemeConfig = {
   token: {
-    // Primary brand color (purple)
-    colorPrimary: colors.primary[500],
-    colorPrimaryHover: colors.primary[600],
-    colorPrimaryActive: colors.primary[700],
-    colorPrimaryBg: colors.primary[50],
-    colorPrimaryBgHover: colors.primary[100],
-    colorPrimaryBorder: colors.primary[300],
+    // Brand
+    colorPrimary: semantic.action.primary,
+    colorPrimaryHover: semantic.action.primaryHover,
+    colorPrimaryActive: semantic.action.primaryActive,
+    colorPrimaryBg: semantic.action.primaryTint,
+    colorPrimaryBgHover: semantic.selected.background,
+    colorPrimaryBorder: semantic.action.primaryBorder,
 
-    // Secondary/Warning color (yellow)
-    colorWarning: colors.secondary[500],
-    colorWarningHover: colors.secondary[600],
-    colorWarningActive: colors.secondary[700],
-    colorWarningBg: colors.secondary[50],
+    // Status - Tag / Alert / Badge / icons. Not button fills.
+    colorSuccess: semantic.status.success,
+    colorWarning: semantic.status.warning,
+    colorInfo: semantic.status.info,
+    colorError: semantic.action.danger,
+    colorErrorHover: semantic.action.dangerHover,
+    colorErrorActive: semantic.action.dangerActive,
 
-    // Semantic colors
-    colorSuccess: colors.success[500],
-    colorSuccessHover: colors.success[600],
-    colorSuccessActive: colors.success[700],
+    // Text
+    colorText: semantic.text.primary,
+    colorTextSecondary: semantic.text.secondary,
+    colorTextTertiary: semantic.text.tertiary,
+    colorTextPlaceholder: semantic.text.tertiary,
 
-    colorError: colors.error[500],
-    colorErrorHover: colors.error[600],
-    colorErrorActive: colors.error[700],
+    // Surfaces
+    colorBgContainer: semantic.surface.base,
+    colorBgElevated: semantic.surface.base,
+    colorBgLayout: semantic.surface.page,
 
-    colorInfo: colors.info[500],
-    colorInfoHover: colors.info[600],
-    colorInfoActive: colors.info[700],
-
-    // Text colors
-    colorText: colors.text.primary,
-    colorTextSecondary: colors.text.secondary,
-    colorTextTertiary: colors.text.tertiary,
-
-    // Background colors
-    colorBgContainer: colors.background.light,
-    colorBgElevated: colors.background.light,
-    colorBgLayout: colors.background.gray,
-
-    // Border colors
-    colorBorder: colors.neutral[200],
-    colorBorderSecondary: colors.neutral[100],
+    // Borders
+    colorBorder: semantic.border.default,
+    colorBorderSecondary: semantic.border.subtle,
 
     // Typography
     fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
@@ -57,12 +51,12 @@ export const antdTheme: ThemeConfig = {
     fontSizeHeading4: 16,
     fontSizeHeading5: 14,
 
-    // Border radius
-    borderRadius: 8,
-    borderRadiusLG: 12,
-    borderRadiusSM: 6,
+    // Shape
+    borderRadius: semantic.radius.md,
+    borderRadiusLG: semantic.radius.lg,
+    borderRadiusSM: semantic.radius.sm,
 
-    // Spacing
+    // Control sizing
     controlHeight: 40,
     controlHeightLG: 48,
     controlHeightSM: 32,
@@ -70,34 +64,32 @@ export const antdTheme: ThemeConfig = {
 
   components: {
     Button: {
-      primaryShadow: "0 2px 0 rgba(139, 92, 246, 0.1)",
-      defaultShadow: "0 2px 0 rgba(0, 0, 0, 0.02)",
       fontWeight: 500,
-    },
-
-    Input: {
-      activeBorderColor: colors.primary[500],
-      hoverBorderColor: colors.primary[400],
+      primaryShadow: "none",
+      defaultShadow: "none",
+      dangerShadow: "none",
     },
 
     Card: {
-      headerBg: colors.background.light,
-      boxShadowTertiary:
-        "0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px 0 rgba(0, 0, 0, 0.02)",
+      headerBg: semantic.surface.base,
+      boxShadowTertiary: semantic.shadow.card,
     },
 
     Layout: {
-      headerBg: colors.primary[700],
-      headerColor: colors.text.inverse,
+      headerBg: semantic.surface.brand,
+      headerColor: semantic.text.inverse,
       headerHeight: 64,
       headerPadding: "0 24px",
+      siderBg: semantic.surface.base,
+      footerBg: semantic.surface.sunken,
+      footerPadding: "12px 24px",
     },
 
     Menu: {
-      itemSelectedBg: colors.primary[50],
-      itemSelectedColor: colors.primary[600],
-      itemHoverBg: colors.primary[50],
-      itemHoverColor: colors.primary[600],
+      itemSelectedBg: semantic.selected.background,
+      itemSelectedColor: semantic.selected.foreground,
+      itemHoverBg: semantic.selected.background,
+      itemHoverColor: semantic.selected.foreground,
     },
 
     Notification: {

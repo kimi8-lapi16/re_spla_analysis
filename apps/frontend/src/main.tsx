@@ -10,7 +10,11 @@ import { configureApiClient } from "./lib/api-client";
 import { queryClient } from "./lib/query-client";
 import { router } from "./router";
 import { useAuthStore } from "./store/authStore";
-import { antdTheme } from "./theme";
+import { antdTheme, applyThemeCssVariables } from "./theme";
+
+// Publish the semantic tokens as CSS custom properties before anything paints,
+// so index.css and base.css resolve against the same values as antdTheme.
+applyThemeCssVariables();
 
 // Configure OpenAPI client with base URL, credentials, and logout handler
 configureApiClient(() => {

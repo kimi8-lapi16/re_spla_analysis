@@ -1,4 +1,5 @@
-import { Card, Checkbox, Typography, Space, Flex } from "antd";
+import { Checkbox, Typography, Space, Flex } from "antd";
+import { Card } from "../../base";
 import { useState } from "react";
 import {
   useVictoryRate,
