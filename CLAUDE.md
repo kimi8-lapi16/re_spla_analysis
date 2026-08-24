@@ -692,6 +692,13 @@ banned outside `colors.ts` / `semantic.ts`, and `Button` / `Card` / `Input` may 
 imported from `antd` outside `components/base`. Being stopped by either rule means the
 concept you need is missing from `semantic.ts` — add a token, don't write a literal.
 
+**Page skeleton**: every page heading goes through `components/layout/PageHeader`
+(title / description / actions) — four pages previously had four different treatments.
+Use `Skeleton` where the layout is known and `Spin` only where it isn't; never wrap a
+form in `Spin` (it drops the content to 65% opacity and makes the labels unreadable —
+a submitting form needs only the button's `loading`). Every empty state pairs `Empty`
+with the next action, and distinguishes "no data yet" from "nothing matches the filter".
+
 #### Component Guidelines
 
 1. **Always Use Ant Design Components First**

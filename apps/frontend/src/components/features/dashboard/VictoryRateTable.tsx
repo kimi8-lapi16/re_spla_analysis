@@ -172,10 +172,14 @@ export function VictoryRateTable({
         <Table
           dataSource={tableData}
           columns={columns}
-          scroll={{ y: "100%" }}
+          // `x: max-content` so narrow viewports scroll instead of clipping columns.
+          scroll={{ x: "max-content", y: "100%" }}
           locale={{
             emptyText: (
-              <Empty description="集計できる試合がありません" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+              <Empty
+                description="集計できる試合がありません"
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+              />
             ),
           }}
           pagination={{

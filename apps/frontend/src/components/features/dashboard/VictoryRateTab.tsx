@@ -1,4 +1,4 @@
-import { Checkbox, Typography, Space, Flex } from "antd";
+import { Checkbox, Empty, Typography, Space, Flex } from "antd";
 import { Card } from "../../base";
 import { useState } from "react";
 import {
@@ -77,7 +77,12 @@ export function VictoryRateTab() {
 
       {selectedGroupBy.length === 0 ? (
         <Card>
-          <Text type="secondary">グルーピング対象を1つ以上選択してください</Text>
+          <Flex justify="center" style={{ padding: "32px 0" }}>
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description="集計する軸を1つ以上選んでください"
+            />
+          </Flex>
         </Card>
       ) : (
         <Flex vertical style={{ flex: 1, minHeight: 0 }}>

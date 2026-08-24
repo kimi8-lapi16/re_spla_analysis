@@ -51,7 +51,7 @@ export function SummaryCards() {
     return (
       <Row gutter={[16, 16]}>
         {[0, 1, 2, 3].map((index) => (
-          <Col key={index} span={6}>
+          <Col key={index} xs={24} sm={12} xl={6}>
             <Card size="small">
               <Skeleton active paragraph={{ rows: 1 }} title={{ width: "60%" }} />
             </Card>
@@ -76,17 +76,25 @@ export function SummaryCards() {
 
   return (
     <Row gutter={[16, 16]}>
-      <Col span={6}>
-        <StatTile label="総試合数" value={totalCount.toLocaleString("ja-JP")} context="登録済みの全試合" />
-      </Col>
-      <Col span={6}>
+      <Col xs={24} sm={12} xl={6}>
         <StatTile
-          label="全体勝率"
-          value={overallVictoryRate === null ? EMPTY_VALUE : formatRatioAsPercent(overallVictoryRate)}
-          context={overallVictoryRate === null ? undefined : `${winCount} 勝 ${totalCount - winCount} 敗`}
+          label="総試合数"
+          value={totalCount.toLocaleString("ja-JP")}
+          context="登録済みの全試合"
         />
       </Col>
-      <Col span={6}>
+      <Col xs={24} sm={12} xl={6}>
+        <StatTile
+          label="全体勝率"
+          value={
+            overallVictoryRate === null ? EMPTY_VALUE : formatRatioAsPercent(overallVictoryRate)
+          }
+          context={
+            overallVictoryRate === null ? undefined : `${winCount} 勝 ${totalCount - winCount} 敗`
+          }
+        />
+      </Col>
+      <Col xs={24} sm={12} xl={6}>
         <StatTile
           label={`直近${RECENT_MATCH_COUNT}戦の勝率`}
           value={recentVictoryRate === null ? EMPTY_VALUE : formatRatioAsPercent(recentVictoryRate)}
@@ -106,7 +114,7 @@ export function SummaryCards() {
           }
         />
       </Col>
-      <Col span={6}>
+      <Col xs={24} sm={12} xl={6}>
         <StatTile
           label="直近のポイント"
           value={data.latestPoint === null ? EMPTY_VALUE : data.latestPoint.toLocaleString("ja-JP")}

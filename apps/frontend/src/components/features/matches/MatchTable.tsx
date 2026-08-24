@@ -1,3 +1,4 @@
+import { PlusOutlined } from "@ant-design/icons";
 import { Empty, Flex, Spin, Table, Typography } from "antd";
 import type { ColumnsType, TableProps } from "antd/es/table";
 import type { SortOrder } from "antd/es/table/interface";
@@ -5,6 +6,7 @@ import dayjs from "dayjs";
 import { useMemo } from "react";
 import type { MatchResponse } from "../../../api";
 import { SearchMatchesRequest } from "../../../api";
+import { Button } from "../../base";
 import { MatchResultTag } from "./MatchResultTag";
 import { useBattleTypes } from "../../../hooks/useBattleType";
 import { useRules } from "../../../hooks/useRule";
@@ -28,6 +30,10 @@ type MatchTableProps = {
   sortBy?: SearchMatchesRequest.sortBy;
   sortOrder?: SearchMatchesRequest.sortOrder;
   onTableChange: (state: MatchTableState) => void;
+  /** Drives which empty state is shown: no data at all, or none matching. */
+  hasActiveFilters: boolean;
+  onClearFilters?: () => void;
+  onCreateMatch: () => void;
   selectedRowKeys?: string[];
   onSelectionChange?: (selectedKeys: string[], selectedRows: MatchResponse[]) => void;
 };
@@ -68,6 +74,9 @@ export function MatchTable({
   sortBy,
   sortOrder,
   onTableChange,
+  hasActiveFilters,
+  onClearFilters,
+  onCreateMatch,
   selectedRowKeys,
   onSelectionChange,
 }: MatchTableProps) {
@@ -234,7 +243,29 @@ export function MatchTable({
           scroll={{ x: "max-content", y: "100%" }}
           locale={{
             emptyText: (
-              <Empty description="試合データがありません" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+              // An empty list is either "nothing recorded yet" or "the filter
+              // excluded everything". Those need different next steps, so say
+              // which one it is and offer the matching action.
+              <Empty
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                description={
+                  hasActiveFilters
+                    ? "この検索条件に一致する試合はありません"
+                    : "まだ試合が登録されていません"
+                }
+              >
+                {hasActiveFilters ? (
+                  onClearFilters && (
+                    <Button intent="neutral" onClick={onClearFilters}>
+                      検索条件をクリア
+                    </Button>
+                  )
+                ) : (
+                  <Button intent="primary" icon={<PlusOutlined />} onClick={onCreateMatch}>
+                    最初の試合を登録する
+                  </Button>
+                )}
+              </Empty>
             ),
           }}
           pagination={{

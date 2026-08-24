@@ -1,7 +1,7 @@
 import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { Flex, Space, Typography } from "antd";
+import { Flex } from "antd";
 import { Dayjs } from "dayjs";
 import { useMemo, useState } from "react";
 import type { MatchResponse, UpdateMatchBody } from "../api";
@@ -12,10 +12,9 @@ import { MatchEditModal } from "../components/features/matches/MatchEditModal";
 import { MatchSearchFilters } from "../components/features/matches/MatchSearchFilters";
 import { MatchTable, type MatchTableState } from "../components/features/matches/MatchTable";
 import { MainLayout } from "../components/layout/MainLayout";
+import { PageHeader } from "../components/layout/PageHeader";
 import { useNotification } from "../contexts/NotificationContext";
 import { useBulkUpdateMatches, useSearchMatches } from "../hooks/useMatch";
-
-const { Title } = Typography;
 
 type SearchFilters = {
   weapons?: number[];
@@ -78,6 +77,28 @@ export function MatchesPage() {
     setFilters((prev) => ({ ...prev, ...newFilters, page: 1 }));
   };
 
+  const handleClearFilters = () => {
+    setFilters((prev) => ({
+      ...prev,
+      weapons: undefined,
+      stages: undefined,
+      rules: undefined,
+      battleTypes: undefined,
+      results: undefined,
+      dateRange: undefined,
+      page: 1,
+    }));
+  };
+
+  const hasActiveFilters = Boolean(
+    filters.weapons?.length ||
+      filters.stages?.length ||
+      filters.rules?.length ||
+      filters.battleTypes?.length ||
+      filters.results?.length ||
+      filters.dateRange
+  );
+
   const handleTableChange = ({ page, sortBy, sortOrder }: MatchTableState) => {
     setFilters((prev) => ({ ...prev, page, sortBy, sortOrder }));
   };
@@ -134,30 +155,30 @@ export function MatchesPage() {
   return (
     <MainLayout>
       <Flex vertical gap="large" style={{ height: "100%" }}>
-        <Flex justify="space-between" align="center">
-          <Title level={2} style={{ margin: 0 }}>
-            試合履歴
-          </Title>
-          <Space>
-            {selectedRowKeys.length > 0 && (
-              <>
-                <Button intent="neutral" icon={<EditOutlined />} onClick={handleEditClick}>
-                  編集 ({selectedRowKeys.length})
-                </Button>
-                <Button
-                  intent="dangerSubtle"
-                  icon={<DeleteOutlined />}
-                  onClick={handleDeleteClick}
-                >
-                  削除 ({selectedRowKeys.length})
-                </Button>
-              </>
-            )}
-            <Button intent="primary" icon={<PlusOutlined />} onClick={handleCreateNew}>
-              新規登録
-            </Button>
-          </Space>
-        </Flex>
+        <PageHeader
+          title="試合履歴"
+          actions={
+            <>
+              {selectedRowKeys.length > 0 && (
+                <>
+                  <Button intent="neutral" icon={<EditOutlined />} onClick={handleEditClick}>
+                    編集 ({selectedRowKeys.length})
+                  </Button>
+                  <Button
+                    intent="dangerSubtle"
+                    icon={<DeleteOutlined />}
+                    onClick={handleDeleteClick}
+                  >
+                    削除 ({selectedRowKeys.length})
+                  </Button>
+                </>
+              )}
+              <Button intent="primary" icon={<PlusOutlined />} onClick={handleCreateNew}>
+                新規登録
+              </Button>
+            </>
+          }
+        />
         <MatchSearchFilters filters={filters} onFiltersChange={handleFiltersChange} />
         <Flex vertical style={{ flex: 1, minHeight: 0 }}>
           <MatchTable
@@ -171,6 +192,9 @@ export function MatchesPage() {
             sortBy={filters.sortBy}
             sortOrder={filters.sortOrder}
             onTableChange={handleTableChange}
+            hasActiveFilters={hasActiveFilters}
+            onClearFilters={handleClearFilters}
+            onCreateMatch={handleCreateNew}
             selectedRowKeys={selectedRowKeys}
             onSelectionChange={handleSelectionChange}
           />

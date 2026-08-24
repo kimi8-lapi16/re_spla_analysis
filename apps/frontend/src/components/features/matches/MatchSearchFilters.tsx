@@ -120,11 +120,7 @@ export function MatchSearchFilters({ filters, onFiltersChange }: MatchSearchFilt
       {hasAppliedFilters ? (
         <Flex align="center" gap={4} wrap onClick={stopToggle}>
           {appliedChips.map((chip) => (
-            <Tag
-              key={chip.key}
-              closable
-              onClose={() => onFiltersChange({ [chip.key]: undefined })}
-            >
+            <Tag key={chip.key} closable onClose={() => onFiltersChange({ [chip.key]: undefined })}>
               {chip.label}
             </Tag>
           ))}
@@ -153,7 +149,7 @@ export function MatchSearchFilters({ filters, onFiltersChange }: MatchSearchFilt
           children: (
             <Form size="small" layout="vertical">
               <Row gutter={16}>
-                <Col span={8}>
+                <Col xs={24} sm={12} lg={8}>
                   <Form.Item label="ブキ">
                     <Select
                       mode="multiple"
@@ -167,7 +163,7 @@ export function MatchSearchFilters({ filters, onFiltersChange }: MatchSearchFilt
                   </Form.Item>
                 </Col>
 
-                <Col span={8}>
+                <Col xs={24} sm={12} lg={8}>
                   <Form.Item label="ステージ">
                     <Select
                       mode="multiple"
@@ -181,7 +177,7 @@ export function MatchSearchFilters({ filters, onFiltersChange }: MatchSearchFilt
                   </Form.Item>
                 </Col>
 
-                <Col span={8}>
+                <Col xs={24} sm={12} lg={8}>
                   <Form.Item label="ルール">
                     <Select
                       mode="multiple"
@@ -195,7 +191,7 @@ export function MatchSearchFilters({ filters, onFiltersChange }: MatchSearchFilt
                   </Form.Item>
                 </Col>
 
-                <Col span={8}>
+                <Col xs={24} sm={12} lg={8}>
                   <Form.Item label="バトル">
                     <Select
                       mode="multiple"
@@ -209,7 +205,7 @@ export function MatchSearchFilters({ filters, onFiltersChange }: MatchSearchFilt
                   </Form.Item>
                 </Col>
 
-                <Col span={8}>
+                <Col xs={24} sm={12} lg={8}>
                   <Form.Item label="勝敗">
                     <Select
                       mode="multiple"
@@ -222,7 +218,7 @@ export function MatchSearchFilters({ filters, onFiltersChange }: MatchSearchFilt
                   </Form.Item>
                 </Col>
 
-                <Col span={8}>
+                <Col xs={24} sm={12} lg={8}>
                   <Form.Item label="日付範囲">
                     <RangePicker
                       showTime
@@ -242,12 +238,8 @@ export function MatchSearchFilters({ filters, onFiltersChange }: MatchSearchFilt
                       value={filters.operator}
                       onChange={(e) => onFiltersChange({ operator: e.target.value })}
                     >
-                      <Radio value={SearchMatchesRequest.operator.AND}>
-                        AND（すべて満たす）
-                      </Radio>
-                      <Radio value={SearchMatchesRequest.operator.OR}>
-                        OR（いずれかを満たす）
-                      </Radio>
+                      <Radio value={SearchMatchesRequest.operator.AND}>AND（すべて満たす）</Radio>
+                      <Radio value={SearchMatchesRequest.operator.OR}>OR（いずれかを満たす）</Radio>
                     </Radio.Group>
                   </Form.Item>
                 </Col>
