@@ -26,11 +26,7 @@ const DEFAULT_PAGE_SIZE = 20;
 export function useTableState<TSortBy extends string>(
   options: UseTableStateOptions<TSortBy>
 ): UseTableStateReturn<TSortBy> {
-  const {
-    defaultSortBy,
-    defaultSortOrder = "desc",
-    pageSize = DEFAULT_PAGE_SIZE,
-  } = options;
+  const { defaultSortBy, defaultSortOrder = "desc", pageSize = DEFAULT_PAGE_SIZE } = options;
 
   const [tableState, setTableStateInternal] = useState<TableState<TSortBy>>({
     page: 1,

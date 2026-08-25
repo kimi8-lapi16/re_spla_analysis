@@ -125,7 +125,6 @@ export function MatchesPage() {
         onSuccess: () => {
           notification.success({
             title: "更新成功",
-            message: "更新成功",
             description: "試合データを更新しました",
             placement: "topRight",
           });
@@ -137,7 +136,6 @@ export function MatchesPage() {
         onError: (error) => {
           notification.error({
             title: "更新失敗",
-            message: "更新失敗",
             description: `更新に失敗しました: ${error.message}`,
             placement: "topRight",
           });

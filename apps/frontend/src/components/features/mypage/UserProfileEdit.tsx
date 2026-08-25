@@ -37,8 +37,8 @@ export const UserProfileEdit = ({ name, email, onCancel, onSuccess }: UserProfil
       updateMutation.mutate(filteredValues, {
         onSuccess: () => {
           notification.success({
-            title: "更新が完了しました！",
-            message: "ユーザー情報を更新しました",
+            title: "更新が完了しました",
+            description: "ユーザー情報を更新しました",
             placement: "topRight",
           });
           onSuccess();
@@ -46,7 +46,7 @@ export const UserProfileEdit = ({ name, email, onCancel, onSuccess }: UserProfil
         onError: (error: Error) => {
           notification.error({
             title: "更新に失敗しました",
-            message: `更新に失敗しました: ${error.message}`,
+            description: error.message,
             placement: "topRight",
           });
         },
