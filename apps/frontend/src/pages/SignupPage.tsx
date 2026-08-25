@@ -1,7 +1,7 @@
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Form, Spin } from "antd";
+import { Flex, Form, Typography } from "antd";
 import { UserOutlined, MailOutlined, LockOutlined } from "@ant-design/icons";
 import { useNavigate, Link } from "@tanstack/react-router";
 import { useCreateUser } from "../hooks/useUser";
@@ -23,6 +23,8 @@ const registerSchema = z.object({
 });
 
 type RegisterFormData = z.infer<typeof registerSchema>;
+
+const { Text } = Typography;
 
 export function SignupPage() {
   const navigate = useNavigate();
@@ -66,79 +68,79 @@ export function SignupPage() {
 
   return (
     <AuthLayout>
-      <Spin spinning={isPending} tip="アカウント作成中...">
-        <Card title="新規登録" tone="raised" style={{ width: 400 }}>
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <Form.Item validateStatus={errors.name ? "error" : ""} help={errors.name?.message}>
-              <Controller
-                name="name"
-                control={control}
-                render={({ field }) => (
-                  <Input
-                    {...field}
-                    prefix={<UserOutlined />}
-                    placeholder="名前"
-                    size="large"
-                    disabled={isPending}
-                  />
-                )}
-              />
-            </Form.Item>
+      <Card title="新規登録" tone="raised" style={{ width: "100%", maxWidth: 400 }}>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <Form.Item validateStatus={errors.name ? "error" : ""} help={errors.name?.message}>
+            <Controller
+              name="name"
+              control={control}
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  prefix={<UserOutlined />}
+                  placeholder="名前"
+                  size="large"
+                  disabled={isPending}
+                />
+              )}
+            />
+          </Form.Item>
 
-            <Form.Item validateStatus={errors.email ? "error" : ""} help={errors.email?.message}>
-              <Controller
-                name="email"
-                control={control}
-                render={({ field }) => (
-                  <Input
-                    {...field}
-                    prefix={<MailOutlined />}
-                    placeholder="メールアドレス"
-                    size="large"
-                    disabled={isPending}
-                  />
-                )}
-              />
-            </Form.Item>
+          <Form.Item validateStatus={errors.email ? "error" : ""} help={errors.email?.message}>
+            <Controller
+              name="email"
+              control={control}
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  prefix={<MailOutlined />}
+                  placeholder="メールアドレス"
+                  size="large"
+                  disabled={isPending}
+                />
+              )}
+            />
+          </Form.Item>
 
-            <Form.Item
-              validateStatus={errors.password ? "error" : ""}
-              help={errors.password?.message}
+          <Form.Item
+            validateStatus={errors.password ? "error" : ""}
+            help={errors.password?.message}
+          >
+            <Controller
+              name="password"
+              control={control}
+              render={({ field }) => (
+                <Input.Password
+                  {...field}
+                  prefix={<LockOutlined />}
+                  placeholder="パスワード（8文字以上、2種類以上）"
+                  size="large"
+                  disabled={isPending}
+                />
+              )}
+            />
+          </Form.Item>
+
+          <Form.Item>
+            <Button
+              intent="primary"
+              htmlType="submit"
+              size="large"
+              block
+              loading={isPending}
+              disabled={isPending}
             >
-              <Controller
-                name="password"
-                control={control}
-                render={({ field }) => (
-                  <Input.Password
-                    {...field}
-                    prefix={<LockOutlined />}
-                    placeholder="パスワード（8文字以上、2種類以上）"
-                    size="large"
-                    disabled={isPending}
-                  />
-                )}
-              />
-            </Form.Item>
+              登録
+            </Button>
+          </Form.Item>
 
-            <Form.Item>
-              <Button
-                intent="primary"
-                htmlType="submit"
-                size="large"
-                block
-                loading={isPending}
-                disabled={isPending}
-              >
-                登録
-              </Button>
-            </Form.Item>
-
-            <div style={{ textAlign: "center", marginTop: "16px" }}>
+          <Flex justify="center">
+            <Text>
               すでにアカウントをお持ちですか？ <Link to="/login">ログイン</Link>
-            </div>
-          </form>
-        </Card>
-      </Spin>
+            </Text>
+          </Flex>
+        </form>
+      </Card>
     </AuthLayout>
   );
 }

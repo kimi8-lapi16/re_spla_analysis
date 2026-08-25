@@ -2,6 +2,7 @@ import { PlusOutlined, SaveOutlined } from "@ant-design/icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "@tanstack/react-router";
 import { Flex, Space, Spin, Table, Typography } from "antd";
+import { PageHeader } from "../components/layout/PageHeader";
 import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import { CreateMatchBody } from "../api";
@@ -35,7 +36,7 @@ const matchSchema = z.object({
     .min(1, "最低1試合は入力してください"),
 });
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 function isValidResult(result: string): result is CreateMatchBody.result {
   return result === "WIN" || result === "LOSE";
@@ -184,14 +185,10 @@ export function CreateMatchesPage() {
   return (
     <MainLayout>
       <Flex vertical gap="large">
-        <Flex vertical gap={4}>
-          <Title level={2} style={{ margin: 0 }}>
-            試合データ登録
-          </Title>
-          <Text type="secondary">
-            複数の試合を一度に登録できます。必要に応じて行を追加してください。
-          </Text>
-        </Flex>
+        <PageHeader
+          title="試合データ登録"
+          description="複数の試合を一度に登録できます。必要に応じて行を追加してください。"
+        />
 
         <form onSubmit={handleSubmit(onSubmit)}>
           <Table

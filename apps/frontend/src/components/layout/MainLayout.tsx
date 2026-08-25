@@ -1,4 +1,4 @@
-import { Layout, Menu } from "antd";
+import { Drawer, Grid, Layout, Menu } from "antd";
 import { type ReactNode, useState } from "react";
 import {
   DashboardOutlined,
@@ -14,16 +14,29 @@ import { useAuthStore } from "../../store/authStore";
 import { semantic } from "../../theme";
 
 const { Sider, Content } = Layout;
+const { useBreakpoint } = Grid;
 
 interface MainLayoutProps {
   children: ReactNode;
 }
 
+const MENU_ITEMS = [
+  { key: "dashboard", icon: <DashboardOutlined />, label: "ダッシュボード", to: "/dashboard" },
+  { key: "matches", icon: <TrophyOutlined />, label: "試合履歴", to: "/matches" },
+  { key: "my-page", icon: <UserOutlined />, label: "マイページ", to: "/my-page" },
+] as const;
+
 export const MainLayout = ({ children }: MainLayoutProps) => {
   const [collapsed, setCollapsed] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const clearAccessToken = useAuthStore((state) => state.clearAccessToken);
+
+  const screens = useBreakpoint();
+  // Below lg the sider would take half a phone screen, so navigation moves into
+  // a drawer opened from the header instead.
+  const isCompact = !screens.lg;
 
   const handleLogout = () => {
     clearAccessToken();
@@ -37,76 +50,83 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
     if (location.pathname === "/my-page") {
       return "my-page";
     }
-    if (location.pathname === "/dashboard") {
-      return "dashboard";
-    }
     return "dashboard";
   };
 
+  const menu = (
+    <Menu
+      mode="inline"
+      selectedKeys={[getSelectedKey()]}
+      items={MENU_ITEMS.map((item) => ({
+        key: item.key,
+        icon: item.icon,
+        label: item.label,
+        onClick: () => {
+          navigate({ to: item.to });
+          setIsDrawerOpen(false);
+        },
+      }))}
+    />
+  );
+
   return (
     <Layout style={{ height: "100vh", overflow: "hidden" }}>
-      <Header onLogout={handleLogout} />
+      <Header
+        onLogout={handleLogout}
+        showMenuButton={isCompact}
+        onMenuClick={() => setIsDrawerOpen(true)}
+      />
       <Layout style={{ overflow: "hidden" }}>
-        <Sider
-          collapsible
-          collapsed={collapsed}
-          onCollapse={setCollapsed}
-          trigger={null}
-          style={{
-            borderRight: `1px solid ${semantic.border.subtle}`,
-            overflow: "auto",
-          }}
-        >
-          <div
+        {isCompact ? (
+          <Drawer
+            placement="left"
+            open={isDrawerOpen}
+            onClose={() => setIsDrawerOpen(false)}
+            size={240}
+            styles={{ body: { padding: 0 } }}
+            title="メニュー"
+          >
+            {menu}
+          </Drawer>
+        ) : (
+          <Sider
+            collapsible
+            collapsed={collapsed}
+            onCollapse={setCollapsed}
+            trigger={null}
             style={{
-              padding: "16px",
-              textAlign: "center",
-              borderBottom: `1px solid ${semantic.border.subtle}`,
+              borderRight: `1px solid ${semantic.border.subtle}`,
+              overflow: "auto",
             }}
           >
-            {collapsed ? (
-              <MenuUnfoldOutlined
-                onClick={() => setCollapsed(false)}
-                style={{ fontSize: "18px", cursor: "pointer" }}
-              />
-            ) : (
-              <MenuFoldOutlined
-                onClick={() => setCollapsed(true)}
-                style={{ fontSize: "18px", cursor: "pointer" }}
-              />
-            )}
-          </div>
-          <Menu
-            mode="inline"
-            selectedKeys={[getSelectedKey()]}
-            items={[
-              {
-                key: "dashboard",
-                icon: <DashboardOutlined />,
-                label: "ダッシュボード",
-                onClick: () => navigate({ to: "/dashboard" }),
-              },
-              {
-                key: "matches",
-                icon: <TrophyOutlined />,
-                label: "試合履歴",
-                onClick: () => navigate({ to: "/matches" }),
-              },
-              {
-                key: "my-page",
-                icon: <UserOutlined />,
-                label: "マイページ",
-                onClick: () => navigate({ to: "/my-page" }),
-              },
-            ]}
-          />
-        </Sider>
+            <div
+              style={{
+                padding: "16px",
+                textAlign: "center",
+                borderBottom: `1px solid ${semantic.border.subtle}`,
+              }}
+            >
+              {collapsed ? (
+                <MenuUnfoldOutlined
+                  onClick={() => setCollapsed(false)}
+                  style={{ fontSize: "18px", cursor: "pointer" }}
+                />
+              ) : (
+                <MenuFoldOutlined
+                  onClick={() => setCollapsed(true)}
+                  style={{ fontSize: "18px", cursor: "pointer" }}
+                />
+              )}
+            </div>
+            {menu}
+          </Sider>
+        )}
         <Layout style={{ display: "flex", flexDirection: "column", overflow: "hidden" }}>
           <Content
             style={{
-              padding: "24px",
+              padding: isCompact ? 16 : 24,
               flex: 1,
-              overflow: "hidden",
+              overflow: "auto",
             }}
           >
             {children}

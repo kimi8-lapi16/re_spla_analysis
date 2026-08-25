@@ -1,4 +1,4 @@
-import { DatePicker, Flex, Select, Space, Typography } from "antd";
+import { DatePicker, Empty, Flex, Select, Space, Typography } from "antd";
 import { Card } from "../../base";
 import { Dayjs } from "dayjs";
 import { useMemo, useState } from "react";
@@ -107,11 +107,17 @@ export function PointTransitionTab() {
         </Space>
       </Card>
 
-      <Card>
+      {/* The card heading names the series, so the chart needs no title or legend. */}
+      <Card title={chartTitle ?? "ポイント推移"}>
         {!isSelectionComplete ? (
-          <Text type="secondary">バトルタイプとルールを選択してください</Text>
+          <Flex justify="center" style={{ padding: "32px 0" }}>
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description="バトルタイプとルールを選ぶと推移が表示されます"
+            />
+          </Flex>
         ) : (
-          <PointTransitionChart data={data?.points} isLoading={isLoading} ruleName={chartTitle} />
+          <PointTransitionChart data={data?.points} isLoading={isLoading} />
         )}
       </Card>
     </Flex>

@@ -1,53 +1,69 @@
 import {
   Chart as ChartJS,
   CategoryScale,
+  Filler,
   LinearScale,
   PointElement,
   LineElement,
-  Title,
   Tooltip,
-  Legend,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
-import { Spin, Empty, Flex } from "antd";
+import { Empty, Flex, Skeleton } from "antd";
 import dayjs from "dayjs";
 import type { PointTransitionItem } from "../../../api";
 import { semantic } from "../../../theme";
 
-// Chart.js の登録
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+// No Title or Legend plugin: the card heading names the series, and a legend for
+// a single series is a box that says what the title already said.
+ChartJS.register(CategoryScale, Filler, LinearScale, PointElement, LineElement, Tooltip);
 
-const CHART_HEIGHT = 400;
+/**
+ * Height follows the viewport instead of being a fixed 400px, but stays bounded:
+ * an aspect ratio alone makes the chart taller than the window on a wide screen.
+ */
+const CHART_HEIGHT = "clamp(220px, 34vh, 380px)";
 
 type PointTransitionChartProps = {
   data?: PointTransitionItem[];
   isLoading: boolean;
-  ruleName?: string;
 };
 
-export function PointTransitionChart({ data, isLoading, ruleName }: PointTransitionChartProps) {
+export function PointTransitionChart({ data, isLoading }: PointTransitionChartProps) {
   if (isLoading) {
+    return <Skeleton active paragraph={{ rows: 6 }} title={false} />;
+  }
+
+  if (!data || data.length === 0) {
     return (
-      <Flex justify="center" align="center" style={{ height: CHART_HEIGHT }}>
-        <Spin size="large" />
+      <Flex justify="center" style={{ padding: "32px 0" }}>
+        <Empty
+          description="この条件で記録されたポイントがありません"
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+        />
       </Flex>
     );
   }
 
-  if (!data || data.length === 0) {
-    return <Empty description="ポイントデータがありません" image={Empty.PRESENTED_IMAGE_SIMPLE} />;
-  }
+  const lastIndex = data.length - 1;
 
   const chartData = {
     labels: data.map((item) => dayjs(item.gameDateTime).format("MM/DD HH:mm")),
     datasets: [
       {
-        label: ruleName ? `${ruleName} ポイント` : "ポイント",
+        label: "ポイント",
         data: data.map((item) => item.point),
         borderColor: semantic.chart.line,
         backgroundColor: semantic.chart.fill,
+        borderWidth: 2,
+        fill: true,
+        tension: 0.25,
+        // Only the latest point gets a marker - a dot on every point turns the
+        // line into a dotted rule and hides the shape.
+        pointRadius: data.map((_, index) => (index === lastIndex ? 5 : 0)),
+        pointHoverRadius: 5,
         pointBackgroundColor: semantic.chart.point,
-        tension: 0.1,
+        pointBorderColor: semantic.surface.base,
+        pointBorderWidth: 2,
       },
     ],
   };
@@ -55,18 +71,28 @@ export function PointTransitionChart({ data, isLoading, ruleName }: PointTransit
   const options = {
     responsive: true,
     maintainAspectRatio: false,
+    interaction: { mode: "index" as const, intersect: false },
     plugins: {
-      legend: {
-        position: "top" as const,
-      },
-      title: {
-        display: true,
-        text: "ポイント推移",
+      legend: { display: false },
+      title: { display: false },
+      tooltip: {
+        displayColors: false,
+        callbacks: {
+          label: (context: { parsed: { y: number | null } }) =>
+            context.parsed.y === null ? "" : `${context.parsed.y.toLocaleString("ja-JP")} pt`,
+        },
       },
     },
     scales: {
+      x: {
+        grid: { display: false },
+        ticks: { maxRotation: 0, autoSkipPadding: 24, color: semantic.text.tertiary },
+      },
       y: {
         beginAtZero: false,
+        border: { display: false },
+        grid: { color: semantic.chart.grid },
+        ticks: { color: semantic.text.tertiary },
       },
     },
   };

@@ -52,9 +52,7 @@ export function MatchDeleteConfirmModal({
     <Modal
       title={
         <Text>
-          <ExclamationCircleOutlined
-            style={{ color: semantic.status.warning, marginRight: 8 }}
-          />
+          <ExclamationCircleOutlined style={{ color: semantic.status.warning, marginRight: 8 }} />
           削除の確認
         </Text>
       }

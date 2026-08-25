@@ -1,11 +1,9 @@
 import { CloseOutlined, SaveOutlined } from "@ant-design/icons";
-import { Flex, Form, Space, Typography } from "antd";
+import { Flex, Form } from "antd";
 import type { UpdateUser } from "../../../api";
 import { useNotification } from "../../../contexts/NotificationContext";
 import { useUpdateUser } from "../../../hooks/useUser";
 import { Button, Card, Input } from "../../base";
-
-const { Title } = Typography;
 
 interface UserProfileEditProps {
   name: string;
@@ -59,68 +57,60 @@ export const UserProfileEdit = ({ name, email, onCancel, onSuccess }: UserProfil
   };
 
   return (
-    <Card>
-      <Space vertical size="large" style={{ width: "100%" }}>
-        <Flex justify="space-between" align="center">
-          <Title level={2} style={{ margin: 0 }}>
-            ユーザー情報
-          </Title>
-        </Flex>
-
-        <Form
-          form={form}
-          layout="vertical"
-          initialValues={{
-            name,
-            email,
-            password: "",
-          }}
+    <Card title="ユーザー情報">
+      <Form
+        form={form}
+        layout="vertical"
+        initialValues={{
+          name,
+          email,
+          password: "",
+        }}
+      >
+        <Form.Item
+          label="名前"
+          name="name"
+          rules={[
+            { required: true, message: "名前を入力してください" },
+            { min: 1, message: "名前を入力してください" },
+          ]}
         >
-          <Form.Item
-            label="名前"
-            name="name"
-            rules={[
-              { required: true, message: "名前を入力してください" },
-              { min: 1, message: "名前を入力してください" },
-            ]}
-          >
-            <Input placeholder="名前を入力" />
-          </Form.Item>
+          <Input placeholder="名前を入力" />
+        </Form.Item>
 
-          <Form.Item
-            label="メールアドレス"
-            name="email"
-            rules={[
-              { required: true, message: "メールアドレスを入力してください" },
-              { type: "email", message: "有効なメールアドレスを入力してください" },
-            ]}
-          >
-            <Input placeholder="メールアドレスを入力" />
-          </Form.Item>
+        <Form.Item
+          label="メールアドレス"
+          name="email"
+          rules={[
+            { required: true, message: "メールアドレスを入力してください" },
+            { type: "email", message: "有効なメールアドレスを入力してください" },
+          ]}
+        >
+          <Input placeholder="メールアドレスを入力" />
+        </Form.Item>
 
-          <Form.Item
-            label="パスワード"
-            name="password"
-            rules={[{ min: 8, message: "パスワードは8文字以上である必要があります" }]}
-          >
-            <Input.Password placeholder="新しいパスワードを入力（任意）" />
-          </Form.Item>
+        <Form.Item
+          label="パスワード"
+          name="password"
+          rules={[{ min: 8, message: "パスワードは8文字以上である必要があります" }]}
+        >
+          <Input.Password placeholder="新しいパスワードを入力（任意）" />
+        </Form.Item>
 
-          <Flex gap={8} justify="flex-end">
-            <Button intent="neutral" icon={<CloseOutlined />} onClick={onCancel}>
-              キャンセル
-            </Button>
-            <Button
-              intent="primary"
-              icon={<SaveOutlined />}
-              onClick={handleSave}
-              loading={updateMutation.isPending}
-            >
-              保存
-            </Button>
-          </Flex>
-        </Form>
-      </Space>
+        <Flex gap={8} justify="flex-end">
+          <Button intent="neutral" icon={<CloseOutlined />} onClick={onCancel}>
+            キャンセル
+          </Button>
+          <Button
+            intent="primary"
+            icon={<SaveOutlined />}
+            onClick={handleSave}
+            loading={updateMutation.isPending}
+          >
+            保存
+          </Button>
+        </Flex>
+      </Form>
     </Card>
   );
 };

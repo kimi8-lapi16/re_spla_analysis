@@ -1,7 +1,7 @@
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate, Link } from "@tanstack/react-router";
-import { Form, Spin } from "antd";
+import { Flex, Form, Typography } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { AuthLayout } from "../components/layout/AuthLayout";
@@ -16,6 +16,8 @@ const loginSchema = z.object({
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
+
+const { Text } = Typography;
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -58,63 +60,63 @@ export function LoginPage() {
 
   return (
     <AuthLayout>
-      <Spin spinning={isPending} tip="ログイン中...">
-        <Card title="ログイン" tone="raised" style={{ width: 400 }}>
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <Form.Item validateStatus={errors.email ? "error" : ""} help={errors.email?.message}>
-              <Controller
-                name="email"
-                control={control}
-                render={({ field }) => (
-                  <Input
-                    {...field}
-                    prefix={<UserOutlined />}
-                    placeholder="メールアドレス"
-                    size="large"
-                    disabled={isPending}
-                  />
-                )}
-              />
-            </Form.Item>
+      <Card title="ログイン" tone="raised" style={{ width: "100%", maxWidth: 400 }}>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <Form.Item validateStatus={errors.email ? "error" : ""} help={errors.email?.message}>
+            <Controller
+              name="email"
+              control={control}
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  prefix={<UserOutlined />}
+                  placeholder="メールアドレス"
+                  size="large"
+                  disabled={isPending}
+                />
+              )}
+            />
+          </Form.Item>
 
-            <Form.Item
-              validateStatus={errors.password ? "error" : ""}
-              help={errors.password?.message}
+          <Form.Item
+            validateStatus={errors.password ? "error" : ""}
+            help={errors.password?.message}
+          >
+            <Controller
+              name="password"
+              control={control}
+              render={({ field }) => (
+                <Input.Password
+                  {...field}
+                  prefix={<LockOutlined />}
+                  placeholder="パスワード"
+                  size="large"
+                  disabled={isPending}
+                />
+              )}
+            />
+          </Form.Item>
+
+          <Form.Item>
+            <Button
+              intent="primary"
+              htmlType="submit"
+              size="large"
+              block
+              loading={isPending}
+              disabled={isPending}
             >
-              <Controller
-                name="password"
-                control={control}
-                render={({ field }) => (
-                  <Input.Password
-                    {...field}
-                    prefix={<LockOutlined />}
-                    placeholder="パスワード"
-                    size="large"
-                    disabled={isPending}
-                  />
-                )}
-              />
-            </Form.Item>
+              ログイン
+            </Button>
+          </Form.Item>
 
-            <Form.Item>
-              <Button
-                intent="primary"
-                htmlType="submit"
-                size="large"
-                block
-                loading={isPending}
-                disabled={isPending}
-              >
-                ログイン
-              </Button>
-            </Form.Item>
-
-            <div style={{ textAlign: "center", marginTop: "16px" }}>
+          <Flex justify="center">
+            <Text>
               アカウントをお持ちでないですか？ <Link to="/register">新規登録</Link>
-            </div>
-          </form>
-        </Card>
-      </Spin>
+            </Text>
+          </Flex>
+        </form>
+      </Card>
     </AuthLayout>
   );
 }
