@@ -27,7 +27,12 @@ export type MatchSessionFormData = {
     date: string;
     battleTypeId?: number;
     ruleId?: number;
-    stageId?: number;
+    /**
+     * The stages in this rotation. A 2-hour rotation runs two stages and each
+     * match draws one of them, so this holds up to two - never one "session
+     * stage" that every match inherits.
+     */
+    stageIds: number[];
   };
   matches: SessionMatchField[];
 };
@@ -41,6 +46,8 @@ type SessionMatchColumnsParams = {
   stages: Stage[] | undefined;
   recentWeaponIds: number[];
   recentStageIds: number[];
+  /** The rotation's stages, used to offer a 2-way choice per match. */
+  sessionStageIds: number[];
 };
 
 function rowError(errors: FieldErrors<MatchSessionFormData>, index: number) {
@@ -56,7 +63,15 @@ export function createSessionMatchColumns({
   stages,
   recentWeaponIds,
   recentStageIds,
+  sessionStageIds,
 }: SessionMatchColumnsParams): TableColumnsType<SessionMatchField> {
+  const stageById = new Map((stages ?? []).map((stage) => [stage.id, stage.name]));
+  const rotationStages = sessionStageIds
+    .map((id) => ({ id, name: stageById.get(id) }))
+    .filter((stage): stage is { id: number; name: string } => stage.name !== undefined);
+  // Two stages in the rotation: offer exactly those, as one tap and with no
+  // preselection. Guessing here would be wrong about half the time.
+  const hasRotationChoice = rotationStages.length >= 2;
   const weaponOptions = withRecentFirst(
     weapons?.map((weapon) => ({ label: weapon.name, value: weapon.id })) ?? [],
     recentWeaponIds,
@@ -107,22 +122,30 @@ export function createSessionMatchColumns({
       title: "ステージ",
       dataIndex: "stageId",
       key: "stageId",
-      width: 200,
+      width: hasRotationChoice ? 260 : 200,
       render: (_: unknown, __: unknown, index: number) => (
         <Controller
           name={`matches.${index}.stageId`}
           control={control}
-          render={({ field }) => (
-            <Select
-              {...field}
-              style={{ width: "100%" }}
-              placeholder="選択してください"
-              status={rowError(errors, index)?.stageId ? "error" : ""}
-              showSearch
-              optionFilterProp="label"
-              options={stageOptions}
-            />
-          )}
+          render={({ field }) =>
+            hasRotationChoice ? (
+              <Radio.Group
+                {...field}
+                optionType="button"
+                options={rotationStages.map((stage) => ({ label: stage.name, value: stage.id }))}
+              />
+            ) : (
+              <Select
+                {...field}
+                style={{ width: "100%" }}
+                placeholder="選択してください"
+                status={rowError(errors, index)?.stageId ? "error" : ""}
+                showSearch
+                optionFilterProp="label"
+                options={stageOptions}
+              />
+            )
+          }
         />
       ),
     },

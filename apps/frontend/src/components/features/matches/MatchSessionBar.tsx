@@ -10,22 +10,27 @@ import type { MatchSessionFormData } from "./sessionMatchColumns";
 
 const RECENT_STAGES_KEY = "spla:recent-stage-ids";
 
+/** A 2-hour rotation runs exactly two stages. */
+export const MAX_ROTATION_STAGES = 2;
+
 interface MatchSessionBarProps {
   control: Control<MatchSessionFormData>;
   errors: FieldErrors<MatchSessionFormData>;
   stages: Stage[] | undefined;
   rules: Rule[] | undefined;
   battleTypes: BattleType[] | undefined;
-  /** Lets the page seed rows that have no stage yet. */
-  onStageChange: (stageId: number) => void;
+  /** Lets the page seed rows when the rotation turns out to have a single stage. */
+  onStagesChange: (stageIds: number[]) => void;
 }
 
 /**
  * The conditions that hold for a whole play session.
  *
  * Date, battle type and rule barely change while you are playing, so asking for
- * them once here removes three fields from every match below. The stage seeds
- * new rows; each row can still override it.
+ * them once here removes three fields from every match below.
+ *
+ * Stage is different: a rotation runs two of them and each match draws one, so
+ * this collects the pair and every match picks which one it was.
  */
 export function MatchSessionBar({
   control,
@@ -33,7 +38,7 @@ export function MatchSessionBar({
   stages,
   rules,
   battleTypes,
-  onStageChange,
+  onStagesChange,
 }: MatchSessionBarProps) {
   const { recentIds: recentStageIds } = useRecentIds(RECENT_STAGES_KEY);
 
@@ -116,23 +121,35 @@ export function MatchSessionBar({
             </Col>
 
             <Col xs={24} sm={12} lg={6}>
-              <Form.Item label="ステージ" extra="追加する行の初期値になります">
+              <Form.Item
+                label="ステージ"
+                extra="この時間帯の2つを選ぶと、試合ごとに切り替えられます"
+                validateStatus={errors.session?.stageIds ? "error" : ""}
+                help={
+                  Array.isArray(errors.session?.stageIds)
+                    ? undefined
+                    : errors.session?.stageIds?.message
+                }
+              >
                 <Controller
-                  name="session.stageId"
+                  name="session.stageIds"
                   control={control}
                   render={({ field }) => (
                     <Select
                       {...field}
+                      mode="multiple"
                       style={{ width: "100%" }}
-                      placeholder="選択"
+                      placeholder="2つまで選択"
                       showSearch
                       optionFilterProp="label"
                       options={stageOptions}
-                      onChange={(stageId) => {
-                        field.onChange(stageId);
-                        if (typeof stageId === "number") {
-                          onStageChange(stageId);
-                        }
+                      value={field.value ?? []}
+                      onChange={(stageIds: number[]) => {
+                        // A rotation runs two stages; keep the two most recently
+                        // picked rather than silently ignoring the new one.
+                        const capped = stageIds.slice(-MAX_ROTATION_STAGES);
+                        field.onChange(capped);
+                        onStagesChange(capped);
                       }}
                     />
                   )}

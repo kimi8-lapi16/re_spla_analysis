@@ -4,11 +4,14 @@ import { useNavigate } from "@tanstack/react-router";
 import { Flex, Skeleton, Space, Table, Typography } from "antd";
 import dayjs from "dayjs";
 import { useMemo } from "react";
-import { useFieldArray, useForm } from "react-hook-form";
+import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { CreateMatchBody } from "../api";
 import { Button } from "../components/base";
-import { MatchSessionBar } from "../components/features/matches/MatchSessionBar";
+import {
+  MatchSessionBar,
+  MAX_ROTATION_STAGES,
+} from "../components/features/matches/MatchSessionBar";
 import {
   createSessionMatchColumns,
   TIME_FORMAT,
@@ -43,7 +46,7 @@ const matchSessionSchema = z
       date: z.string().min(1, "日付を選択してください"),
       battleTypeId: z.number().optional(),
       ruleId: z.number().optional(),
-      stageId: z.number().optional(),
+      stageIds: z.array(z.number()),
     }),
     matches: z
       .array(
@@ -123,27 +126,33 @@ function isComplete(match: SessionMatchField): match is CompleteMatch {
   );
 }
 
-/** Battle type / rule / stage carry over to the next visit; the date does not. */
-type StoredSession = { battleTypeId?: number; ruleId?: number; stageId?: number };
+/** Battle type / rule / stages carry over to the next visit; the date does not. */
+type StoredSession = { battleTypeId?: number; ruleId?: number; stageIds: number[] };
+
+const EMPTY_STORED_SESSION: StoredSession = { stageIds: [] };
 
 function readStoredSession(): StoredSession {
   try {
     const raw = window.localStorage.getItem(LAST_SESSION_KEY);
-    if (!raw) return {};
+    if (!raw) return EMPTY_STORED_SESSION;
     const parsed: unknown = JSON.parse(raw);
-    if (typeof parsed !== "object" || parsed === null) return {};
+    if (typeof parsed !== "object" || parsed === null) return EMPTY_STORED_SESSION;
     const asRecord: Record<string, unknown> = { ...parsed };
-    const pick = (key: string): number | undefined => {
+    const pickNumber = (key: string): number | undefined => {
       const value = asRecord[key];
       return typeof value === "number" ? value : undefined;
     };
+    const rawStageIds = asRecord.stageIds;
+    const stageIds = Array.isArray(rawStageIds)
+      ? rawStageIds.filter((id): id is number => typeof id === "number")
+      : [];
     return {
-      battleTypeId: pick("battleTypeId"),
-      ruleId: pick("ruleId"),
-      stageId: pick("stageId"),
+      battleTypeId: pickNumber("battleTypeId"),
+      ruleId: pickNumber("ruleId"),
+      stageIds: stageIds.slice(0, MAX_ROTATION_STAGES),
     };
   } catch {
-    return {};
+    return EMPTY_STORED_SESSION;
   }
 }
 
@@ -197,35 +206,43 @@ export function CreateMatchesPage() {
         date: dayjs().format("YYYY-MM-DD"),
         battleTypeId: storedSession.battleTypeId,
         ruleId: storedSession.ruleId,
-        stageId: storedSession.stageId,
+        stageIds: storedSession.stageIds,
       },
-      matches: [newRow({ stageId: storedSession.stageId })],
+      matches: [newRow()],
     },
   });
 
   const { fields, append, remove } = useFieldArray({ control, name: "matches" });
 
+  // The row cells need to re-render as the rotation's stages change.
+  const watchedStageIds = useWatch({ control, name: "session.stageIds" }) ?? [];
+
   const isLoading = isLoadingWeapons || isLoadingStages || isLoadingRules || isLoadingBattleTypes;
 
-  // Choosing the session stage fills rows that have none yet. Rows where a stage
-  // was already picked are left alone - this seeds blanks, it does not overwrite.
-  const handleSessionStageChange = (stageId: number) => {
+  // Nothing here ever picks a stage for the player. Changing the rotation only
+  // clears rows whose stage is no longer one of its two, so an edit cannot leave
+  // a match pointing at a stage that is not on offer any more.
+  const handleSessionStagesChange = (stageIds: number[]) => {
+    if (stageIds.length < MAX_ROTATION_STAGES) return;
     getValues().matches.forEach((match, index) => {
-      if (match.stageId === undefined) {
-        setValue(`matches.${index}.stageId`, stageId, { shouldValidate: false });
+      if (match.stageId !== undefined && !stageIds.includes(match.stageId)) {
+        setValue(`matches.${index}.stageId`, undefined, { shouldValidate: false });
       }
     });
   };
 
-  // A new row copies the weapon and stage of the one above it: within a session
-  // those usually repeat, so the common case needs only the win/loss tap.
+  // A new row copies the weapon of the one above it - players keep a weapon for a
+  // run of matches - but never the stage. See below.
   const handleAddRow = () => {
     const current = getValues();
     const previous = current.matches[current.matches.length - 1];
     append(
       newRow({
         weaponId: previous?.weaponId,
-        stageId: previous?.stageId ?? current.session.stageId,
+        // Stage is deliberately left blank. A rotation draws one of two stages per
+        // match, so carrying the previous one over - or defaulting to either -
+        // would be wrong about half the time, and a wrong value that looks filled
+        // in is worse than an empty one.
       })
     );
   };
@@ -256,7 +273,7 @@ export function CreateMatchesPage() {
       onSuccess: () => {
         rememberWeapons(complete.map((match) => match.weaponId));
         rememberStages(complete.map((match) => match.stageId));
-        writeStoredSession({ battleTypeId, ruleId, stageId: session.stageId });
+        writeStoredSession({ battleTypeId, ruleId, stageIds: session.stageIds });
         notification.success({
           title: "登録しました",
           description: `${payload.matches.length} 試合を登録しました`,
@@ -294,6 +311,7 @@ export function CreateMatchesPage() {
     stages,
     recentWeaponIds,
     recentStageIds,
+    sessionStageIds: watchedStageIds,
   });
 
   const rowErrorCount = Array.isArray(errors.matches) ? errors.matches.filter(Boolean).length : 0;
@@ -303,7 +321,7 @@ export function CreateMatchesPage() {
       <Flex vertical gap="large">
         <PageHeader
           title="試合を登録"
-          description="セッションの条件を上で決めると、あとは試合ごとにブキと勝敗だけで記録できます。"
+          description="セッションの条件を上で決めると、あとは試合ごとにステージと勝敗を選ぶだけです。"
         />
 
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -314,7 +332,7 @@ export function CreateMatchesPage() {
               stages={stages}
               rules={rules}
               battleTypes={battleTypes}
-              onStageChange={handleSessionStageChange}
+              onStagesChange={handleSessionStagesChange}
             />
 
             <Table
