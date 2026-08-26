@@ -39,6 +39,7 @@
 
 ## インフラ
 - AWS CDK 一式は `infra/` にあります → [infra/README.md](infra/README.md)
+- 分析サマリー機能（統計処理＋日次バッチ）の設計メモ → [docs/analysis-summary-design.md](docs/analysis-summary-design.md)
 - バッチの実行: `pnpm --filter @app/backend batch <jobName>` (例: `smoke`)
 
 ## 生成AI
