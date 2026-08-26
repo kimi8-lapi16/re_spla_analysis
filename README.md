@@ -37,5 +37,9 @@
 - UseCase層 複雑なリレーションや複数テーブルを跨ぐためにトランザクションを張る場合などに使用
 - 気持ちとしてはこんな感じ Module > Controller > Service > (UseCase) > Repository
 
+## インフラ
+- AWS CDK 一式は `infra/` にあります → [infra/README.md](infra/README.md)
+- バッチの実行: `pnpm --filter @app/backend batch <jobName>` (例: `smoke`)
+
 ## 生成AI
 - ClaudeCodeにほとんど書かせてます
